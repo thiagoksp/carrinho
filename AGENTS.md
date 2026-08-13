@@ -15,7 +15,7 @@ Construir, passo a passo, um agente de mercado que recebe orçamento, dias, disp
 
 ## Escopo atual
 
-A interface inicial é o terminal. O programa identifica os seis dados básicos do pedido e os mostra para conferência; ainda não cria planos ou listas.
+A interface inicial é o terminal. O programa identifica os seis dados básicos, pergunta somente o que estiver faltando e pede confirmação; ainda não cria planos ou listas.
 
 ## Evolução prevista
 

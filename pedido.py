@@ -1,6 +1,6 @@
 """Interpretação inicial de pedidos escritos em linguagem comum."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import re
 import unicodedata
 
@@ -14,8 +14,8 @@ class PedidoEntendido:
     pessoas: int | None = None
     dias: int | None = None
     disposicao: str | None = None
-    itens_em_casa: list[str] = field(default_factory=list)
-    restricoes: list[str] = field(default_factory=list)
+    itens_em_casa: list[str] | None = None
+    restricoes: list[str] | None = None
 
 
 NUMEROS = {
@@ -97,7 +97,16 @@ def _encontrar_disposicao(texto: str) -> str | None:
     return None
 
 
-def _encontrar_itens(texto: str) -> list[str]:
+def _encontrar_itens(texto: str) -> list[str] | None:
+    texto_normalizado = _sem_acentos(texto)
+    sem_itens = (
+        "nao tenho nada em casa",
+        "nao temos nada em casa",
+        "nenhum item em casa",
+    )
+    if any(expressao in texto_normalizado for expressao in sem_itens):
+        return []
+
     resultado = re.search(
         r"(?:j[aá]\s+(?:tenho|temos)|(?:tenho|temos)\s+em\s+casa)\s+"
         r"(?P<itens>.+?)"
@@ -106,20 +115,28 @@ def _encontrar_itens(texto: str) -> list[str]:
         re.IGNORECASE,
     )
     if not resultado:
-        return []
+        return None
 
     itens = re.split(r"\s*,\s*|\s+e\s+", resultado.group("itens"))
     return [item.strip().casefold() for item in itens if item.strip()]
 
 
-def _encontrar_restricoes(texto: str) -> list[str]:
+def _encontrar_restricoes(texto: str) -> list[str] | None:
     texto_normalizado = _sem_acentos(texto)
-    restricoes: list[str] = []
+
+    sem_restricoes = (
+        "sem restricao",
+        "sem restricoes",
+        "nenhuma restricao",
+        "nenhuma restricao alimentar",
+    )
+    if any(expressao in texto_normalizado for expressao in sem_restricoes):
+        return []
 
     if "lactose" in texto_normalizado:
-        restricoes.append("intolerância à lactose")
+        return ["intolerância à lactose"]
 
-    return restricoes
+    return None
 
 
 def entender_pedido(texto: str) -> PedidoEntendido:

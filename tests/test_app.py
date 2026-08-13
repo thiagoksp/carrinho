@@ -14,12 +14,39 @@ class TestTerminal(unittest.TestCase):
         )
 
         with (
-            patch("builtins.input", return_value=pedido),
+            patch("builtins.input", side_effect=[pedido, "s"]),
             patch("sys.stdout", new_callable=io.StringIO) as saida,
         ):
             main()
 
         self.assertIn("O Carrinho entendeu", saida.getvalue())
+        self.assertIn("Orçamento: CAD$80", saida.getvalue())
+        self.assertIn("Pessoas: 2", saida.getvalue())
+        self.assertIn("Dias: 4", saida.getvalue())
+        self.assertIn("Disposição para cozinhar: baixa", saida.getvalue())
+        self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
+        self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
+        self.assertIn("Dados confirmados", saida.getvalue())
+
+    def test_pergunta_somente_os_dados_ausentes(self) -> None:
+        respostas = [
+            "Preciso organizar minha alimentação.",
+            "80",
+            "2",
+            "4",
+            "1",
+            "arroz, 7 ovos",
+            "intolerância à lactose",
+            "s",
+        ]
+
+        with (
+            patch("builtins.input", side_effect=respostas) as entrada,
+            patch("sys.stdout", new_callable=io.StringIO) as saida,
+        ):
+            main()
+
+        self.assertEqual(entrada.call_count, 8)
         self.assertIn("Orçamento: CAD$80", saida.getvalue())
         self.assertIn("Pessoas: 2", saida.getvalue())
         self.assertIn("Dias: 4", saida.getvalue())

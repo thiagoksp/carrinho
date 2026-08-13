@@ -36,10 +36,17 @@ class TestEntenderPedido(unittest.TestCase):
         self.assertIsNone(pedido.pessoas)
         self.assertIsNone(pedido.dias)
         self.assertIsNone(pedido.disposicao)
+        self.assertIsNone(pedido.itens_em_casa)
+        self.assertIsNone(pedido.restricoes)
+
+    def test_distingue_nenhum_item_de_informacao_ausente(self) -> None:
+        pedido = entender_pedido(
+            "Não tenho nada em casa e não possuo nenhuma restrição alimentar."
+        )
+
         self.assertEqual(pedido.itens_em_casa, [])
         self.assertEqual(pedido.restricoes, [])
 
 
 if __name__ == "__main__":
     unittest.main()
-

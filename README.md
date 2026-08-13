@@ -15,13 +15,13 @@ O sistema deverá gerar um plano de refeições e uma lista de compras. Em vers�
 
 ## Estado atual
 
-O projeto possui uma entrada mínima pelo terminal. Ela identifica orçamento, pessoas, dias, disposição para cozinhar, itens existentes e restrições alimentares. Ainda não gera refeições nem lista de compras.
+O projeto possui uma entrada mínima pelo terminal. Ela identifica orçamento, pessoas, dias, disposição para cozinhar, itens existentes e restrições alimentares; pergunta somente o que estiver faltando e pede uma confirmação. Ainda não gera refeições nem lista de compras.
 
 O cenário de referência aprovado está documentado em [`docs/caso-base.md`](docs/caso-base.md).
 
 ## Próxima etapa
 
-Confirmar ou completar dados que não foram identificados antes de criar qualquer plano.
+Gerar um primeiro plano de refeições previsível para o caso-base, ainda sem inteligência artificial externa.
 
 ## Ambiente local
 
