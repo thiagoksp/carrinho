@@ -6,8 +6,12 @@ from app import main
 
 
 class TestTerminal(unittest.TestCase):
-    def test_confirma_o_pedido_recebido(self) -> None:
-        pedido = "Tenho CAD$80 para duas pessoas."
+    def test_mostra_os_dados_identificados(self) -> None:
+        pedido = (
+            "Tenho CAD$80 para alimentar 2 pessoas por 4 dias. "
+            "Estamos com pouca disposição para cozinhar, já temos arroz e 7 ovos, "
+            "e pelo menos uma pessoa tem intolerância à lactose."
+        )
 
         with (
             patch("builtins.input", return_value=pedido),
@@ -15,10 +19,14 @@ class TestTerminal(unittest.TestCase):
         ):
             main()
 
-        self.assertIn("Pedido recebido", saida.getvalue())
-        self.assertIn(pedido, saida.getvalue())
+        self.assertIn("O Carrinho entendeu", saida.getvalue())
+        self.assertIn("Orçamento: CAD$80", saida.getvalue())
+        self.assertIn("Pessoas: 2", saida.getvalue())
+        self.assertIn("Dias: 4", saida.getvalue())
+        self.assertIn("Disposição para cozinhar: baixa", saida.getvalue())
+        self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
+        self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
 
 
 if __name__ == "__main__":
     unittest.main()
-
