@@ -15,13 +15,14 @@ O sistema deverá gerar um plano de refeições e uma lista de compras. Em vers�
 
 ## Estado atual
 
-Somente a fundação do projeto está pronta. Ainda não há funcionalidades do aplicativo.
+Somente a fundação e o caso-base do projeto estão prontos. Ainda não há funcionalidades do aplicativo.
+
+O cenário de referência aprovado está documentado em [`docs/caso-base.md`](docs/caso-base.md).
 
 ## Próxima etapa
 
-Definir, em conjunto, um único exemplo de entrada e o formato esperado da resposta antes de implementar código.
+Escolher a forma mais simples de interação da primeira versão antes de implementar código.
 
 ## Ambiente local
 
 O projeto usa Python 3.12 e não possui dependências externas nesta etapa.
-
