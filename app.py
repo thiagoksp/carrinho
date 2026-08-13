@@ -3,6 +3,7 @@
 import re
 
 from pedido import PedidoEntendido, entender_pedido
+from planejamento import Plano, gerar_plano_caso_base
 
 
 def _mostrar(valor: object | None) -> str:
@@ -135,6 +136,36 @@ def _confirmar_dados() -> bool:
         print("Responda com 's' para sim ou 'n' para não.")
 
 
+def mostrar_plano(plano: Plano) -> None:
+    """Apresenta o primeiro plano e seus custos simulados."""
+    print("\nPLANO DE REFEIÇÕES")
+    for refeicao in plano.refeicoes:
+        print(f"- Dia {refeicao.dia} — {refeicao.momento}: {refeicao.prato}")
+
+    print("\nCOMO REDUZIR O TRABALHO")
+    for orientacao in plano.reaproveitamento:
+        print(f"- {orientacao}")
+
+    print("\nLISTA DE COMPRAS — PREÇOS SIMULADOS")
+    for item in plano.compras:
+        print(
+            f"- {item.nome}: {item.quantidade} "
+            f"— CAD${item.preco_estimado:.2f}"
+        )
+
+    print(f"\nTotal estimado: CAD${plano.total_estimado:.2f}")
+    print(f"Margem do orçamento: CAD${plano.margem:.2f}")
+
+    print("\nITENS QUE JÁ ESTÃO EM CASA")
+    for uso in plano.uso_itens_casa:
+        print(f"- {uso}")
+
+    print(
+        "\nAtenção: o plano não usa ingredientes lácteos intencionalmente, "
+        "mas os rótulos dos produtos devem ser conferidos."
+    )
+
+
 def main() -> None:
     """Recebe um pedido e mostra os dados básicos identificados."""
     print("\nCARRINHO")
@@ -151,10 +182,16 @@ def main() -> None:
 
     if _confirmar_dados():
         print("\nDados confirmados.")
+        plano = gerar_plano_caso_base(dados)
+        if plano is None:
+            print(
+                "\nO primeiro plano automático ainda está disponível somente "
+                "para o caso-base de 2 pessoas por 4 dias."
+            )
+        else:
+            mostrar_plano(plano)
     else:
         print("\nTudo bem. Execute novamente e descreva os dados corrigidos.")
-
-    print("Nenhum plano de refeições foi criado ainda.")
 
 
 if __name__ == "__main__":

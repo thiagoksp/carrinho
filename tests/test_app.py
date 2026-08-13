@@ -27,6 +27,9 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
         self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
         self.assertIn("Dados confirmados", saida.getvalue())
+        self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
+        self.assertIn("Total estimado: CAD$58.25", saida.getvalue())
+        self.assertIn("Margem do orçamento: CAD$21.75", saida.getvalue())
 
     def test_pergunta_somente_os_dados_ausentes(self) -> None:
         respostas = [
@@ -53,6 +56,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Disposição para cozinhar: baixa", saida.getvalue())
         self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
         self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
+        self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
 
 
 if __name__ == "__main__":
