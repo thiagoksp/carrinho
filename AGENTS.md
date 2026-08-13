@@ -15,7 +15,7 @@ Construir, passo a passo, um agente de mercado que recebe orçamento, dias, disp
 
 ## Escopo atual
 
-A interface inicial é o terminal. O programa identifica os seis dados básicos, completa e confirma as informações. Para o caso-base, gera um plano fixo, uma lista de compras e custos simulados, sem serviços externos.
+A interface inicial é o terminal. O programa identifica, completa e confirma os dados. O planejamento por regras ajusta pessoas, dias, embalagens, itens existentes e orçamento em CAD, sem serviços externos. Somente ausência de restrições ou restrição à lactose são suportadas nesta etapa.
 
 ## Evolução prevista
 

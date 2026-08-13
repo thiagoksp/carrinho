@@ -15,13 +15,13 @@ O sistema deverá gerar um plano de refeições e uma lista de compras. Em vers�
 
 ## Estado atual
 
-O projeto possui uma entrada pelo terminal. Ela identifica os dados, pergunta somente o que estiver faltando e pede confirmação. Para o caso-base aprovado, gera um primeiro plano fixo com 8 refeições, reaproveitamento, lista de compras, preços simulados e margem do orçamento.
+O projeto possui uma entrada pelo terminal. Ela identifica, completa e confirma os dados. O planejamento por regras atende de 1 a 12 pessoas por 1 a 14 dias, ajusta quantidades por embalagem, aproveita itens existentes e calcula margem ou falta de orçamento em CAD. Nesta etapa, aceita somente ausência de restrições ou restrição à lactose.
 
 O cenário de referência aprovado está documentado em [`docs/caso-base.md`](docs/caso-base.md).
 
 ## Próxima etapa
 
-Transformar o plano fixo em regras simples que possam se adaptar a outros números de pessoas, dias e orçamentos.
+Criar uma alternativa econômica quando o primeiro plano ultrapassar o orçamento.
 
 ## Ambiente local
 

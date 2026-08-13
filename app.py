@@ -3,7 +3,7 @@
 import re
 
 from pedido import PedidoEntendido, entender_pedido
-from planejamento import Plano, gerar_plano_caso_base
+from planejamento import Plano, gerar_plano
 
 
 def _mostrar(valor: object | None) -> str:
@@ -139,6 +139,7 @@ def _confirmar_dados() -> bool:
 def mostrar_plano(plano: Plano) -> None:
     """Apresenta o primeiro plano e seus custos simulados."""
     print("\nPLANO DE REFEIÇÕES")
+    print(f"Para {plano.pessoas} pessoa(s) durante {plano.dias} dia(s).")
     for refeicao in plano.refeicoes:
         print(f"- Dia {refeicao.dia} — {refeicao.momento}: {refeicao.prato}")
 
@@ -154,11 +155,17 @@ def mostrar_plano(plano: Plano) -> None:
         )
 
     print(f"\nTotal estimado: CAD${plano.total_estimado:.2f}")
-    print(f"Margem do orçamento: CAD${plano.margem:.2f}")
+    if plano.margem >= 0:
+        print(f"Margem do orçamento: CAD${plano.margem:.2f}")
+    else:
+        print(f"Valor acima do orçamento: CAD${abs(plano.margem):.2f}")
 
     print("\nITENS QUE JÁ ESTÃO EM CASA")
-    for uso in plano.uso_itens_casa:
-        print(f"- {uso}")
+    if plano.uso_itens_casa:
+        for uso in plano.uso_itens_casa:
+            print(f"- {uso}")
+    else:
+        print("- Nenhum ingrediente principal do plano foi identificado em casa.")
 
     print(
         "\nAtenção: o plano não usa ingredientes lácteos intencionalmente, "
@@ -182,11 +189,11 @@ def main() -> None:
 
     if _confirmar_dados():
         print("\nDados confirmados.")
-        plano = gerar_plano_caso_base(dados)
+        plano = gerar_plano(dados)
         if plano is None:
             print(
-                "\nO primeiro plano automático ainda está disponível somente "
-                "para o caso-base de 2 pessoas por 4 dias."
+                "\nEsta versão planeja de 1 a 12 pessoas por 1 a 14 dias, "
+                "em CAD, sem restrições ou somente com restrição à lactose."
             )
         else:
             mostrar_plano(plano)
