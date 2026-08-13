@@ -2,7 +2,8 @@ import io
 import unittest
 from unittest.mock import patch
 
-from app import main
+from app import main, revisar_dados
+from pedido import PedidoEntendido
 
 
 class TestTerminal(unittest.TestCase):
@@ -57,6 +58,65 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
         self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
         self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
+
+    def test_corrige_orcamento_e_dias_sem_reiniciar(self) -> None:
+        dados = PedidoEntendido(
+            orcamento=80,
+            moeda="CAD",
+            pessoas=2,
+            dias=4,
+            disposicao="baixa",
+            itens_em_casa=["arroz", "7 ovos"],
+            restricoes=["intolerância à lactose"],
+        )
+
+        with (
+            patch(
+                "builtins.input",
+                side_effect=["n", "1", "60", "n", "3", "5", "s"],
+            ),
+            patch("sys.stdout", new_callable=io.StringIO) as saida,
+        ):
+            resultado = revisar_dados(dados)
+
+        self.assertEqual(resultado.orcamento, 60)
+        self.assertEqual(resultado.dias, 5)
+        self.assertIn("Orçamento: CAD$60", saida.getvalue())
+        self.assertIn("Dias: 5", saida.getvalue())
+
+    def test_corrige_estoque_e_restricoes_sem_reiniciar(self) -> None:
+        dados = PedidoEntendido(
+            orcamento=80,
+            moeda="CAD",
+            pessoas=2,
+            dias=4,
+            disposicao="baixa",
+            itens_em_casa=["arroz"],
+            restricoes=["intolerância à lactose"],
+        )
+
+        with (
+            patch(
+                "builtins.input",
+                side_effect=[
+                    "n",
+                    "5",
+                    "1 kg de arroz, meia dúzia de ovos",
+                    "n",
+                    "6",
+                    "nenhuma",
+                    "s",
+                ],
+            ),
+            patch("sys.stdout", new_callable=io.StringIO),
+        ):
+            resultado = revisar_dados(dados)
+
+        self.assertEqual(
+            resultado.itens_em_casa,
+            ["1 kg de arroz", "meia dúzia de ovos"],
+        )
+        self.assertEqual(resultado.restricoes, [])
 
 
 if __name__ == "__main__":

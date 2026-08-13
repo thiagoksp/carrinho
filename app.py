@@ -136,6 +136,56 @@ def _confirmar_dados() -> bool:
         print("Responda com 's' para sim ou 'n' para não.")
 
 
+def _corrigir_um_dado(dados: PedidoEntendido) -> None:
+    opcoes = {
+        "1": "orcamento",
+        "2": "pessoas",
+        "3": "dias",
+        "4": "disposicao",
+        "5": "itens",
+        "6": "restricoes",
+    }
+
+    while True:
+        resposta = input(
+            "\nQual dado você quer corrigir?\n"
+            "1 - Orçamento\n"
+            "2 - Pessoas\n"
+            "3 - Dias\n"
+            "4 - Disposição para cozinhar\n"
+            "5 - Itens em casa\n"
+            "6 - Restrições alimentares\n> "
+        ).strip()
+        escolha = opcoes.get(resposta)
+        if escolha is not None:
+            break
+        print("Escolha um número de 1 a 6.")
+
+    if escolha == "orcamento":
+        dados.orcamento, dados.moeda = _ler_orcamento()
+    elif escolha == "pessoas":
+        dados.pessoas = _ler_quantidade(
+            "Para quantas pessoas?", "pessoas", "pessoas"
+        )
+    elif escolha == "dias":
+        dados.dias = _ler_quantidade("Por quantos dias?", "dias", "dias")
+    elif escolha == "disposicao":
+        dados.disposicao = _ler_disposicao()
+    elif escolha == "itens":
+        dados.itens_em_casa = _ler_itens()
+    else:
+        dados.restricoes = _ler_restricoes()
+
+
+def revisar_dados(dados: PedidoEntendido) -> PedidoEntendido:
+    """Permite corrigir um campo por vez até o usuário confirmar o resumo."""
+    while True:
+        mostrar_resumo(dados)
+        if _confirmar_dados():
+            return dados
+        _corrigir_um_dado(dados)
+
+
 def mostrar_plano(plano: Plano) -> None:
     """Apresenta o primeiro plano e seus custos simulados."""
     if plano.economico:
@@ -191,21 +241,17 @@ def main() -> None:
         print("\nNenhum pedido foi informado.")
         return
 
-    dados = completar_dados(entender_pedido(pedido))
-    mostrar_resumo(dados)
+    dados = revisar_dados(completar_dados(entender_pedido(pedido)))
+    print("\nDados confirmados.")
 
-    if _confirmar_dados():
-        print("\nDados confirmados.")
-        plano = gerar_plano(dados)
-        if plano is None:
-            print(
-                "\nEsta versão planeja de 1 a 12 pessoas por 1 a 14 dias, "
-                "em CAD, sem restrições ou somente com restrição à lactose."
-            )
-        else:
-            mostrar_plano(plano)
+    plano = gerar_plano(dados)
+    if plano is None:
+        print(
+            "\nEsta versão planeja de 1 a 12 pessoas por 1 a 14 dias, "
+            "em CAD, sem restrições ou somente com restrição à lactose."
+        )
     else:
-        print("\nTudo bem. Execute novamente e descreva os dados corrigidos.")
+        mostrar_plano(plano)
 
 
 if __name__ == "__main__":

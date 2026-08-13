@@ -15,7 +15,7 @@ Construir, passo a passo, um agente de mercado que recebe orçamento, dias, disp
 
 ## Escopo atual
 
-A interface inicial é o terminal. O programa identifica, completa e confirma os dados. O planejamento por regras ajusta pessoas, dias, embalagens, quantidades existentes e orçamento em CAD, sem serviços externos. Quando necessário, tenta uma alternativa econômica e informa se ela ainda ultrapassar o orçamento. Somente ausência de restrições ou restrição à lactose são suportadas nesta etapa.
+A interface inicial é o terminal. O programa identifica, completa, permite corrigir e confirma os dados. O planejamento por regras ajusta pessoas, dias, embalagens, quantidades existentes e orçamento em CAD, sem serviços externos. Quando necessário, tenta uma alternativa econômica e informa se ela ainda ultrapassar o orçamento. Somente ausência de restrições ou restrição à lactose são suportadas nesta etapa.
 
 ## Evolução prevista
 
