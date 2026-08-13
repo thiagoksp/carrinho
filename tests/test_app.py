@@ -1,9 +1,12 @@
 import io
+from pathlib import Path
+import tempfile
 import unittest
 from unittest.mock import patch
 
-from app import main, revisar_dados
+from app import formatar_plano, main, revisar_dados, salvar_plano
 from pedido import PedidoEntendido
+from planejamento import gerar_plano
 
 
 class TestTerminal(unittest.TestCase):
@@ -15,7 +18,7 @@ class TestTerminal(unittest.TestCase):
         )
 
         with (
-            patch("builtins.input", side_effect=[pedido, "s"]),
+            patch("builtins.input", side_effect=[pedido, "s", "n"]),
             patch("sys.stdout", new_callable=io.StringIO) as saida,
         ):
             main()
@@ -42,6 +45,7 @@ class TestTerminal(unittest.TestCase):
             "arroz, 7 ovos",
             "intolerância à lactose",
             "s",
+            "n",
         ]
 
         with (
@@ -50,7 +54,7 @@ class TestTerminal(unittest.TestCase):
         ):
             main()
 
-        self.assertEqual(entrada.call_count, 8)
+        self.assertEqual(entrada.call_count, 9)
         self.assertIn("Orçamento: CAD$80", saida.getvalue())
         self.assertIn("Pessoas: 2", saida.getvalue())
         self.assertIn("Dias: 4", saida.getvalue())
@@ -117,6 +121,54 @@ class TestTerminal(unittest.TestCase):
             ["1 kg de arroz", "meia dúzia de ovos"],
         )
         self.assertEqual(resultado.restricoes, [])
+
+    def test_formata_todas_as_secoes_do_plano(self) -> None:
+        dados = PedidoEntendido(
+            orcamento=80,
+            moeda="CAD",
+            pessoas=2,
+            dias=4,
+            disposicao="baixa",
+            itens_em_casa=["arroz", "7 ovos"],
+            restricoes=["intolerância à lactose"],
+        )
+        plano = gerar_plano(dados)
+
+        assert plano is not None
+        conteudo = formatar_plano(plano)
+        self.assertIn("PLANO DE REFEIÇÕES", conteudo)
+        self.assertIn("COMO REDUZIR O TRABALHO", conteudo)
+        self.assertIn("LISTA DE COMPRAS", conteudo)
+        self.assertIn("Total estimado: CAD$58.25", conteudo)
+        self.assertIn("ITENS QUE JÁ ESTÃO EM CASA", conteudo)
+
+    def test_salva_novos_arquivos_sem_sobrescrever(self) -> None:
+        dados = PedidoEntendido(
+            orcamento=80,
+            moeda="CAD",
+            pessoas=2,
+            dias=4,
+            disposicao="baixa",
+            itens_em_casa=["arroz", "7 ovos"],
+            restricoes=["intolerância à lactose"],
+        )
+        plano = gerar_plano(dados)
+
+        assert plano is not None
+        with tempfile.TemporaryDirectory() as pasta:
+            primeiro = salvar_plano(plano, Path(pasta))
+            segundo = salvar_plano(plano, Path(pasta))
+
+            self.assertEqual(primeiro.name, "plano-carrinho.txt")
+            self.assertEqual(segundo.name, "plano-carrinho-2.txt")
+            self.assertEqual(
+                primeiro.read_text(encoding="utf-8"),
+                segundo.read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "LISTA DE COMPRAS",
+                primeiro.read_text(encoding="utf-8"),
+            )
 
 
 if __name__ == "__main__":

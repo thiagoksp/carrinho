@@ -1,5 +1,6 @@
 """Entrada inicial do Carrinho pelo terminal."""
 
+from pathlib import Path
 import re
 
 from pedido import PedidoEntendido, entender_pedido
@@ -186,48 +187,91 @@ def revisar_dados(dados: PedidoEntendido) -> PedidoEntendido:
         _corrigir_um_dado(dados)
 
 
-def mostrar_plano(plano: Plano) -> None:
-    """Apresenta o primeiro plano e seus custos simulados."""
+def formatar_plano(plano: Plano) -> str:
+    """Produz o mesmo conteúdo para o terminal e para o arquivo salvo."""
+    linhas: list[str] = []
+
     if plano.economico:
-        print("\nALTERNATIVA ECONÔMICA")
-        print("O plano inicial ultrapassou o orçamento e foi simplificado.")
+        linhas.append("ALTERNATIVA ECONÔMICA")
+        linhas.append("O plano inicial ultrapassou o orçamento e foi simplificado.")
         if plano.total_plano_normal is not None:
             economia = plano.total_plano_normal - plano.total_estimado
-            print(f"Economia estimada: CAD${economia:.2f}")
+            linhas.append(f"Economia estimada: CAD${economia:.2f}")
+        linhas.append("")
 
-    print("\nPLANO DE REFEIÇÕES")
-    print(f"Para {plano.pessoas} pessoa(s) durante {plano.dias} dia(s).")
+    linhas.append("PLANO DE REFEIÇÕES")
+    linhas.append(f"Para {plano.pessoas} pessoa(s) durante {plano.dias} dia(s).")
     for refeicao in plano.refeicoes:
-        print(f"- Dia {refeicao.dia} — {refeicao.momento}: {refeicao.prato}")
+        linhas.append(
+            f"- Dia {refeicao.dia} — {refeicao.momento}: {refeicao.prato}"
+        )
 
-    print("\nCOMO REDUZIR O TRABALHO")
+    linhas.extend(("", "COMO REDUZIR O TRABALHO"))
     for orientacao in plano.reaproveitamento:
-        print(f"- {orientacao}")
+        linhas.append(f"- {orientacao}")
 
-    print("\nLISTA DE COMPRAS — PREÇOS SIMULADOS")
+    linhas.extend(("", "LISTA DE COMPRAS — PREÇOS SIMULADOS"))
     for item in plano.compras:
-        print(
+        linhas.append(
             f"- {item.nome}: {item.quantidade} "
             f"— CAD${item.preco_estimado:.2f}"
         )
 
-    print(f"\nTotal estimado: CAD${plano.total_estimado:.2f}")
+    linhas.extend(("", f"Total estimado: CAD${plano.total_estimado:.2f}"))
     if plano.margem >= 0:
-        print(f"Margem do orçamento: CAD${plano.margem:.2f}")
+        linhas.append(f"Margem do orçamento: CAD${plano.margem:.2f}")
     else:
-        print(f"Valor acima do orçamento: CAD${abs(plano.margem):.2f}")
+        linhas.append(f"Valor acima do orçamento: CAD${abs(plano.margem):.2f}")
 
-    print("\nITENS QUE JÁ ESTÃO EM CASA")
+    linhas.extend(("", "ITENS QUE JÁ ESTÃO EM CASA"))
     if plano.uso_itens_casa:
         for uso in plano.uso_itens_casa:
-            print(f"- {uso}")
+            linhas.append(f"- {uso}")
     else:
-        print("- Nenhum ingrediente principal do plano foi identificado em casa.")
+        linhas.append(
+            "- Nenhum ingrediente principal do plano foi identificado em casa."
+        )
 
-    print(
-        "\nAtenção: o plano não usa ingredientes lácteos intencionalmente, "
+    linhas.extend((
+        "",
+        "Atenção: o plano não usa ingredientes lácteos intencionalmente, "
         "mas os rótulos dos produtos devem ser conferidos."
-    )
+    ))
+    return "\n".join(linhas)
+
+
+def mostrar_plano(plano: Plano) -> None:
+    """Apresenta o plano e seus custos simulados."""
+    print(f"\n{formatar_plano(plano)}")
+
+
+def _proximo_caminho(diretorio: Path) -> Path:
+    caminho = diretorio / "plano-carrinho.txt"
+    numero = 2
+    while caminho.exists():
+        caminho = diretorio / f"plano-carrinho-{numero}.txt"
+        numero += 1
+    return caminho
+
+
+def salvar_plano(plano: Plano, diretorio: Path | None = None) -> Path:
+    """Salva um novo arquivo sem substituir resultados anteriores."""
+    pasta = diretorio or Path(__file__).resolve().parent / "resultados"
+    pasta.mkdir(parents=True, exist_ok=True)
+    caminho = _proximo_caminho(pasta)
+    caminho.write_text(f"{formatar_plano(plano)}\n", encoding="utf-8")
+    return caminho
+
+
+def _quer_salvar_plano() -> bool:
+    while True:
+        resposta = input("\nDeseja salvar o plano em um arquivo? (s/n)\n> ").strip()
+        resposta = resposta.casefold()
+        if resposta in {"s", "sim"}:
+            return True
+        if resposta in {"n", "não", "nao"}:
+            return False
+        print("Responda com 's' para sim ou 'n' para não.")
 
 
 def main() -> None:
@@ -252,6 +296,9 @@ def main() -> None:
         )
     else:
         mostrar_plano(plano)
+        if _quer_salvar_plano():
+            caminho = salvar_plano(plano)
+            print(f"\nPlano salvo em:\n{caminho}")
 
 
 if __name__ == "__main__":
