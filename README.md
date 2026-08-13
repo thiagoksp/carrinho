@@ -15,13 +15,13 @@ O sistema deverá gerar um plano de refeições e uma lista de compras. Em vers�
 
 ## Estado atual
 
-O projeto possui uma entrada pelo terminal. Ela identifica e completa os dados; durante a confirmação, permite corrigir um campo por vez sem reiniciar. O planejamento por regras atende de 1 a 12 pessoas por 1 a 14 dias, ajusta quantidades por embalagem e desconta o estoque informado em kg, g, litros, latas, dúzias, unidades e frações de pacotes. Quando o plano normal ultrapassa o orçamento em CAD, tenta automaticamente uma alternativa econômica e informa com honestidade se ainda faltar dinheiro. Ao final, pode salvar o plano e a lista em um novo arquivo dentro de `resultados/`. Nesta etapa, aceita somente ausência de restrições ou restrição à lactose.
+O projeto possui uma entrada pelo terminal. Ela identifica e completa os dados; durante a confirmação, permite corrigir um campo por vez sem reiniciar. O planejamento por regras atende de 1 a 12 pessoas por 1 a 14 dias, ajusta quantidades por embalagem e desconta o estoque informado em kg, g, litros, latas, dúzias, unidades e frações de pacotes. Quando o plano normal ultrapassa o orçamento em CAD, tenta automaticamente uma alternativa econômica e informa com honestidade se ainda faltar dinheiro. Os valores vêm de um catálogo JSON claramente identificado como simulado, que pode ser substituído por outra fonte. Ao final, pode salvar o plano e a lista em um novo arquivo dentro de `resultados/`. Nesta etapa, aceita somente ausência de restrições ou restrição à lactose.
 
 O cenário de referência aprovado está documentado em [`docs/caso-base.md`](docs/caso-base.md).
 
 ## Próxima etapa
 
-Separar o catálogo de preços simulados para preparar a futura pesquisa de preços reais.
+Adicionar localização e loja à entrada antes de consultar preços reais.
 
 ## Ambiente local
 

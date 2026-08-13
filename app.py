@@ -187,6 +187,12 @@ def revisar_dados(dados: PedidoEntendido) -> PedidoEntendido:
         _corrigir_um_dado(dados)
 
 
+def _formatar_dinheiro(moeda: str, valor: float) -> str:
+    prefixos = {"CAD": "CAD$", "USD": "US$", "BRL": "R$"}
+    prefixo = prefixos.get(moeda, f"{moeda} ")
+    return f"{prefixo}{valor:.2f}"
+
+
 def formatar_plano(plano: Plano) -> str:
     """Produz o mesmo conteúdo para o terminal e para o arquivo salvo."""
     linhas: list[str] = []
@@ -196,7 +202,9 @@ def formatar_plano(plano: Plano) -> str:
         linhas.append("O plano inicial ultrapassou o orçamento e foi simplificado.")
         if plano.total_plano_normal is not None:
             economia = plano.total_plano_normal - plano.total_estimado
-            linhas.append(f"Economia estimada: CAD${economia:.2f}")
+            linhas.append(
+                f"Economia estimada: {_formatar_dinheiro(plano.moeda, economia)}"
+            )
         linhas.append("")
 
     linhas.append("PLANO DE REFEIÇÕES")
@@ -210,18 +218,23 @@ def formatar_plano(plano: Plano) -> str:
     for orientacao in plano.reaproveitamento:
         linhas.append(f"- {orientacao}")
 
-    linhas.extend(("", "LISTA DE COMPRAS — PREÇOS SIMULADOS"))
+    linhas.extend(("", f"LISTA DE COMPRAS — PREÇOS {plano.tipo_precos.upper()}"))
     for item in plano.compras:
         linhas.append(
             f"- {item.nome}: {item.quantidade} "
-            f"— CAD${item.preco_estimado:.2f}"
+            f"— {_formatar_dinheiro(plano.moeda, item.preco_estimado)}"
         )
 
-    linhas.extend(("", f"Total estimado: CAD${plano.total_estimado:.2f}"))
+    total = _formatar_dinheiro(plano.moeda, plano.total_estimado)
+    linhas.extend(("", f"Total estimado: {total}"))
     if plano.margem >= 0:
-        linhas.append(f"Margem do orçamento: CAD${plano.margem:.2f}")
+        margem = _formatar_dinheiro(plano.moeda, plano.margem)
+        linhas.append(f"Margem do orçamento: {margem}")
     else:
-        linhas.append(f"Valor acima do orçamento: CAD${abs(plano.margem):.2f}")
+        excesso = _formatar_dinheiro(plano.moeda, abs(plano.margem))
+        linhas.append(f"Valor acima do orçamento: {excesso}")
+
+    linhas.append(f"Fonte dos preços: {plano.descricao_precos}")
 
     linhas.extend(("", "ITENS QUE JÁ ESTÃO EM CASA"))
     if plano.uso_itens_casa:

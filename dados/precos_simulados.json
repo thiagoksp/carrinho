@@ -1,0 +1,111 @@
+{
+  "moeda": "CAD",
+  "tipo": "simulados",
+  "descricao": "Valores locais fictícios para desenvolvimento; não representam ofertas atuais.",
+  "produtos": [
+    {
+      "chave": "frango",
+      "nome": "Coxas ou sobrecoxas de frango",
+      "embalagem": "1,2 kg",
+      "conteudo_embalagem": 1.2,
+      "preco_embalagem": 13.0,
+      "palavras_chave": ["frango"]
+    },
+    {
+      "chave": "carne",
+      "nome": "Carne moída",
+      "embalagem": "500 g",
+      "conteudo_embalagem": 0.5,
+      "preco_embalagem": 7.0,
+      "palavras_chave": ["carne moida"]
+    },
+    {
+      "chave": "macarrao",
+      "nome": "Macarrão seco",
+      "embalagem": "pacote de 900 g",
+      "conteudo_embalagem": 0.9,
+      "preco_embalagem": 2.5,
+      "palavras_chave": ["macarrao"]
+    },
+    {
+      "chave": "tomate",
+      "nome": "Tomate em lata ou molho de tomate",
+      "embalagem": "1 lata",
+      "conteudo_embalagem": 1.0,
+      "preco_embalagem": 2.5,
+      "palavras_chave": ["tomate", "molho de tomate"]
+    },
+    {
+      "chave": "feijao",
+      "nome": "Feijão em lata",
+      "embalagem": "1 lata",
+      "conteudo_embalagem": 1.0,
+      "preco_embalagem": 1.75,
+      "palavras_chave": ["feijao"]
+    },
+    {
+      "chave": "legumes",
+      "nome": "Legumes congelados",
+      "embalagem": "pacote de 1,5 kg",
+      "conteudo_embalagem": 1.5,
+      "preco_embalagem": 6.0,
+      "palavras_chave": ["legumes"]
+    },
+    {
+      "chave": "batatas",
+      "nome": "Batatas",
+      "embalagem": "saco de 5 lb",
+      "conteudo_embalagem": 2.27,
+      "preco_embalagem": 5.0,
+      "palavras_chave": ["batata", "batatas"]
+    },
+    {
+      "chave": "cebolas",
+      "nome": "Cebolas",
+      "embalagem": "saco de 3 lb",
+      "conteudo_embalagem": 1.36,
+      "preco_embalagem": 4.0,
+      "palavras_chave": ["cebola", "cebolas"]
+    },
+    {
+      "chave": "alho",
+      "nome": "Alho",
+      "embalagem": "unidade ou pacote",
+      "conteudo_embalagem": 0.2,
+      "preco_embalagem": 1.5,
+      "palavras_chave": ["alho"]
+    },
+    {
+      "chave": "oleo",
+      "nome": "Óleo vegetal",
+      "embalagem": "1 frasco",
+      "conteudo_embalagem": 0.946,
+      "preco_embalagem": 5.0,
+      "palavras_chave": ["oleo", "azeite"]
+    },
+    {
+      "chave": "temperos",
+      "nome": "Sal, pimenta e páprica",
+      "embalagem": "quantidade básica",
+      "conteudo_embalagem": 1.0,
+      "preco_embalagem": 4.0,
+      "palavras_chave": ["sal", "pimenta", "paprica", "temperos"]
+    },
+    {
+      "chave": "arroz",
+      "nome": "Arroz",
+      "embalagem": "saco de 2 kg",
+      "conteudo_embalagem": 2.0,
+      "preco_embalagem": 6.0,
+      "palavras_chave": ["arroz"]
+    },
+    {
+      "chave": "ovos",
+      "nome": "Ovos",
+      "embalagem": "dúzia",
+      "conteudo_embalagem": 12.0,
+      "preco_embalagem": 4.5,
+      "palavras_chave": ["ovo", "ovos"]
+    }
+  ]
+}

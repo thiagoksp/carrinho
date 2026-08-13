@@ -140,6 +140,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("COMO REDUZIR O TRABALHO", conteudo)
         self.assertIn("LISTA DE COMPRAS", conteudo)
         self.assertIn("Total estimado: CAD$58.25", conteudo)
+        self.assertIn("Fonte dos preços:", conteudo)
         self.assertIn("ITENS QUE JÁ ESTÃO EM CASA", conteudo)
 
     def test_salva_novos_arquivos_sem_sobrescrever(self) -> None:

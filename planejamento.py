@@ -5,6 +5,7 @@ import math
 import re
 import unicodedata
 
+from catalogo import CatalogoPrecos, Produto, carregar_catalogo_simulado
 from pedido import PedidoEntendido
 
 
@@ -29,16 +30,6 @@ class ModeloRefeicao:
 
 
 @dataclass(frozen=True)
-class Produto:
-    chave: str
-    nome: str
-    embalagem: str
-    conteudo_embalagem: float
-    preco_embalagem: float
-    palavras_chave: tuple[str, ...]
-
-
-@dataclass(frozen=True)
 class Plano:
     refeicoes: tuple[Refeicao, ...]
     reaproveitamento: tuple[str, ...]
@@ -47,6 +38,9 @@ class Plano:
     orcamento: float
     pessoas: int
     dias: int
+    moeda: str
+    tipo_precos: str
+    descricao_precos: str
     economico: bool = False
     total_plano_normal: float | None = None
 
@@ -187,36 +181,6 @@ MODELOS_ECONOMICOS = (
         "Arroz com omelete simples e legumes",
         (("arroz", 0.10), ("ovos", 1.50), ("legumes", 0.10)),
     ),
-)
-
-PRODUTOS = (
-    Produto("frango", "Coxas ou sobrecoxas de frango", "1,2 kg", 1.20, 13.00, ("frango",)),
-    Produto("carne", "Carne moída", "500 g", 0.50, 7.00, ("carne moida",)),
-    Produto("macarrao", "Macarrão seco", "pacote de 900 g", 0.90, 2.50, ("macarrao",)),
-    Produto(
-        "tomate",
-        "Tomate em lata ou molho de tomate",
-        "1 lata",
-        1.00,
-        2.50,
-        ("tomate", "molho de tomate"),
-    ),
-    Produto("feijao", "Feijão em lata", "1 lata", 1.00, 1.75, ("feijao",)),
-    Produto("legumes", "Legumes congelados", "pacote de 1,5 kg", 1.50, 6.00, ("legumes",)),
-    Produto("batatas", "Batatas", "saco de 5 lb", 2.27, 5.00, ("batata", "batatas")),
-    Produto("cebolas", "Cebolas", "saco de 3 lb", 1.36, 4.00, ("cebola", "cebolas")),
-    Produto("alho", "Alho", "unidade ou pacote", 0.20, 1.50, ("alho",)),
-    Produto("oleo", "Óleo vegetal", "1 frasco", 0.946, 5.00, ("oleo", "azeite")),
-    Produto(
-        "temperos",
-        "Sal, pimenta e páprica",
-        "quantidade básica",
-        1.00,
-        4.00,
-        ("sal", "pimenta", "paprica", "temperos"),
-    ),
-    Produto("arroz", "Arroz", "saco de 2 kg", 2.00, 6.00, ("arroz",)),
-    Produto("ovos", "Ovos", "dúzia", 12.00, 4.50, ("ovo", "ovos")),
 )
 
 UNIDADES_BASE = {
@@ -364,10 +328,12 @@ def _quantidade_disponivel(
 
 
 def _calcular_compras(
-    necessidades: dict[str, float], itens_em_casa: list[str] | None
+    necessidades: dict[str, float],
+    itens_em_casa: list[str] | None,
+    produtos: tuple[Produto, ...],
 ) -> tuple[ItemCompra, ...]:
     compras: list[ItemCompra] = []
-    for produto in PRODUTOS:
+    for produto in produtos:
         necessario = necessidades.get(produto.chave, 0)
         disponivel = _quantidade_disponivel(produto, itens_em_casa)
         falta = max(0, necessario - disponivel)
@@ -390,11 +356,28 @@ def _calcular_compras(
     return tuple(compras)
 
 
+def _validar_cobertura_catalogo(
+    necessidades: dict[str, float], produtos: tuple[Produto, ...]
+) -> None:
+    chaves_disponiveis = {produto.chave for produto in produtos}
+    chaves_ausentes = sorted(
+        chave
+        for chave, quantidade in necessidades.items()
+        if quantidade > 0 and chave not in chaves_disponiveis
+    )
+    if chaves_ausentes:
+        raise ValueError(
+            "O catálogo não contém preços para: " + ", ".join(chaves_ausentes) + "."
+        )
+
+
 def _descrever_uso_da_casa(
-    necessidades: dict[str, float], itens_em_casa: list[str] | None
+    necessidades: dict[str, float],
+    itens_em_casa: list[str] | None,
+    produtos: tuple[Produto, ...],
 ) -> tuple[str, ...]:
     usos: list[str] = []
-    for produto in PRODUTOS:
+    for produto in produtos:
         necessario = necessidades.get(produto.chave, 0)
         disponivel = _quantidade_disponivel(produto, itens_em_casa)
         if necessario <= 0 or disponivel <= 0:
@@ -416,6 +399,7 @@ def _descrever_uso_da_casa(
 def _criar_plano(
     pedido: PedidoEntendido,
     modelos: tuple[ModeloRefeicao, ...],
+    catalogo: CatalogoPrecos,
     economico: bool = False,
     total_plano_normal: float | None = None,
 ) -> Plano:
@@ -425,6 +409,7 @@ def _criar_plano(
 
     refeicoes_com_modelos = _montar_refeicoes(pedido.dias, modelos)
     necessidades = _calcular_necessidades(refeicoes_com_modelos, pedido.pessoas)
+    _validar_cobertura_catalogo(necessidades, catalogo.produtos)
 
     return Plano(
         refeicoes=tuple(refeicao for refeicao, _ in refeicoes_com_modelos),
@@ -434,23 +419,31 @@ def _criar_plano(
             "Cozinhe arroz para até dois dias por vez e refrigere rapidamente as sobras.",
             "Separe as porções futuras antes de servir para facilitar o reaproveitamento.",
         ),
-        compras=_calcular_compras(necessidades, pedido.itens_em_casa),
+        compras=_calcular_compras(
+            necessidades, pedido.itens_em_casa, catalogo.produtos
+        ),
         uso_itens_casa=_descrever_uso_da_casa(
-            necessidades, pedido.itens_em_casa
+            necessidades, pedido.itens_em_casa, catalogo.produtos
         ),
         orcamento=pedido.orcamento or 0,
         pessoas=pedido.pessoas,
         dias=pedido.dias,
+        moeda=catalogo.moeda,
+        tipo_precos=catalogo.tipo,
+        descricao_precos=catalogo.descricao,
         economico=economico,
         total_plano_normal=total_plano_normal,
     )
 
 
-def gerar_plano(pedido: PedidoEntendido) -> Plano | None:
+def gerar_plano(
+    pedido: PedidoEntendido, catalogo: CatalogoPrecos | None = None
+) -> Plano | None:
     """Gera o plano normal ou uma alternativa econômica quando necessário."""
+    catalogo_escolhido = catalogo or carregar_catalogo_simulado()
     if not (
         pedido.orcamento is not None
-        and pedido.moeda == "CAD"
+        and pedido.moeda == catalogo_escolhido.moeda
         and pedido.pessoas is not None
         and 1 <= pedido.pessoas <= 12
         and pedido.dias is not None
@@ -459,13 +452,16 @@ def gerar_plano(pedido: PedidoEntendido) -> Plano | None:
     ):
         return None
 
-    plano_normal = _criar_plano(pedido, MODELOS_REFEICOES)
+    plano_normal = _criar_plano(
+        pedido, MODELOS_REFEICOES, catalogo_escolhido
+    )
     if plano_normal.margem >= 0:
         return plano_normal
 
     plano_economico = _criar_plano(
         pedido,
         MODELOS_ECONOMICOS,
+        catalogo_escolhido,
         economico=True,
         total_plano_normal=plano_normal.total_estimado,
     )
