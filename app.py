@@ -3,6 +3,7 @@
 from pathlib import Path
 import re
 
+from instacart import salvar_payload_instacart
 from pedido import PedidoEntendido, entender_pedido
 from planejamento import Plano, gerar_plano
 
@@ -332,7 +333,9 @@ def salvar_plano(plano: Plano, diretorio: Path | None = None) -> Path:
 
 def _quer_salvar_plano() -> bool:
     while True:
-        resposta = input("\nDeseja salvar o plano em um arquivo? (s/n)\n> ").strip()
+        resposta = input(
+            "\nDeseja salvar o plano e a prévia local da Instacart? (s/n)\n> "
+        ).strip()
         resposta = resposta.casefold()
         if resposta in {"s", "sim"}:
             return True
@@ -364,8 +367,13 @@ def main() -> None:
     else:
         mostrar_plano(plano)
         if _quer_salvar_plano():
-            caminho = salvar_plano(plano)
-            print(f"\nPlano salvo em:\n{caminho}")
+            caminho_plano = salvar_plano(plano)
+            caminho_instacart = salvar_payload_instacart(plano)
+            print(f"\nPlano salvo em:\n{caminho_plano}")
+            print(
+                "\nPrévia Instacart salva localmente — nenhum dado foi enviado:\n"
+                f"{caminho_instacart}"
+            )
 
 
 if __name__ == "__main__":

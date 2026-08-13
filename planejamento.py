@@ -21,6 +21,9 @@ class ItemCompra:
     nome: str
     quantidade: str
     preco_estimado: float
+    termo_busca_instacart: str
+    quantidade_instacart: float
+    unidade_instacart: str
 
 
 @dataclass(frozen=True)
@@ -350,9 +353,14 @@ def _calcular_compras(
         )
         compras.append(
             ItemCompra(
-                produto.nome,
-                quantidade,
-                round(embalagens * produto.preco_embalagem, 2),
+                nome=produto.nome,
+                quantidade=quantidade,
+                preco_estimado=round(embalagens * produto.preco_embalagem, 2),
+                termo_busca_instacart=produto.termo_busca_instacart,
+                quantidade_instacart=round(
+                    embalagens * produto.quantidade_instacart, 6
+                ),
+                unidade_instacart=produto.unidade_instacart,
             )
         )
     return tuple(compras)

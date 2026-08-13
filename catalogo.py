@@ -7,6 +7,9 @@ from pathlib import Path
 import unicodedata
 
 
+UNIDADES_INSTACART = {"kg", "g", "can", "lb bag", "each", "ml", "package"}
+
+
 @dataclass(frozen=True)
 class Produto:
     chave: str
@@ -15,6 +18,9 @@ class Produto:
     conteudo_embalagem: float
     preco_embalagem: float
     palavras_chave: tuple[str, ...]
+    termo_busca_instacart: str
+    quantidade_instacart: float
+    unidade_instacart: str
 
 
 @dataclass(frozen=True)
@@ -43,6 +49,9 @@ def _validar_produto(dados: object, posicao: int) -> Produto:
         "conteudo_embalagem",
         "preco_embalagem",
         "palavras_chave",
+        "termo_busca_instacart",
+        "quantidade_instacart",
+        "unidade_instacart",
     }
     ausentes = campos.difference(dados)
     if ausentes:
@@ -53,12 +62,19 @@ def _validar_produto(dados: object, posicao: int) -> Produto:
     try:
         conteudo = float(dados["conteudo_embalagem"])
         preco = float(dados["preco_embalagem"])
+        quantidade_instacart = float(dados["quantidade_instacart"])
     except (TypeError, ValueError) as erro:
         raise ValueError(
             f"Produto {posicao} possui quantidade ou preço inválido."
         ) from erro
 
-    campos_texto = ("chave", "nome", "embalagem")
+    campos_texto = (
+        "chave",
+        "nome",
+        "embalagem",
+        "termo_busca_instacart",
+        "unidade_instacart",
+    )
     if any(
         not isinstance(dados[campo], str) or not dados[campo].strip()
         for campo in campos_texto
@@ -66,9 +82,13 @@ def _validar_produto(dados: object, posicao: int) -> Produto:
         raise ValueError(f"Produto {posicao} possui texto obrigatório vazio.")
 
     palavras = dados["palavras_chave"]
-    if not math.isfinite(conteudo) or not math.isfinite(preco):
+    if (
+        not math.isfinite(conteudo)
+        or not math.isfinite(preco)
+        or not math.isfinite(quantidade_instacart)
+    ):
         raise ValueError(f"Produto {posicao} possui quantidade ou preço inválido.")
-    if conteudo <= 0 or preco < 0:
+    if conteudo <= 0 or preco < 0 or quantidade_instacart <= 0:
         raise ValueError(f"Produto {posicao} possui quantidade ou preço inválido.")
     if (
         not isinstance(palavras, list)
@@ -76,6 +96,9 @@ def _validar_produto(dados: object, posicao: int) -> Produto:
         or any(not isinstance(palavra, str) or not palavra.strip() for palavra in palavras)
     ):
         raise ValueError(f"Produto {posicao} precisa de palavras-chave.")
+    unidade_instacart = dados["unidade_instacart"].strip()
+    if unidade_instacart not in UNIDADES_INSTACART:
+        raise ValueError(f"Produto {posicao} possui unidade Instacart inválida.")
 
     return Produto(
         chave=_normalizar_texto(dados["chave"]),
@@ -84,6 +107,9 @@ def _validar_produto(dados: object, posicao: int) -> Produto:
         conteudo_embalagem=conteudo,
         preco_embalagem=preco,
         palavras_chave=tuple(_normalizar_texto(palavra) for palavra in palavras),
+        termo_busca_instacart=dados["termo_busca_instacart"].strip(),
+        quantidade_instacart=quantidade_instacart,
+        unidade_instacart=unidade_instacart,
     )
 
 

@@ -35,6 +35,9 @@ class TestCatalogo(unittest.TestCase):
                     "conteudo_embalagem": 1,
                     "preco_embalagem": 5,
                     "palavras_chave": ["arroz"],
+                    "termo_busca_instacart": "rice",
+                    "quantidade_instacart": 1,
+                    "unidade_instacart": "kg",
                 },
                 {
                     "chave": "arroz",
@@ -43,6 +46,9 @@ class TestCatalogo(unittest.TestCase):
                     "conteudo_embalagem": 2,
                     "preco_embalagem": 8,
                     "palavras_chave": ["arroz"],
+                    "termo_busca_instacart": "rice",
+                    "quantidade_instacart": 2,
+                    "unidade_instacart": "kg",
                 },
             ],
         }
@@ -129,7 +135,9 @@ class TestCatalogo(unittest.TestCase):
         casos = (
             ("conteudo_embalagem", float("nan"), "quantidade ou preço inválido"),
             ("preco_embalagem", float("inf"), "quantidade ou preço inválido"),
+            ("quantidade_instacart", 0, "quantidade ou preço inválido"),
             ("palavras_chave", [""], "precisa de palavras-chave"),
+            ("unidade_instacart", "duzia", "unidade Instacart inválida"),
         )
         for campo, valor, mensagem in casos:
             with self.subTest(campo=campo, valor=valor):
@@ -145,6 +153,9 @@ class TestCatalogo(unittest.TestCase):
                             "conteudo_embalagem": 1,
                             "preco_embalagem": 5,
                             "palavras_chave": ["arroz"],
+                            "termo_busca_instacart": "rice",
+                            "quantidade_instacart": 1,
+                            "unidade_instacart": "kg",
                             campo: valor,
                         }
                     ],

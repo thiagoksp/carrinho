@@ -39,6 +39,9 @@ def _catalogo_valido(
                 "conteudo_embalagem": 1,
                 "preco_embalagem": 5,
                 "palavras_chave": ["arroz"],
+                "termo_busca_instacart": "rice",
+                "quantidade_instacart": 1,
+                "unidade_instacart": "kg",
             }
         ],
     }

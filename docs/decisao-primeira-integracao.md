@@ -47,8 +47,8 @@ A Instacart não será usada como mecanismo de comparação de preços entre loj
 garantia de seleção da No Frills. Caso a comparação continue necessária, o Carrinho
 precisará de outra fonte licenciada.
 
-## Próxima etapa
+## Conversão local concluída
 
-Preparar, sem enviar nada pela internet, a conversão da lista atual para o formato de
-itens e quantidades aceito pela Instacart. A chave de desenvolvimento só será necessária
-quando essa conversão local estiver pronta e testada.
+A lista atual já pode ser convertida e salva localmente no formato de itens e medidas
+aceito pela Instacart, sem enviar dados ou exigir chave. Os detalhes estão em
+[`preparacao-instacart.md`](preparacao-instacart.md).

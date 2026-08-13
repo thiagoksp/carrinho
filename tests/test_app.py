@@ -70,6 +70,28 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Loja preferida: qualquer loja", saida.getvalue())
         self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
 
+    def test_ao_salvar_gera_plano_e_previa_instacart(self) -> None:
+        pedido = (
+            "Tenho CAD$80 para 2 pessoas por 4 dias, pouca energia, "
+            "já tenho arroz e 7 ovos, sem restrições. "
+            "Estou em Toronto e prefiro a loja No Frills."
+        )
+        with (
+            patch("builtins.input", side_effect=[pedido, "s", "s"]),
+            patch("app.salvar_plano", return_value=Path("plano.txt")) as texto,
+            patch(
+                "app.salvar_payload_instacart",
+                return_value=Path("lista-instacart.json"),
+            ) as json_instacart,
+            patch("sys.stdout", new_callable=io.StringIO) as saida,
+        ):
+            main()
+
+        texto.assert_called_once()
+        json_instacart.assert_called_once()
+        self.assertIn("nenhum dado foi enviado", saida.getvalue())
+        self.assertIn("lista-instacart.json", saida.getvalue())
+
     def test_corrige_orcamento_e_dias_sem_reiniciar(self) -> None:
         dados = PedidoEntendido(
             orcamento=80,
