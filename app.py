@@ -37,6 +37,8 @@ def mostrar_resumo(dados: PedidoEntendido) -> None:
     print(f"- Disposição para cozinhar: {_mostrar(dados.disposicao)}")
     print(f"- Itens em casa: {itens}")
     print(f"- Restrições: {restricoes}")
+    print(f"- Localização das compras: {_mostrar(dados.localizacao)}")
+    print(f"- Loja preferida: {_mostrar(dados.loja_preferida)}")
 
 
 def _ler_orcamento() -> tuple[float, str]:
@@ -110,6 +112,41 @@ def _ler_restricoes() -> list[str]:
         print("Informe a restrição ou digite 'nenhuma'.")
 
 
+def _ler_localizacao() -> str:
+    while True:
+        resposta = input(
+            "\nEm qual cidade ou região você fará as compras? "
+            "(ex.: Toronto ou M5V 2T6)\n> "
+        ).strip()
+        if resposta:
+            return resposta
+        print("Informe uma cidade, região ou código postal.")
+
+
+def _ler_loja() -> str:
+    respostas_livres = {
+        "qualquer",
+        "qualquer loja",
+        "sem preferencia",
+        "sem preferência",
+        "tanto faz",
+        "nenhuma",
+        "nenhum",
+        "não",
+        "nao",
+    }
+    while True:
+        resposta = input(
+            "\nTem alguma loja preferida? "
+            "Digite o nome ou 'qualquer'.\n> "
+        ).strip()
+        if resposta.casefold() in respostas_livres:
+            return "qualquer loja"
+        if resposta:
+            return resposta
+        print("Informe uma loja ou digite 'qualquer'.")
+
+
 def completar_dados(dados: PedidoEntendido) -> PedidoEntendido:
     """Pergunta somente os dados que não apareceram no texto inicial."""
     if dados.orcamento is None:
@@ -124,6 +161,10 @@ def completar_dados(dados: PedidoEntendido) -> PedidoEntendido:
         dados.itens_em_casa = _ler_itens()
     if dados.restricoes is None:
         dados.restricoes = _ler_restricoes()
+    if dados.localizacao is None:
+        dados.localizacao = _ler_localizacao()
+    if dados.loja_preferida is None:
+        dados.loja_preferida = _ler_loja()
     return dados
 
 
@@ -145,6 +186,8 @@ def _corrigir_um_dado(dados: PedidoEntendido) -> None:
         "4": "disposicao",
         "5": "itens",
         "6": "restricoes",
+        "7": "localizacao",
+        "8": "loja",
     }
 
     while True:
@@ -155,12 +198,14 @@ def _corrigir_um_dado(dados: PedidoEntendido) -> None:
             "3 - Dias\n"
             "4 - Disposição para cozinhar\n"
             "5 - Itens em casa\n"
-            "6 - Restrições alimentares\n> "
+            "6 - Restrições alimentares\n"
+            "7 - Localização das compras\n"
+            "8 - Loja preferida\n> "
         ).strip()
         escolha = opcoes.get(resposta)
         if escolha is not None:
             break
-        print("Escolha um número de 1 a 6.")
+        print("Escolha um número de 1 a 8.")
 
     if escolha == "orcamento":
         dados.orcamento, dados.moeda = _ler_orcamento()
@@ -174,8 +219,12 @@ def _corrigir_um_dado(dados: PedidoEntendido) -> None:
         dados.disposicao = _ler_disposicao()
     elif escolha == "itens":
         dados.itens_em_casa = _ler_itens()
-    else:
+    elif escolha == "restricoes":
         dados.restricoes = _ler_restricoes()
+    elif escolha == "localizacao":
+        dados.localizacao = _ler_localizacao()
+    else:
+        dados.loja_preferida = _ler_loja()
 
 
 def revisar_dados(dados: PedidoEntendido) -> PedidoEntendido:
@@ -209,6 +258,11 @@ def formatar_plano(plano: Plano) -> str:
 
     linhas.append("PLANO DE REFEIÇÕES")
     linhas.append(f"Para {plano.pessoas} pessoa(s) durante {plano.dias} dia(s).")
+    linhas.append(f"Localização das compras: {_mostrar(plano.localizacao)}.")
+    linhas.append(f"Loja preferida: {_mostrar(plano.loja_preferida)}.")
+    linhas.append(
+        "Nesta etapa, localização e loja ainda não alteram os preços simulados."
+    )
     for refeicao in plano.refeicoes:
         linhas.append(
             f"- Dia {refeicao.dia} — {refeicao.momento}: {refeicao.prato}"

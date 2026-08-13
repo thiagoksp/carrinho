@@ -4,7 +4,7 @@ Este é o primeiro cenário de referência aprovado para orientar o desenvolvime
 
 ## Entrada
 
-> Tenho CAD$80 para alimentar 2 pessoas por 4 dias. Estamos com pouca disposição para cozinhar, já temos arroz e 7 ovos, e pelo menos uma pessoa tem intolerância à lactose. Precisamos de almoço e jantar.
+> Tenho CAD$80 para alimentar 2 pessoas por 4 dias. Estamos com pouca disposição para cozinhar, já temos arroz e 7 ovos, e pelo menos uma pessoa tem intolerância à lactose. Precisamos de almoço e jantar. Estou em Toronto e não tenho preferência de loja.
 
 ## Interpretação esperada
 
@@ -16,6 +16,8 @@ Este é o primeiro cenário de referência aprovado para orientar o desenvolvime
 - Disposição para cozinhar: baixa.
 - Itens disponíveis: arroz em quantidade suficiente e 7 ovos.
 - Restrição: todo o plano deve ser seguro sem lactose.
+- Localização das compras: Toronto.
+- Loja preferida: qualquer loja.
 
 ## Formato esperado da resposta
 
@@ -34,5 +36,5 @@ Este é o primeiro cenário de referência aprovado para orientar o desenvolvime
 - As refeições priorizam preparos simples e reaproveitamento.
 - A lista considera o arroz e os ovos já disponíveis.
 - O custo total estimado não ultrapassa CAD$80.
+- A localização e a preferência de loja aparecem no resumo e no plano salvo.
 - Preços reais, comparação de lojas e montagem de carrinho não fazem parte desta primeira versão.
-

@@ -16,6 +16,8 @@ class PedidoEntendido:
     disposicao: str | None = None
     itens_em_casa: list[str] | None = None
     restricoes: list[str] | None = None
+    localizacao: str | None = None
+    loja_preferida: str | None = None
 
 
 NUMEROS = {
@@ -110,7 +112,10 @@ def _encontrar_itens(texto: str) -> list[str] | None:
     resultado = re.search(
         r"(?:j[aá]\s+(?:tenho|temos)|(?:tenho|temos)\s+em\s+casa)\s+"
         r"(?P<itens>.+?)"
-        r"(?=,\s*e\s+(?:pelo\s+menos|algu[eé]m|uma?\s+pessoa)|[.;]|$)",
+        r"(?=,\s*(?:e\s+)?(?:pelo\s+menos|algu[eé]m|uma?\s+pessoa|moro|"
+        r"moramos|estou|estamos|prefiro|preferimos|loja\s+preferida)"
+        r"|\s+e\s+(?:moro|moramos|estou|estamos|prefiro|preferimos|"
+        r"loja\s+preferida)|[.;]|$)",
         texto,
         re.IGNORECASE,
     )
@@ -139,6 +144,76 @@ def _encontrar_restricoes(texto: str) -> list[str] | None:
     return None
 
 
+def _limpar_valor_textual(valor: str) -> str:
+    return re.sub(r"\s+", " ", valor).strip(" ,.;")
+
+
+def _encontrar_localizacao(texto: str) -> str | None:
+    proximo_campo = (
+        r"a\s+loja|loja|prefiro|preferimos|compro|compramos|"
+        r"n[aã]o\s+tenho\s+prefer[eê]ncia|n[aã]o\s+temos\s+prefer[eê]ncia|"
+        r"sem\s+prefer[eê]ncia"
+    )
+    fim = (
+        rf"(?=,\s*(?:e\s+)?(?:{proximo_campo})"
+        rf"|\s+e\s+(?:{proximo_campo})|[.;]|$)"
+    )
+    padroes = (
+        rf"\b(?:localiza[çc][aã]o|cidade|regi[aã]o)\s*"
+        rf"(?:é|e|de|:|-)\s*(?P<valor>.+?){fim}",
+        rf"\b(?:moro|moramos|estou|estamos|fico|ficamos)\s+em\s+"
+        rf"(?P<valor>.+?){fim}",
+    )
+    for padrao in padroes:
+        resultado = re.search(padrao, texto, re.IGNORECASE)
+        if resultado:
+            valor = _limpar_valor_textual(resultado.group("valor"))
+            valor_normalizado = _sem_acentos(valor)
+            if (
+                valor
+                and valor_normalizado != "casa"
+                and not valor_normalizado.startswith("casa,")
+            ):
+                return valor
+    return None
+
+
+def _encontrar_loja(texto: str) -> str | None:
+    texto_normalizado = _sem_acentos(texto)
+    sem_preferencia = (
+        "sem preferencia de loja",
+        "nao tenho preferencia de loja",
+        "nao tenho loja preferida",
+        "nenhuma loja preferida",
+        "qualquer loja",
+        "tanto faz a loja",
+    )
+    if any(expressao in texto_normalizado for expressao in sem_preferencia):
+        return "qualquer loja"
+
+    fim = (
+        r"(?=,\s*(?:e\s+)?(?:moro|moramos|estou|estamos|tenho|temos)"
+        r"|\s+e\s+(?:moro|moramos|estou|estamos|tenho|temos)|[.;]|$)"
+    )
+    padroes = (
+        rf"\bloja\s+preferida\s*(?:é|e|:|-)\s*(?P<valor>.+?){fim}",
+        rf"\b(?:prefiro|preferimos)\s+a\s+loja\s+"
+        rf"(?P<valor>.+?){fim}",
+        rf"\b(?:prefiro|preferimos)\s+comprar\s+(?:no|na)\s+"
+        rf"(?P<valor>.+?){fim}",
+        rf"\b(?:compro|compramos|costumo\s+comprar|costumamos\s+comprar)\s+"
+        rf"(?:no|na)\s+"
+        rf"(?P<valor>.+?){fim}",
+    )
+    for padrao in padroes:
+        resultado = re.search(padrao, texto, re.IGNORECASE)
+        if resultado:
+            valor = _limpar_valor_textual(resultado.group("valor"))
+            if valor:
+                return valor
+    return None
+
+
 def entender_pedido(texto: str) -> PedidoEntendido:
     """Extrai os dados básicos que estiverem explícitos no pedido."""
     orcamento, moeda = _encontrar_orcamento(texto)
@@ -151,4 +226,6 @@ def entender_pedido(texto: str) -> PedidoEntendido:
         disposicao=_encontrar_disposicao(texto),
         itens_em_casa=_encontrar_itens(texto),
         restricoes=_encontrar_restricoes(texto),
+        localizacao=_encontrar_localizacao(texto),
+        loja_preferida=_encontrar_loja(texto),
     )

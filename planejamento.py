@@ -41,6 +41,8 @@ class Plano:
     moeda: str
     tipo_precos: str
     descricao_precos: str
+    localizacao: str | None = None
+    loja_preferida: str | None = None
     economico: bool = False
     total_plano_normal: float | None = None
 
@@ -431,6 +433,8 @@ def _criar_plano(
         moeda=catalogo.moeda,
         tipo_precos=catalogo.tipo,
         descricao_precos=catalogo.descricao,
+        localizacao=pedido.localizacao,
+        loja_preferida=pedido.loja_preferida,
         economico=economico,
         total_plano_normal=total_plano_normal,
     )

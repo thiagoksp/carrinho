@@ -14,7 +14,8 @@ class TestTerminal(unittest.TestCase):
         pedido = (
             "Tenho CAD$80 para alimentar 2 pessoas por 4 dias. "
             "Estamos com pouca disposição para cozinhar, já temos arroz e 7 ovos, "
-            "e pelo menos uma pessoa tem intolerância à lactose."
+            "e pelo menos uma pessoa tem intolerância à lactose. "
+            "Estou em Toronto e prefiro a loja Walmart."
         )
 
         with (
@@ -30,6 +31,8 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Disposição para cozinhar: baixa", saida.getvalue())
         self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
         self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
+        self.assertIn("Localização das compras: Toronto", saida.getvalue())
+        self.assertIn("Loja preferida: Walmart", saida.getvalue())
         self.assertIn("Dados confirmados", saida.getvalue())
         self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
         self.assertIn("Total estimado: CAD$58.25", saida.getvalue())
@@ -44,6 +47,8 @@ class TestTerminal(unittest.TestCase):
             "1",
             "arroz, 7 ovos",
             "intolerância à lactose",
+            "Toronto",
+            "qualquer",
             "s",
             "n",
         ]
@@ -54,13 +59,15 @@ class TestTerminal(unittest.TestCase):
         ):
             main()
 
-        self.assertEqual(entrada.call_count, 9)
+        self.assertEqual(entrada.call_count, 11)
         self.assertIn("Orçamento: CAD$80", saida.getvalue())
         self.assertIn("Pessoas: 2", saida.getvalue())
         self.assertIn("Dias: 4", saida.getvalue())
         self.assertIn("Disposição para cozinhar: baixa", saida.getvalue())
         self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
         self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
+        self.assertIn("Localização das compras: Toronto", saida.getvalue())
+        self.assertIn("Loja preferida: qualquer loja", saida.getvalue())
         self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
 
     def test_corrige_orcamento_e_dias_sem_reiniciar(self) -> None:
@@ -122,6 +129,39 @@ class TestTerminal(unittest.TestCase):
         )
         self.assertEqual(resultado.restricoes, [])
 
+    def test_corrige_localizacao_e_loja_sem_reiniciar(self) -> None:
+        dados = PedidoEntendido(
+            orcamento=80,
+            moeda="CAD",
+            pessoas=2,
+            dias=4,
+            disposicao="baixa",
+            itens_em_casa=["arroz", "7 ovos"],
+            restricoes=[],
+            localizacao="Toronto",
+            loja_preferida="qualquer loja",
+        )
+
+        with (
+            patch(
+                "builtins.input",
+                side_effect=[
+                    "n",
+                    "7",
+                    "North York",
+                    "n",
+                    "8",
+                    "No Frills",
+                    "s",
+                ],
+            ),
+            patch("sys.stdout", new_callable=io.StringIO),
+        ):
+            resultado = revisar_dados(dados)
+
+        self.assertEqual(resultado.localizacao, "North York")
+        self.assertEqual(resultado.loja_preferida, "No Frills")
+
     def test_formata_todas_as_secoes_do_plano(self) -> None:
         dados = PedidoEntendido(
             orcamento=80,
@@ -131,6 +171,8 @@ class TestTerminal(unittest.TestCase):
             disposicao="baixa",
             itens_em_casa=["arroz", "7 ovos"],
             restricoes=["intolerância à lactose"],
+            localizacao="Toronto",
+            loja_preferida="No Frills",
         )
         plano = gerar_plano(dados)
 
@@ -141,6 +183,9 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("LISTA DE COMPRAS", conteudo)
         self.assertIn("Total estimado: CAD$58.25", conteudo)
         self.assertIn("Fonte dos preços:", conteudo)
+        self.assertIn("Localização das compras: Toronto", conteudo)
+        self.assertIn("Loja preferida: No Frills", conteudo)
+        self.assertIn("ainda não alteram os preços simulados", conteudo)
         self.assertIn("ITENS QUE JÁ ESTÃO EM CASA", conteudo)
 
     def test_salva_novos_arquivos_sem_sobrescrever(self) -> None:
@@ -152,6 +197,8 @@ class TestTerminal(unittest.TestCase):
             disposicao="baixa",
             itens_em_casa=["arroz", "7 ovos"],
             restricoes=["intolerância à lactose"],
+            localizacao="Toronto",
+            loja_preferida="No Frills",
         )
         plano = gerar_plano(dados)
 
@@ -168,6 +215,14 @@ class TestTerminal(unittest.TestCase):
             )
             self.assertIn(
                 "LISTA DE COMPRAS",
+                primeiro.read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "Localização das compras: Toronto",
+                primeiro.read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "Loja preferida: No Frills",
                 primeiro.read_text(encoding="utf-8"),
             )
 
