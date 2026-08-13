@@ -15,13 +15,13 @@ O sistema deverá gerar um plano de refeições e uma lista de compras. Em vers�
 
 ## Estado atual
 
-O projeto possui uma entrada pelo terminal. Ela identifica, completa e confirma os dados. O planejamento por regras atende de 1 a 12 pessoas por 1 a 14 dias, ajusta quantidades por embalagem e aproveita itens existentes. Quando o plano normal ultrapassa o orçamento em CAD, tenta automaticamente uma alternativa econômica e informa com honestidade se ainda faltar dinheiro. Nesta etapa, aceita somente ausência de restrições ou restrição à lactose.
+O projeto possui uma entrada pelo terminal. Ela identifica, completa e confirma os dados. O planejamento por regras atende de 1 a 12 pessoas por 1 a 14 dias, ajusta quantidades por embalagem e desconta o estoque informado em kg, g, litros, latas, dúzias, unidades e frações de pacotes. Quando o plano normal ultrapassa o orçamento em CAD, tenta automaticamente uma alternativa econômica e informa com honestidade se ainda faltar dinheiro. Nesta etapa, aceita somente ausência de restrições ou restrição à lactose.
 
 O cenário de referência aprovado está documentado em [`docs/caso-base.md`](docs/caso-base.md).
 
 ## Próxima etapa
 
-Melhorar a leitura das quantidades dos itens que já existem em casa.
+Permitir corrigir um dado na confirmação sem precisar reiniciar o programa.
 
 ## Ambiente local
 

@@ -47,6 +47,16 @@ class TestEntenderPedido(unittest.TestCase):
         self.assertEqual(pedido.itens_em_casa, [])
         self.assertEqual(pedido.restricoes, [])
 
+    def test_preserva_as_quantidades_informadas_no_estoque(self) -> None:
+        pedido = entender_pedido(
+            "Já tenho 1 kg de arroz, meio pacote de macarrão e 7 ovos."
+        )
+
+        self.assertEqual(
+            pedido.itens_em_casa,
+            ["1 kg de arroz", "meio pacote de macarrão", "7 ovos"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

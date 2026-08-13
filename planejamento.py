@@ -219,6 +219,31 @@ PRODUTOS = (
     Produto("ovos", "Ovos", "dúzia", 12.00, 4.50, ("ovo", "ovos")),
 )
 
+UNIDADES_BASE = {
+    "tomate": "latas",
+    "feijao": "latas",
+    "ovos": "unidades",
+    "oleo": "litros",
+    "temperos": "embalagens",
+}
+
+NUMEROS_POR_EXTENSO = {
+    "um": 1.0,
+    "uma": 1.0,
+    "dois": 2.0,
+    "duas": 2.0,
+    "tres": 3.0,
+    "quatro": 4.0,
+    "cinco": 5.0,
+    "seis": 6.0,
+    "sete": 7.0,
+    "oito": 8.0,
+    "nove": 9.0,
+    "dez": 10.0,
+    "meio": 0.5,
+    "meia": 0.5,
+}
+
 
 def _sem_acentos(texto: str) -> str:
     normalizado = unicodedata.normalize("NFKD", texto.casefold())
@@ -263,6 +288,64 @@ def _item_corresponde(item: str, produto: Produto) -> bool:
     return any(palavra in item_normalizado for palavra in produto.palavras_chave)
 
 
+def _extrair_numero(texto: str) -> float | None:
+    fracao = re.search(r"\b(\d+)\s*/\s*(\d+)\b", texto)
+    if fracao and int(fracao.group(2)) != 0:
+        return int(fracao.group(1)) / int(fracao.group(2))
+
+    numero = re.search(r"\b\d+(?:[.,]\d+)?\b", texto)
+    if numero:
+        return float(numero.group().replace(",", "."))
+
+    for palavra, valor in NUMEROS_POR_EXTENSO.items():
+        if re.search(rf"\b{palavra}\b", texto):
+            return valor
+    return None
+
+
+def _quantidade_do_item(item: str, produto: Produto) -> float | None:
+    texto = _sem_acentos(item)
+    numero = _extrair_numero(texto)
+    if numero is None:
+        return None
+
+    if produto.chave == "ovos":
+        if "duzia" in texto:
+            return numero * 12
+        return numero
+
+    if produto.chave in {"tomate", "feijao"}:
+        if re.search(r"\blatas?\b", texto):
+            return numero
+        if re.search(r"\b(?:pacotes?|embalagens?)\b", texto):
+            return numero * produto.conteudo_embalagem
+        return None
+
+    if produto.chave == "oleo":
+        if re.search(r"\b(?:ml|mililitros?)\b", texto):
+            return numero / 1000
+        if re.search(r"\b(?:l|litros?)\b", texto):
+            return numero
+        if re.search(r"\b(?:frascos?|garrafas?)\b", texto):
+            return numero * produto.conteudo_embalagem
+        return None
+
+    if produto.chave == "temperos":
+        if re.search(r"\b(?:pacotes?|embalagens?|potes?)\b", texto):
+            return numero * produto.conteudo_embalagem
+        return None
+
+    if re.search(r"\b(?:kg|quilos?|quilogramas?)\b", texto):
+        return numero
+    if re.search(r"\b(?:g|gramas?)\b", texto):
+        return numero / 1000
+    if re.search(
+        r"\b(?:pacotes?|embalagens?|sacos?|unidades?)\b", texto
+    ):
+        return numero * produto.conteudo_embalagem
+    return None
+
+
 def _quantidade_disponivel(
     produto: Produto, itens_em_casa: list[str] | None
 ) -> float:
@@ -272,17 +355,12 @@ def _quantidade_disponivel(
     if not correspondentes:
         return 0
 
-    if produto.chave == "ovos":
-        quantidade = 0
-        for item in correspondentes:
-            resultado = re.search(r"\d+", item)
-            if resultado:
-                quantidade += int(resultado.group())
-            elif "duzia" in _sem_acentos(item):
-                quantidade += 12
-        return float(quantidade)
-
-    return math.inf
+    quantidades = [
+        _quantidade_do_item(item, produto) for item in correspondentes
+    ]
+    if any(quantidade is None for quantidade in quantidades):
+        return math.inf
+    return sum(quantidade or 0 for quantidade in quantidades)
 
 
 def _calcular_compras(
@@ -322,9 +400,14 @@ def _descrever_uso_da_casa(
         if necessario <= 0 or disponivel <= 0:
             continue
 
-        if produto.chave == "ovos" and not math.isinf(disponivel):
-            usados = min(math.ceil(necessario), int(disponivel))
-            usos.append(f"Ovos disponíveis: {usados} serão usados no plano.")
+        if not math.isinf(disponivel):
+            usados = min(necessario, disponivel)
+            unidade = UNIDADES_BASE.get(produto.chave, "kg")
+            quantidade = f"{usados:g}".replace(".", ",")
+            usos.append(
+                f"{produto.nome}: o plano aproveitará "
+                f"{quantidade} {unidade} do estoque."
+            )
         else:
             usos.append(f"{produto.nome}: será aproveitado do que já está em casa.")
     return tuple(usos)
