@@ -138,6 +138,13 @@ def _confirmar_dados() -> bool:
 
 def mostrar_plano(plano: Plano) -> None:
     """Apresenta o primeiro plano e seus custos simulados."""
+    if plano.economico:
+        print("\nALTERNATIVA ECONÔMICA")
+        print("O plano inicial ultrapassou o orçamento e foi simplificado.")
+        if plano.total_plano_normal is not None:
+            economia = plano.total_plano_normal - plano.total_estimado
+            print(f"Economia estimada: CAD${economia:.2f}")
+
     print("\nPLANO DE REFEIÇÕES")
     print(f"Para {plano.pessoas} pessoa(s) durante {plano.dias} dia(s).")
     for refeicao in plano.refeicoes:

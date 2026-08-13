@@ -26,6 +26,7 @@ class TestPlanejamento(unittest.TestCase):
         )
         self.assertEqual(plano.total_estimado, 58.25)
         self.assertEqual(plano.margem, 21.75)
+        self.assertFalse(plano.economico)
 
     def test_usa_exatamente_os_sete_ovos(self) -> None:
         plano = gerar_plano(entender_pedido(CASO_BASE))
@@ -65,13 +66,31 @@ class TestPlanejamento(unittest.TestCase):
         self.assertIn("Ovos", [item.nome for item in plano.compras])
         self.assertGreater(plano.total_estimado, 58.25)
 
-    def test_mostra_quando_o_orcamento_nao_e_suficiente(self) -> None:
+    def test_cria_alternativa_economica_quando_o_plano_normal_nao_cabe(self) -> None:
         pedido = entender_pedido(CASO_BASE.replace("CAD$80", "CAD$20"))
         plano = gerar_plano(pedido)
 
         assert plano is not None
-        self.assertEqual(plano.total_estimado, 58.25)
-        self.assertEqual(plano.margem, -38.25)
+        self.assertTrue(plano.economico)
+        self.assertEqual(plano.total_plano_normal, 58.25)
+        self.assertEqual(plano.total_estimado, 16.25)
+        self.assertEqual(plano.margem, 3.75)
+        self.assertNotIn(
+            "Carne moída", [item.nome for item in plano.compras]
+        )
+        self.assertNotIn(
+            "Coxas ou sobrecoxas de frango",
+            [item.nome for item in plano.compras],
+        )
+
+    def test_informa_falta_quando_nem_a_alternativa_cabe(self) -> None:
+        pedido = entender_pedido(CASO_BASE.replace("CAD$80", "CAD$10"))
+        plano = gerar_plano(pedido)
+
+        assert plano is not None
+        self.assertTrue(plano.economico)
+        self.assertEqual(plano.total_estimado, 16.25)
+        self.assertEqual(plano.margem, -6.25)
 
     def test_compra_arroz_e_ovos_quando_nao_estao_em_casa(self) -> None:
         pedido = PedidoEntendido(

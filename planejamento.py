@@ -47,6 +47,8 @@ class Plano:
     orcamento: float
     pessoas: int
     dias: int
+    economico: bool = False
+    total_plano_normal: float | None = None
 
     @property
     def total_estimado(self) -> float:
@@ -152,6 +154,41 @@ MODELOS_REFEICOES = (
     ),
 )
 
+MODELOS_ECONOMICOS = (
+    ModeloRefeicao(
+        "Arroz, feijão e legumes",
+        (("arroz", 0.10), ("feijao", 0.25), ("legumes", 0.10)),
+    ),
+    ModeloRefeicao(
+        "Arroz com ovos e legumes",
+        (("arroz", 0.10), ("ovos", 2.00), ("legumes", 0.10)),
+    ),
+    ModeloRefeicao(
+        "Arroz, feijão e legumes preparados anteriormente",
+        (("arroz", 0.10), ("feijao", 0.25), ("legumes", 0.10)),
+    ),
+    ModeloRefeicao(
+        "Macarrão com feijão e molho de tomate",
+        (("macarrao", 0.125), ("feijao", 0.15), ("tomate", 0.125)),
+    ),
+    ModeloRefeicao(
+        "Macarrão com feijão e molho preparado anteriormente",
+        (("macarrao", 0.125), ("feijao", 0.15), ("tomate", 0.125)),
+    ),
+    ModeloRefeicao(
+        "Arroz, feijão e legumes",
+        (("arroz", 0.10), ("feijao", 0.25), ("legumes", 0.10)),
+    ),
+    ModeloRefeicao(
+        "Arroz, feijão e tomate",
+        (("arroz", 0.10), ("feijao", 0.25), ("tomate", 0.125)),
+    ),
+    ModeloRefeicao(
+        "Arroz com omelete simples e legumes",
+        (("arroz", 0.10), ("ovos", 1.50), ("legumes", 0.10)),
+    ),
+)
+
 PRODUTOS = (
     Produto("frango", "Coxas ou sobrecoxas de frango", "1,2 kg", 1.20, 13.00, ("frango",)),
     Produto("carne", "Carne moída", "500 g", 0.50, 7.00, ("carne moida",)),
@@ -194,14 +231,16 @@ def _restricoes_suportadas(restricoes: list[str] | None) -> bool:
     return all("lactose" in _sem_acentos(restricao) for restricao in restricoes)
 
 
-def _montar_refeicoes(dias: int) -> tuple[tuple[Refeicao, ModeloRefeicao], ...]:
+def _montar_refeicoes(
+    dias: int, modelos: tuple[ModeloRefeicao, ...] = MODELOS_REFEICOES
+) -> tuple[tuple[Refeicao, ModeloRefeicao], ...]:
     refeicoes: list[tuple[Refeicao, ModeloRefeicao]] = []
     momentos = ("Almoço", "Jantar")
 
     for dia in range(1, dias + 1):
         for indice_momento, momento in enumerate(momentos):
-            indice = ((dia - 1) * 2 + indice_momento) % len(MODELOS_REFEICOES)
-            modelo = MODELOS_REFEICOES[indice]
+            indice = ((dia - 1) * 2 + indice_momento) % len(modelos)
+            modelo = modelos[indice]
             refeicoes.append((Refeicao(dia, momento, modelo.prato), modelo))
 
     return tuple(refeicoes)
@@ -291,20 +330,17 @@ def _descrever_uso_da_casa(
     return tuple(usos)
 
 
-def gerar_plano(pedido: PedidoEntendido) -> Plano | None:
-    """Gera um plano adaptado dentro dos limites seguros desta primeira regra."""
-    if not (
-        pedido.orcamento is not None
-        and pedido.moeda == "CAD"
-        and pedido.pessoas is not None
-        and 1 <= pedido.pessoas <= 12
-        and pedido.dias is not None
-        and 1 <= pedido.dias <= 14
-        and _restricoes_suportadas(pedido.restricoes)
-    ):
-        return None
+def _criar_plano(
+    pedido: PedidoEntendido,
+    modelos: tuple[ModeloRefeicao, ...],
+    economico: bool = False,
+    total_plano_normal: float | None = None,
+) -> Plano:
+    assert pedido.orcamento is not None
+    assert pedido.pessoas is not None
+    assert pedido.dias is not None
 
-    refeicoes_com_modelos = _montar_refeicoes(pedido.dias)
+    refeicoes_com_modelos = _montar_refeicoes(pedido.dias, modelos)
     necessidades = _calcular_necessidades(refeicoes_com_modelos, pedido.pessoas)
 
     return Plano(
@@ -322,7 +358,37 @@ def gerar_plano(pedido: PedidoEntendido) -> Plano | None:
         orcamento=pedido.orcamento or 0,
         pessoas=pedido.pessoas,
         dias=pedido.dias,
+        economico=economico,
+        total_plano_normal=total_plano_normal,
     )
+
+
+def gerar_plano(pedido: PedidoEntendido) -> Plano | None:
+    """Gera o plano normal ou uma alternativa econômica quando necessário."""
+    if not (
+        pedido.orcamento is not None
+        and pedido.moeda == "CAD"
+        and pedido.pessoas is not None
+        and 1 <= pedido.pessoas <= 12
+        and pedido.dias is not None
+        and 1 <= pedido.dias <= 14
+        and _restricoes_suportadas(pedido.restricoes)
+    ):
+        return None
+
+    plano_normal = _criar_plano(pedido, MODELOS_REFEICOES)
+    if plano_normal.margem >= 0:
+        return plano_normal
+
+    plano_economico = _criar_plano(
+        pedido,
+        MODELOS_ECONOMICOS,
+        economico=True,
+        total_plano_normal=plano_normal.total_estimado,
+    )
+    if plano_economico.total_estimado < plano_normal.total_estimado:
+        return plano_economico
+    return plano_normal
 
 
 def gerar_plano_caso_base(pedido: PedidoEntendido) -> Plano | None:
