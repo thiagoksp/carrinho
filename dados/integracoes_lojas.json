@@ -1,0 +1,19 @@
+{
+  "integracoes": [
+    {
+      "id": "no-frills-toronto",
+      "loja_piloto": "No Frills",
+      "localizacao_piloto": "Toronto, ON",
+      "pais": "CA",
+      "moeda": "CAD",
+      "fonte_precos": "simulada",
+      "status_precos": "disponivel",
+      "catalogo_local": "precos_simulados.json",
+      "entrega_lista": "instacart",
+      "status_entrega": "planejada",
+      "permite_fixar_loja": false,
+      "precos_reais_disponiveis": false,
+      "aviso": "O endpoint escolhido poderá receber a lista, mas não retorna preços ao Carrinho nem garante a loja selecionada."
+    }
+  ]
+}
