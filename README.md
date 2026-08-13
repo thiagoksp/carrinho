@@ -15,14 +15,20 @@ O sistema deverá gerar um plano de refeições e uma lista de compras. Em vers�
 
 ## Estado atual
 
-Somente a fundação e o caso-base do projeto estão prontos. Ainda não há funcionalidades do aplicativo.
+O projeto possui uma entrada mínima pelo terminal. Ela recebe uma frase e confirma o texto, mas ainda não gera refeições nem lista de compras.
 
 O cenário de referência aprovado está documentado em [`docs/caso-base.md`](docs/caso-base.md).
 
 ## Próxima etapa
 
-Escolher a forma mais simples de interação da primeira versão antes de implementar código.
+Ensinar o programa a identificar os dados essenciais presentes no pedido.
 
 ## Ambiente local
 
 O projeto usa Python 3.12 e não possui dependências externas nesta etapa.
+
+Para abrir o Carrinho no Windows:
+
+```powershell
+.\.venv\Scripts\python.exe app.py
+```

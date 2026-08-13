@@ -15,7 +15,7 @@ Construir, passo a passo, um agente de mercado que recebe orçamento, dias, disp
 
 ## Escopo atual
 
-O ambiente e a estrutura inicial estão preparados. Nenhuma funcionalidade do app deve ser criada até uma solicitação explícita.
+A interface inicial será o terminal. O programa apenas recebe e confirma o texto do usuário; ainda não interpreta o pedido nem cria planos ou listas.
 
 ## Evolução prevista
 
@@ -24,4 +24,3 @@ O ambiente e a estrutura inicial estão preparados. Nenhuma funcionalidade do ap
 3. Pesquisa de produtos e preços reais.
 4. Otimização por loja ou combinação de lojas.
 5. Montagem do carrinho de compras.
-
