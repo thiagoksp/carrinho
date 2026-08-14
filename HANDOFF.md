@@ -38,10 +38,15 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Active team: `🛒 Carrinho`.
 - Active issue prefix: `CAR`.
 - Exactly one issue is labelled `Next`:
-  [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7).
-  It is in progress and assigned to Thiago. Use the saved household profile and current
-  request to select meals deterministically; preserve one plan, one retailer-neutral
-  simulated estimate, and the reference case.
+  [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
+  It is in progress and assigned to Thiago. Add a small, tested set of varied meal
+  templates without changing the deterministic selector, package-aware calculations,
+  retailer-neutral estimate, or reference case.
+- [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
+  is complete. Its implementation was merged as
+  [pull request #13](https://github.com/thiagoksp/carrinho/pull/13) on August 14, 2026.
+  The selector now filters current lactose-safe templates, prefers the requested cooking
+  energy, then uses pantry coverage as a deterministic tie-breaker.
 - [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6)
   is complete. Its implementation was merged as
   [pull request #11](https://github.com/thiagoksp/carrinho/pull/11) on August 14, 2026.
@@ -64,9 +69,8 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   tracks the external Instacart approval.
 - [CAR-4](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
   is blocked by CAR-3.
-- The remaining product step is [CAR-8](https://linear.app/thiagoksp/issue/CAR-8): expand
-  the curated meal library after deterministic selection is stable. This change does not
-  require a database, account, or network service.
+- CAR-8 expands the curated meal library after deterministic selection is stable. This
+  change does not require a database, account, or network service.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.
