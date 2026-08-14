@@ -110,26 +110,22 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Finish and review package reconciliation in Linear issue
-[CAR-2](https://linear.app/thiagoksp/issue/CAR-2), the only issue currently labelled
-`Next`. The reference output must distinguish recipe need, whole package count,
-expected purchased quantity, overage, and variable-weight uncertainty. Do not expand
-this into product-by-product or retailer-by-retailer testing.
+Work on [CAR-5](https://linear.app/thiagoksp/issue/CAR-5), the only issue currently
+labelled `Next`: externalize the existing meal templates and per-person ingredient
+quantities into a validated, versioned Canadian English data file. Preserve the
+reference-case output and do not add a database, account system, or network service.
 
-## Planned sequence after CAR-2
+## Planned sequence after CAR-5
 
-Once CAR-2 is reviewed and merged, promote the next backlog item in this order:
+Once CAR-5 is reviewed and merged, promote the next backlog item in this order:
 
-1. [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5).
-   Move meal templates and ingredient quantities from code into a validated versioned
-   data file.
-2. [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6).
+1. [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6).
    Store private household defaults and pantry quantities in ignored local JSON, not in
    Git. Do not add a database, account, or network service at this stage.
-3. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7).
+2. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7).
    Make cooking energy, lactose intolerance, and pantry inventory influence the chosen
    meals.
-4. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
+3. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
    Add variety after the catalogue and selection rules have stable coverage.
 
 The official Instacart validation and API milestones remain externally gated. The

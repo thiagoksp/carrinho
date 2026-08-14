@@ -31,21 +31,21 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 
 ## Ownership
 
-- Primary owner, formal assignee, and project lead: Thiago (`@tkubrusly`).
-- Secondary collaborator: Julia (`@julia.arsego2`).
-- Linear supports one formal assignee, so active issues are assigned to Thiago and
-  carry the `Secondary: Julia` label and mention Julia in their descriptions.
+- Project owner and formal assignee: Thiago (`@tkubrusly`).
 
 ## Current checkpoint
 
 - Active team: `🛒 Carrinho`.
 - Active issue prefix: `CAR`.
 - Exactly one issue is labelled `Next`:
-  [CAR-2 — Reconcile recipe quantities with purchasable packages](https://linear.app/thiagoksp/issue/CAR-2).
-  It is currently in progress on branch `codex/car-2-package-reconciliation`.
-  GitHub authentication was restored on August 14, 2026. Draft
-  [pull request #7](https://github.com/thiagoksp/carrinho/pull/7) contains the tested
-  implementation and is ready for review before changing implementation scope.
+  [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5).
+  It is in progress and assigned to Thiago. Start by moving the existing meal templates
+  and per-person ingredient quantities into a validated, versioned Canadian English
+  data file without changing the reference-case output.
+- [CAR-2 — Reconcile recipe quantities with purchasable packages](https://linear.app/thiagoksp/issue/CAR-2)
+  is complete. Its implementation was merged as
+  [pull request #7](https://github.com/thiagoksp/carrinho/pull/7) on August 14, 2026,
+  after local and CI test verification.
 - CAR-1 was cancelled because neither **Shopping List → Paste items** nor
   **Cart Assistant** was available in the project's Canadian Instacart account.
 - A limited public Instacart search confirmed that generic product matching can work,
@@ -55,13 +55,11 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   tracks the external Instacart approval.
 - [CAR-4](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
   is blocked by CAR-3.
-- After CAR-2, the planned product sequence is [CAR-5](https://linear.app/thiagoksp/issue/CAR-5),
-  [CAR-6](https://linear.app/thiagoksp/issue/CAR-6),
+- The remaining product sequence is [CAR-6](https://linear.app/thiagoksp/issue/CAR-6),
   [CAR-7](https://linear.app/thiagoksp/issue/CAR-7), then
-  [CAR-8](https://linear.app/thiagoksp/issue/CAR-8): externalize the meal catalogue,
-  persist private household and pantry data locally, select meals from household
-  constraints, then expand the curated meal library. These changes do not require a
-  database, account, or network service.
+  [CAR-8](https://linear.app/thiagoksp/issue/CAR-8): persist private household and
+  pantry data locally, select meals from household constraints, then expand the curated
+  meal library. These changes do not require a database, account, or network service.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.
