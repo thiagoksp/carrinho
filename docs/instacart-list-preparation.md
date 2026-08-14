@@ -13,6 +13,10 @@ When a result is saved, Carrinho creates three local files:
 No network call is made. The preview does not contain prices, budget, shopping location,
 selected store, credentials, headers, or a service endpoint.
 
+Omitting store and location is the approved direction, not a limitation of the preview.
+Carrinho delegates address, retailer selection, product matching, availability, and
+actual prices to Instacart after the handoff.
+
 ## Available path without an API key
 
 Carrinho submitted the Canadian Developer Platform interest form on August 13, 2026.
@@ -86,9 +90,11 @@ Official sources:
 
 ## Canada
 
-The pilot remains Canadian. `country_code` is not included in the preview because the
+The product remains Canadian. `country_code` is not included in the preview because the
 current endpoint reference does not document that field, although an earlier changelog
-mentioned it. Shopping location remains plain text in the meal plan.
+mentioned it. Shopping location remains plain text in the current meal plan only; the
+approved next increment removes it from Carrinho and leaves location and retailer
+selection to Instacart.
 
 Before the first network call, Canadian behaviour must be verified once against the
 development server with a project-owned Instacart key. Until then, the JSON is a local
@@ -96,6 +102,7 @@ preview and must never be sent automatically.
 
 ## Next step
 
-Validate one list through the manual iPhone flow and wait for the application response.
+First remove the transitional No Frills and Toronto requirement from the request and
+planning flow. Then validate one retailer-neutral list through the manual iPhone flow.
 If development access and a key are approved, run one non-checkout contract test against
 the development server before integrating any network call.

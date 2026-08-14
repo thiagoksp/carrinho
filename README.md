@@ -11,13 +11,17 @@ The user describes a household situation in natural language:
 - number of people and days;
 - cooking energy;
 - food already available at home;
-- dietary restrictions;
-- shopping area and selected store.
+- dietary restrictions.
 
-Carrinho produces one practical meal plan, one shopping list, one selected working price
-per item, and one cart handoff. It is not a store or price comparison product: it does
-not rank retailers, combine carts, or silently replace the meal plan with a cheaper one.
-The budget remains visible as either a balance or a shortfall.
+Carrinho produces one practical meal plan, one shopping list, one simulated Canadian
+planning estimate per item, and one Instacart shopping-list handoff. Instacart is the
+planned shopping platform, not a retailer selected by Carrinho. The user chooses an
+available retailer inside Instacart, where address-specific availability and actual
+prices are determined.
+
+Carrinho is not a store or price comparison product: it does not rank retailers, combine
+carts, or silently replace the meal plan with a cheaper one. The budget remains visible
+as either a balance or a shortfall.
 
 ## Current state
 
@@ -27,8 +31,9 @@ adjusts package quantities and accounts for pantry amounts expressed in kilogram
 grams, litres, cans, dozens, units, and package fractions. The current values come from
 one JSON catalog that is explicitly labelled as simulated.
 
-The current terminal pilot accepts only No Frills in Toronto, Ontario. The program
-creates three local files when a plan is saved:
+The current terminal pilot still accepts only No Frills in Toronto, Ontario. This is
+transitional behaviour scheduled for removal; it is not the approved product direction.
+The program creates three local files when a plan is saved:
 
 - a readable meal plan;
 - an Instacart JSON preview for a future approved integration;
@@ -46,19 +51,34 @@ A separate manual-price importer creates an Excel-compatible CSV and stores loca
 self-declared observations with package, exact store location, date, channel, and source.
 The CSV hash preserves an import trail but does not prove that a value is authentic,
 licensed, live, or verified. These observations are isolated from the planner and cannot
-change its budget calculations.
+change its budget calculations. This importer remains a legacy research tool from the
+store-specific pilot and is not the planned Instacart price source.
+
+## Approved transition
+
+The next product increment removes shopping area and selected store from the Carrinho
+request. Canada and CAD remain fixed product constraints. Carrinho will generate one
+retailer-neutral list and hand it to Instacart; the user's Instacart context will
+determine available retailers, local products, availability, and actual checkout prices.
+
+Until approved API access exists, the handoff remains a local preview and a manual
+iPhone paste list. Carrinho must not claim that it selected a specific retailer or knows
+the final price before the user reviews the list in Instacart.
 
 Project decisions and formats are documented in:
 
 - [`docs/reference-case.md`](docs/reference-case.md)
+- [`docs/instacart-platform-direction.md`](docs/instacart-platform-direction.md)
 - [`docs/initial-integration-decision.md`](docs/initial-integration-decision.md)
 - [`docs/instacart-list-preparation.md`](docs/instacart-list-preparation.md)
 - [`docs/manual-price-observations.md`](docs/manual-price-observations.md)
 
 ## Next step
 
-Record one manual No Frills price observation without using it in the plan, validate the
-manual iPhone paste flow once, and wait for the Instacart application response.
+Remove the transitional No Frills and Toronto fields from the request and planning model
+while keeping the current simulated Canadian catalog for budget guidance. Preserve the
+manual iPhone paste flow and keep all network integration disabled until approved access
+and contract testing are available.
 
 ## Local environment
 

@@ -1,19 +1,25 @@
 # Manual price observations
 
+Status: this is a legacy research tool from the No Frills and Toronto pilot. The
+approved product direction uses Instacart as the shopping handoff and does not require
+Carrinho to select a retailer or city. These observations remain isolated and will not
+become the source of planning estimates or checkout prices.
+
 Date: August 13, 2026.
 
-## Why this step is manual
+## Why this experiment was manual
 
-No public, authorized No Frills or Loblaw feed was identified that provides Carrinho
+No public, authorized No Frills or Loblaw feed was identified that provided Carrinho
 with exact consumer prices by store. Prices can vary by location, channel, promotion,
-and fulfilment time. The first record is therefore local, manual, and limited to personal
+and fulfilment time. The experiment was therefore local, manual, and limited to personal
 development use.
 
 Carrinho does not scrape a website, import Flipp data, or turn flyers into a commercial
 database. Any future automated or commercial use requires a source licensed in writing.
 
-This is not a comparison dataset. Each valid record is a candidate for one selected
-working price tied to an exact store, package, channel, and observation date.
+This is not a comparison dataset. Each valid record documents one historical observation
+tied to an exact store, package, channel, and observation date. It never becomes a
+planning estimate, a selected retailer price, or a checkout price.
 
 ## Create the template
 
@@ -80,10 +86,10 @@ price, or authenticity. Files in `outputs/` are excluded from Git.
 
 ## Boundary of this stage
 
-The planner continues to use only the simulated catalog. Manual records are never
-labelled as licensed, do not enable `real_prices_available`, and cannot affect a budget
-or cart. A later approved step may select one canonical source for each item; it must not
-choose the lowest value across sources.
+The planner continues to use only the simulated catalog. Manual records are permanently
+isolated, are never labelled as licensed, do not enable `real_prices_available`, and
+cannot affect a budget or shopping-list handoff. No manual observation becomes a
+canonical product price source.
 
 Official sources:
 
@@ -94,4 +100,5 @@ Official sources:
 
 ## Next step
 
-Record one observation and verify its provenance without using it in planning.
+No further manual price collection is planned. Keep the tool isolated until a later
+code-cleanup decision removes or archives the experiment.
