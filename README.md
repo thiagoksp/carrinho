@@ -15,11 +15,11 @@ The user describes a household situation in natural language:
 - food already available at home;
 - dietary restrictions.
 
-Carrinho produces one practical meal plan, one shopping list, one simulated Canadian
-planning estimate per item, and one Instacart shopping-list handoff. Instacart is the
-planned shopping platform, not a retailer selected by Carrinho. The user chooses an
-available retailer inside Instacart, where address-specific availability and actual
-prices are determined.
+Carrinho produces one practical meal plan, one shopping list, and one simulated Canadian
+planning estimate per item. It is useful as a standalone local application. Instacart is
+an optional future shopping handoff, not a retailer selected by Carrinho. The user would
+choose an available retailer inside Instacart, where address-specific availability and
+actual prices are determined.
 
 Carrinho is not a store or price comparison product: it does not rank retailers, combine
 carts, or silently replace the meal plan with a cheaper one. The budget remains visible
@@ -27,8 +27,10 @@ as either a balance or a shortfall.
 
 ## Current state
 
-The terminal app understands and completes an English request, allows one field at a
-time to be corrected, and supports 1–12 people for 1–14 days. Its rule-based planner
+The terminal app and local browser interface support 1–12 people for 1–14 days. The
+browser provides a structured form, friendly validation, and the complete plan on one
+page at `http://127.0.0.1:8765`. The terminal interface remains available for natural
+language requests and one-field-at-a-time corrections. The rule-based planner
 separates recipe requirements from whole purchasable packages, reports expected
 overage, marks variable-weight products as approximate, and accounts for pantry amounts
 expressed in kilograms, grams, pounds, litres, millilitres, cans, dozens, units, and
@@ -75,12 +77,10 @@ Project decisions and formats are documented in:
 
 ## Next step
 
-Track CAR-3 while waiting for Instacart to respond to the Developer Platform interest
-form. No code change is required while that external state is unchanged. The documented
-iPhone **Paste items** and **Cart Assistant** features were not available in the
-project's Canadian Instacart account, so further handoff testing remains gated on an
-available official surface or approved Developer Platform access. Keep all network
-integration disabled until approved access and contract testing are available.
+[CAR-12](https://linear.app/thiagoksp/issue/CAR-12) will let households edit local meal
+templates and generic foods through a validated workflow. Instacart approval is tracked
+separately in CAR-3 and is no longer on the standalone product's critical path. Keep all
+network integration disabled until approved access and contract testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).
@@ -96,6 +96,14 @@ Run Carrinho on Windows:
 ```powershell
 .\.venv\Scripts\python.exe app.py
 ```
+
+Run the local browser interface:
+
+```powershell
+.\.venv\Scripts\python.exe web_app.py
+```
+
+Then open <http://127.0.0.1:8765>. Press `Ctrl+C` in the terminal to stop it.
 
 Run the test suite:
 
