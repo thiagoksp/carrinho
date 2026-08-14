@@ -2,6 +2,10 @@
 
 Date: August 13, 2026.
 
+Status: superseded on August 14, 2026, by
+[`instacart-platform-direction.md`](instacart-platform-direction.md). This document is
+retained as the historical decision behind the current transitional implementation.
+
 ## Decision
 
 The first Carrinho pilot uses **No Frills in Toronto, Ontario** as its selected store.

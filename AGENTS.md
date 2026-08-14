@@ -3,9 +3,13 @@
 ## Goal
 
 Build Carrinho step by step: a Canadian grocery agent that receives a budget, number of
-days and people, cooking energy, pantry items, dietary restrictions, shopping area, and
-one selected store. It produces one meal plan, one shopping list, one selected working
-price per item, and one reviewable cart handoff.
+days and people, cooking energy, pantry items, and dietary restrictions. It produces one
+meal plan, one shopping list, one clearly labelled simulated Canadian planning estimate
+per item, and one reviewable Instacart handoff.
+
+Instacart is the planned shopping platform, not a retailer. Carrinho does not choose or
+guarantee a merchant. The user's address, available retailers, product availability, and
+actual prices are handled inside Instacart during the handoff.
 
 Carrinho is not a price-comparison product. Do not rank retailers, combine stores, search
 for the cheapest basket, or silently replace the requested plan with a cheaper menu.
@@ -35,6 +39,10 @@ simulated price catalog. This version accepts only No Frills in Toronto. The app
 meal plan, an Instacart JSON preview, and a plain-text list for the manual iPhone
 **Paste items** flow. It performs no network request and uses no credential.
 
+The No Frills and Toronto restriction is transitional current behaviour, not the
+approved product direction. The next implementation increment removes store and city
+from the planning request while preserving Canada and CAD as product constraints.
+
 An Instacart Developer Platform interest form was submitted on August 13, 2026, but no
 approval or API key has been received. Manual price observations remain local,
 self-declared, unverified, and isolated from planning. Only no dietary restrictions or
@@ -44,6 +52,8 @@ lactose intolerance are supported at this stage.
 
 1. Understand the household request.
 2. Produce one meal plan and shopping list.
-3. Attach one selected working price per item from the chosen retailer and location.
-4. Produce one reviewable cart handoff.
-5. Enable an official cart integration only after approved access and contract testing.
+3. Attach one Canadian planning estimate per item from one clearly labelled catalog.
+4. Remove the transitional No Frills and Toronto requirement from the request flow.
+5. Hand one shopping list to Instacart, where the user selects an available retailer.
+6. Treat retailer-specific availability and actual prices as Instacart-owned results.
+7. Enable an official handoff only after approved access and contract testing.

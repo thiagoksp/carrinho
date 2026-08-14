@@ -2,6 +2,15 @@
 
 This is the first approved scenario used to guide development and tests.
 
+Status: this remains the current implementation baseline. The approved next increment
+will remove the shopping-area and selected-store sentence from the input and the related
+interpretation fields. Existing acceptance criteria remain valid until that code change
+is implemented and tested.
+
+The target version will also replace selected working prices with clearly labelled,
+simulated Canadian planning estimates; create a retailer-neutral Instacart shopping-list
+handoff; and leave retailer, location, availability, and actual prices to Instacart.
+
 ## Input
 
 > I have CAD$80 to feed 2 people for 4 days. We have low energy for cooking,
