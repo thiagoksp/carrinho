@@ -21,6 +21,8 @@ class TestRequestParser(unittest.TestCase):
         self.assertEqual(request.cooking_energy, "low")
         self.assertEqual(request.pantry_items, ["enough rice", "7 eggs"])
         self.assertEqual(request.dietary_restrictions, ["lactose intolerance"])
+        self.assertIsNone(request.avoided_product_keys)
+        self.assertIsNone(request.preferred_product_keys)
         self.assertFalse(hasattr(request, "shopping_location"))
         self.assertFalse(hasattr(request, "selected_store"))
 
@@ -45,6 +47,8 @@ class TestRequestParser(unittest.TestCase):
         self.assertIsNone(request.cooking_energy)
         self.assertIsNone(request.pantry_items)
         self.assertIsNone(request.dietary_restrictions)
+        self.assertIsNone(request.avoided_product_keys)
+        self.assertIsNone(request.preferred_product_keys)
         self.assertFalse(hasattr(request, "shopping_location"))
         self.assertFalse(hasattr(request, "selected_store"))
 
@@ -134,6 +138,26 @@ class TestRequestParser(unittest.TestCase):
             request.pantry_items,
             ["1 kg of rice", "half a package of pasta", "7 eggs"],
         )
+
+    def test_maps_common_food_preferences_to_catalogue_keys(self) -> None:
+        request = parse_request(
+            "I don't like onions and beans. My favourite foods are chicken and eggs."
+        )
+
+        self.assertEqual(request.avoided_product_keys, ["onions", "beans"])
+        self.assertEqual(request.preferred_product_keys, ["chicken", "eggs"])
+
+    def test_keeps_unknown_or_retailer_preferences_out_of_food_keys(self) -> None:
+        request = parse_request("I dislike mushrooms. I prefer No Frills.")
+
+        self.assertIsNone(request.avoided_product_keys)
+        self.assertIsNone(request.preferred_product_keys)
+
+    def test_understands_explicitly_empty_food_preferences(self) -> None:
+        request = parse_request("I have no foods to avoid and no food preferences.")
+
+        self.assertEqual(request.avoided_product_keys, [])
+        self.assertEqual(request.preferred_product_keys, [])
 
 
 if __name__ == "__main__":

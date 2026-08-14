@@ -22,6 +22,8 @@ def _request() -> ParsedRequest:
         cooking_energy="low",
         pantry_items=["rice", "7 eggs"],
         dietary_restrictions=["lactose intolerance"],
+        avoided_product_keys=["onions"],
+        preferred_product_keys=["chicken", "eggs"],
     )
 
 
@@ -34,6 +36,8 @@ class TestHouseholdProfile(unittest.TestCase):
         self.assertEqual(data["schema"], HOUSEHOLD_PROFILE_SCHEMA)
         self.assertEqual(data["people"], 2)
         self.assertEqual(data["pantry_items"], ["rice", "7 eggs"])
+        self.assertEqual(data["avoided_product_keys"], ["onions"])
+        self.assertEqual(data["preferred_product_keys"], ["chicken", "eggs"])
         self.assertNotIn("budget", data)
         self.assertNotIn("days", data)
         self.assertNotIn("currency", data)
@@ -50,6 +54,8 @@ class TestHouseholdProfile(unittest.TestCase):
                 cooking_energy="low",
                 pantry_items=("rice", "7 eggs"),
                 dietary_restrictions=("lactose intolerance",),
+                avoided_product_keys=("onions",),
+                preferred_product_keys=("chicken", "eggs"),
             ),
         )
 
@@ -74,6 +80,8 @@ class TestHouseholdProfile(unittest.TestCase):
             cooking_energy="low",
             pantry_items=("rice", "7 eggs"),
             dietary_restrictions=("lactose intolerance",),
+            avoided_product_keys=("beans",),
+            preferred_product_keys=("eggs",),
         )
 
         result = apply_household_defaults(request_data, profile)
@@ -82,6 +90,51 @@ class TestHouseholdProfile(unittest.TestCase):
         self.assertEqual(result.cooking_energy, "low")
         self.assertEqual(result.pantry_items, ["rice", "7 eggs"])
         self.assertEqual(result.dietary_restrictions, ["lactose intolerance"])
+        self.assertEqual(result.avoided_product_keys, ["beans"])
+        self.assertEqual(result.preferred_product_keys, ["eggs"])
+
+    def test_loads_a_legacy_profile_with_empty_food_preferences(self) -> None:
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "household-profile.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema": "carrinho.household-profile.v1",
+                        "people": 2,
+                        "cooking_energy": "low",
+                        "pantry_items": ["rice"],
+                        "dietary_restrictions": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            profile = load_household_profile(Path(directory))
+
+        assert profile is not None
+        self.assertEqual(profile.avoided_product_keys, ())
+        self.assertEqual(profile.preferred_product_keys, ())
+
+    def test_rejects_unknown_or_conflicting_product_preference_keys(self) -> None:
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "household-profile.json"
+            base_data = {
+                "schema": HOUSEHOLD_PROFILE_SCHEMA,
+                "people": 2,
+                "cooking_energy": "low",
+                "pantry_items": [],
+                "dietary_restrictions": [],
+                "avoided_product_keys": ["mushrooms"],
+                "preferred_product_keys": [],
+            }
+            path.write_text(json.dumps(base_data), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "unknown product preference"):
+                load_household_profile(Path(directory))
+
+            base_data["avoided_product_keys"] = ["eggs"]
+            base_data["preferred_product_keys"] = ["eggs"]
+            path.write_text(json.dumps(base_data), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "cannot avoid and prefer"):
+                load_household_profile(Path(directory))
 
     def test_rejects_corrupt_or_unsupported_profile_data(self) -> None:
         with TemporaryDirectory() as directory:

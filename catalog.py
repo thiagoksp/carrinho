@@ -197,3 +197,41 @@ def load_catalog(path: Path) -> PriceCatalog:
 def load_simulated_catalog() -> PriceCatalog:
     path = Path(__file__).resolve().parent / "data" / "simulated-prices.json"
     return load_catalog(path)
+
+
+def resolve_product_keys(
+    food_names: list[str] | tuple[str, ...],
+    products: tuple[Product, ...],
+) -> tuple[str, ...]:
+    """Resolve user-entered generic food names to stable catalogue product keys."""
+    if not food_names:
+        raise ValueError("Enter at least one food preference or choose none.")
+    aliases: dict[str, set[str]] = {}
+    for product in products:
+        product_aliases = {
+            product.key,
+            product.key.replace("_", " "),
+            product.name,
+            *product.keywords,
+        }
+        for alias in product_aliases:
+            normalized_alias = _normalize_text(alias)
+            aliases.setdefault(normalized_alias, set()).add(product.key)
+
+    resolved_keys: list[str] = []
+    unknown_names: list[str] = []
+    for food_name in food_names:
+        normalized_name = _normalize_text(food_name)
+        matching_keys = aliases.get(normalized_name, set())
+        if len(matching_keys) != 1:
+            unknown_names.append(food_name.strip())
+            continue
+        product_key = next(iter(matching_keys))
+        if product_key not in resolved_keys:
+            resolved_keys.append(product_key)
+
+    if unknown_names:
+        raise ValueError(
+            "Unknown food preference: " + ", ".join(unknown_names) + "."
+        )
+    return tuple(resolved_keys)

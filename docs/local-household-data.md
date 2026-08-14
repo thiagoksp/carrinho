@@ -8,7 +8,9 @@ The directory is ignored by Git and is never uploaded by Carrinho.
 - people;
 - cooking energy;
 - pantry items;
-- dietary restrictions.
+- dietary restrictions;
+- generic product keys for foods to avoid;
+- generic product keys for foods to prefer.
 
 Budget, days, currency, address, retailer, payment information, receipts, and API keys
 are never part of the household profile.
@@ -19,6 +21,13 @@ If a profile exists, the terminal asks whether to use it. Saved values fill only
 fields missing from the current request, so a new request always wins. After a confirmed
 plan, the terminal separately asks whether to save or update the profile.
 
-The file uses schema `carrinho.household-profile.v1`. It is a local convenience feature,
-not an account or synchronization service. Deleting `local-data/household-profile.json`
-removes the saved profile from that computer.
+The request summary lets the user correct **Foods to avoid** or **Foods to prefer** and
+then save those selections with the profile. Carrinho resolves common names such as
+`onions`, `beans`, or `eggs` through the small existing generic product catalogue. It
+does not ship or copy an exhaustive external food dataset. An unknown food is reported
+clearly and is not silently stored or guessed.
+
+The file uses schema `carrinho.household-profile.v2`. Version 1 profiles remain readable
+and load with empty food-preference lists. This is a local convenience feature, not an
+account or synchronization service. Deleting `local-data/household-profile.json` removes
+the saved profile from that computer.

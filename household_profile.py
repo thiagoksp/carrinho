@@ -4,10 +4,12 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
+from catalog import load_simulated_catalog
 from request_parser import ParsedRequest
 
 
-HOUSEHOLD_PROFILE_SCHEMA = "carrinho.household-profile.v1"
+HOUSEHOLD_PROFILE_SCHEMA = "carrinho.household-profile.v2"
+LEGACY_HOUSEHOLD_PROFILE_SCHEMA = "carrinho.household-profile.v1"
 DEFAULT_LOCAL_DATA_DIRECTORY = Path(__file__).resolve().parent / "local-data"
 PROFILE_FILENAME = "household-profile.json"
 COOKING_ENERGY_VALUES = {"low", "normal", "high"}
@@ -19,6 +21,8 @@ class HouseholdProfile:
     cooking_energy: str
     pantry_items: tuple[str, ...]
     dietary_restrictions: tuple[str, ...]
+    avoided_product_keys: tuple[str, ...] = ()
+    preferred_product_keys: tuple[str, ...] = ()
 
 
 def _profile_path(local_data_directory: Path | None = None) -> Path:
@@ -37,7 +41,8 @@ def _text_items(value: object, field: str) -> tuple[str, ...]:
 def _validate_profile(data: object) -> HouseholdProfile:
     if not isinstance(data, dict):
         raise ValueError("The household profile must be a JSON object.")
-    if data.get("schema") != HOUSEHOLD_PROFILE_SCHEMA:
+    schema = data.get("schema")
+    if schema not in {HOUSEHOLD_PROFILE_SCHEMA, LEGACY_HOUSEHOLD_PROFILE_SCHEMA}:
         raise ValueError("The household profile has an unsupported schema.")
 
     people = data.get("people")
@@ -56,11 +61,38 @@ def _validate_profile(data: object) -> HouseholdProfile:
     if any("lactose" not in restriction.casefold() for restriction in dietary_restrictions):
         raise ValueError("The household profile has unsupported dietary restrictions.")
 
+    if schema == LEGACY_HOUSEHOLD_PROFILE_SCHEMA:
+        avoided_product_keys: tuple[str, ...] = ()
+        preferred_product_keys: tuple[str, ...] = ()
+    else:
+        avoided_product_keys = _text_items(
+            data.get("avoided_product_keys"),
+            "avoided product keys",
+        )
+        preferred_product_keys = _text_items(
+            data.get("preferred_product_keys"),
+            "preferred product keys",
+        )
+    available_keys = {product.key for product in load_simulated_catalog().products}
+    unknown_keys = set(avoided_product_keys + preferred_product_keys).difference(
+        available_keys
+    )
+    if unknown_keys:
+        raise ValueError("The household profile has unknown product preference keys.")
+    if len(avoided_product_keys) != len(set(avoided_product_keys)) or len(
+        preferred_product_keys
+    ) != len(set(preferred_product_keys)):
+        raise ValueError("The household profile has duplicate product preference keys.")
+    if set(avoided_product_keys).intersection(preferred_product_keys):
+        raise ValueError("The household profile cannot avoid and prefer the same food.")
+
     return HouseholdProfile(
         people=people,
         cooking_energy=cooking_energy,
         pantry_items=pantry_items,
         dietary_restrictions=dietary_restrictions,
+        avoided_product_keys=avoided_product_keys,
+        preferred_product_keys=preferred_product_keys,
     )
 
 
@@ -87,7 +119,6 @@ def _profile_from_request(request_data: ParsedRequest) -> HouseholdProfile:
         raise ValueError("A household profile requires pantry items.")
     if request_data.dietary_restrictions is None:
         raise ValueError("A household profile requires dietary restrictions.")
-
     return _validate_profile(
         {
             "schema": HOUSEHOLD_PROFILE_SCHEMA,
@@ -95,6 +126,8 @@ def _profile_from_request(request_data: ParsedRequest) -> HouseholdProfile:
             "cooking_energy": request_data.cooking_energy,
             "pantry_items": request_data.pantry_items,
             "dietary_restrictions": request_data.dietary_restrictions,
+            "avoided_product_keys": request_data.avoided_product_keys or [],
+            "preferred_product_keys": request_data.preferred_product_keys or [],
         }
     )
 
@@ -113,6 +146,8 @@ def save_household_profile(
         "cooking_energy": profile.cooking_energy,
         "pantry_items": list(profile.pantry_items),
         "dietary_restrictions": list(profile.dietary_restrictions),
+        "avoided_product_keys": list(profile.avoided_product_keys),
+        "preferred_product_keys": list(profile.preferred_product_keys),
     }
     temporary_path = path.with_suffix(".tmp")
     temporary_path.write_text(
@@ -136,4 +171,8 @@ def apply_household_defaults(
         request_data.pantry_items = list(profile.pantry_items)
     if request_data.dietary_restrictions is None:
         request_data.dietary_restrictions = list(profile.dietary_restrictions)
+    if request_data.avoided_product_keys is None:
+        request_data.avoided_product_keys = list(profile.avoided_product_keys)
+    if request_data.preferred_product_keys is None:
+        request_data.preferred_product_keys = list(profile.preferred_product_keys)
     return request_data

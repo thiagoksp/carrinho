@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import re
 import unicodedata
 
+from catalog import load_simulated_catalog, resolve_product_keys
+
 
 @dataclass
 class ParsedRequest:
@@ -16,6 +18,8 @@ class ParsedRequest:
     cooking_energy: str | None = None
     pantry_items: list[str] | None = None
     dietary_restrictions: list[str] | None = None
+    avoided_product_keys: list[str] | None = None
+    preferred_product_keys: list[str] | None = None
 
 
 NUMBER_WORDS = {
@@ -156,6 +160,52 @@ def _find_dietary_restrictions(text: str) -> list[str] | None:
     return None
 
 
+def _find_product_preferences(text: str, preference: str) -> list[str] | None:
+    normalized_text = _remove_accents(text)
+    no_preference_phrases = {
+        "avoid": (
+            "no foods to avoid",
+            "no food to avoid",
+            "do not avoid any foods",
+            "don't avoid any foods",
+        ),
+        "prefer": (
+            "no food preferences",
+            "no preferred foods",
+            "do not prefer any foods",
+            "don't prefer any foods",
+        ),
+    }
+    if any(phrase in normalized_text for phrase in no_preference_phrases[preference]):
+        return []
+
+    patterns = {
+        "avoid": (
+            r"(?:i|we)\s+(?:do\s+not|don't)\s+like\s+(?P<items>[^.;]+)",
+            r"(?:i|we)\s+(?:dislike|avoid)\s+(?P<items>[^.;]+)",
+        ),
+        "prefer": (
+            r"(?:my|our)\s+favou?rite\s+foods?\s+(?:is|are)\s+(?P<items>[^.;]+)",
+            r"(?:i|we)\s+(?:like|prefer)(?:\s+eating)?\s+(?P<items>[^.;]+)",
+        ),
+    }
+    for pattern in patterns[preference]:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match is None:
+            continue
+        food_names = re.split(r"\s*,\s*|\s+and\s+", match.group("items"))
+        food_names = [name.strip() for name in food_names if name.strip()]
+        try:
+            product_keys = resolve_product_keys(
+                food_names,
+                load_simulated_catalog().products,
+            )
+        except ValueError:
+            return None
+        return list(product_keys)
+    return None
+
+
 def parse_request(text: str) -> ParsedRequest:
     """Extract data that is explicitly present in a grocery request."""
     budget, currency = _find_budget(text)
@@ -168,4 +218,6 @@ def parse_request(text: str) -> ParsedRequest:
         cooking_energy=_find_cooking_energy(text),
         pantry_items=_find_pantry_items(text),
         dietary_restrictions=_find_dietary_restrictions(text),
+        avoided_product_keys=_find_product_preferences(text, "avoid"),
+        preferred_product_keys=_find_product_preferences(text, "prefer"),
     )

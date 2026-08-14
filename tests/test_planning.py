@@ -2,7 +2,8 @@ from dataclasses import replace
 import unittest
 
 from catalog import load_simulated_catalog
-from planning import generate_plan
+from meal_catalogue import MealCatalogue, load_default_meal_catalogue
+from planning import generate_plan, validate_meal_candidate_keys
 from request_parser import ParsedRequest, parse_request
 
 
@@ -15,6 +16,91 @@ BASE_CASE = (
 
 
 class TestPlanning(unittest.TestCase):
+    def test_soft_food_preferences_rank_meals_without_becoming_hard_filters(self) -> None:
+        request = ParsedRequest(
+            budget=100,
+            currency="CAD",
+            people=2,
+            days=1,
+            cooking_energy="low",
+            pantry_items=[],
+            dietary_restrictions=[],
+            avoided_product_keys=["eggs"],
+            preferred_product_keys=["beans"],
+        )
+
+        plan = generate_plan(request)
+
+        assert plan is not None
+        self.assertEqual(plan.meals[0].dish, "Previously prepared bean stew with rice")
+        self.assertIn(
+            "Soft food preferences influenced meal ranking after dietary filters.",
+            plan.meal_selection_guidance,
+        )
+
+    def test_rejects_unknown_or_conflicting_food_preference_keys(self) -> None:
+        request = ParsedRequest(
+            budget=100,
+            currency="CAD",
+            people=2,
+            days=1,
+            cooking_energy="low",
+            pantry_items=[],
+            dietary_restrictions=[],
+            avoided_product_keys=["mushrooms"],
+        )
+        with self.assertRaisesRegex(ValueError, "Unknown food preference key"):
+            generate_plan(request)
+
+        request.avoided_product_keys = ["eggs"]
+        request.preferred_product_keys = ["eggs"]
+        with self.assertRaisesRegex(ValueError, "both avoided and preferred"):
+            generate_plan(request)
+
+    def test_validates_future_llm_candidates_against_local_hard_rules(self) -> None:
+        request = ParsedRequest(dietary_restrictions=["lactose intolerance"])
+        catalogue = load_default_meal_catalogue()
+        candidate_keys = [
+            catalogue.templates[1].key,
+            catalogue.templates[0].key,
+        ]
+
+        candidates = validate_meal_candidate_keys(candidate_keys, request, catalogue)
+
+        self.assertEqual([template.key for template in candidates], candidate_keys)
+        with self.assertRaisesRegex(ValueError, "Unknown meal candidate key"):
+            validate_meal_candidate_keys(["invented_meal"], request, catalogue)
+        with self.assertRaisesRegex(ValueError, "must not contain duplicates"):
+            validate_meal_candidate_keys(
+                [candidate_keys[0], candidate_keys[0]],
+                request,
+                catalogue,
+            )
+        with self.assertRaisesRegex(ValueError, "must not be empty"):
+            validate_meal_candidate_keys([], request, catalogue)
+
+        unsupported_request = ParsedRequest(
+            dietary_restrictions=["gluten intolerance"]
+        )
+        with self.assertRaisesRegex(ValueError, "unsupported dietary restrictions"):
+            validate_meal_candidate_keys(
+                candidate_keys,
+                unsupported_request,
+                catalogue,
+            )
+
+        unsafe_template = replace(catalogue.templates[0], dietary_tags=())
+        unsafe_catalogue = MealCatalogue(
+            description=catalogue.description,
+            templates=(unsafe_template,),
+        )
+        with self.assertRaisesRegex(ValueError, "dietary restrictions"):
+            validate_meal_candidate_keys(
+                [unsafe_template.key],
+                request,
+                unsafe_catalogue,
+            )
+
     def test_generates_eight_meals_within_the_budget(self) -> None:
         plan = generate_plan(parse_request(BASE_CASE))
 
