@@ -5,8 +5,12 @@ import math
 import re
 import unicodedata
 
-from catalog import PriceCatalog, Product, load_simulated_catalog
-from meal_catalogue import MealCatalogue, MealTemplate, load_default_meal_catalogue
+from catalog import PriceCatalog, Product
+from local_catalogue import (
+    load_effective_meal_catalogue,
+    load_effective_price_catalog,
+)
+from meal_catalogue import MealCatalogue, MealTemplate
 from request_parser import ParsedRequest
 
 
@@ -134,7 +138,7 @@ def validate_meal_candidate_keys(
     if len(normalized_keys) != len(set(normalized_keys)):
         raise ValueError("Meal candidate keys must not contain duplicates.")
 
-    selected_catalogue = meal_catalogue or load_default_meal_catalogue()
+    selected_catalogue = meal_catalogue or load_effective_meal_catalogue()
     templates_by_key = {
         template.key: template for template in selected_catalogue.templates
     }
@@ -576,9 +580,10 @@ def _create_plan(
 def generate_plan(
     request: ParsedRequest,
     catalog: PriceCatalog | None = None,
+    meal_catalogue: MealCatalogue | None = None,
 ) -> Plan | None:
     """Generate one meal plan and shopping list from a single price catalog."""
-    selected_catalog = catalog or load_simulated_catalog()
+    selected_catalog = catalog or load_effective_price_catalog()
     if not (
         request.budget is not None
         and request.currency == selected_catalog.currency
@@ -592,5 +597,5 @@ def generate_plan(
 
     _validate_preference_keys(request, selected_catalog.products)
 
-    meal_catalogue = load_default_meal_catalogue()
-    return _create_plan(request, meal_catalogue.templates, selected_catalog)
+    selected_meals = meal_catalogue or load_effective_meal_catalogue()
+    return _create_plan(request, selected_meals.templates, selected_catalog)

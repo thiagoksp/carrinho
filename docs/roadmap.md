@@ -100,14 +100,16 @@ It adds a structured local form and renders the deterministic plan in a browser 
 binding only to `127.0.0.1`. It adds no dependency, credential, or external request and
 keeps the terminal interface working.
 
-**Next:** [CAR-12 — Let households edit local meals and generic
-foods](https://linear.app/thiagoksp/issue/CAR-12)
+**Complete:** [CAR-12 — Let households edit local meals and generic
+foods](https://linear.app/thiagoksp/issue/CAR-12), merged through
+[pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
 
-Provide a validated local editing or import workflow with stable text keys and a small
-starter catalogue. Do not add a database, account system, retailer SKU, or copied food
-database.
+It provides a validated local JSON editor with stable text keys and a small starter
+catalogue. Private extensions are saved atomically under ignored `local-data/`, valid
+replacements create backups, and the latest backup can be restored. It adds no database,
+account system, retailer SKU, or copied food database.
 
-**Backlog:** [CAR-13 — Add an optional guarded LLM meal
+**Next:** [CAR-13 — Add an optional guarded LLM meal
 selector](https://linear.app/thiagoksp/issue/CAR-13)
 
 The LLM may interpret household language and return ordered known meal-template keys.

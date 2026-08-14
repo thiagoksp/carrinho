@@ -66,6 +66,9 @@ and user-visible output in Canadian English.
   - `instacart-list.json`;
   - `instacart-paste-list.txt`.
 - Generated files remain local and are excluded from Git.
+- A validated browser editor can extend generic foods and meal templates in ignored
+  `local-data/custom-catalogue.json`. Valid replacements create a local backup, and the
+  latest backup can be restored without changing the built-in starter catalogue.
 - No network request is made and no API key is required.
 - The former No Frills and Toronto pilot and manual-price experiment have been removed
   from the active product. Their rationale remains available in Git history and the
@@ -121,10 +124,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Continue [CAR-12](https://linear.app/thiagoksp/issue/CAR-12), the only issue labelled
-`Next`. Add a validated local editing or import workflow for household meal templates
-and generic foods. Do not add a database, account system, retailer SKU, or large copied
-food dataset. CAR-3 continues to track Instacart approval in parallel.
+Continue [CAR-13](https://linear.app/thiagoksp/issue/CAR-13), the only issue labelled
+`Next`. Add an optional guarded LLM meal selector that can return ordered known
+meal-template keys. Keep dietary validation, quantities, packages, and estimates local
+and deterministic. CAR-3 continues to track Instacart approval in parallel.
 
 ## Current deterministic selection
 
@@ -141,11 +144,17 @@ template keys only; Carrinho validates the candidates and deterministically calc
 restrictions, quantities, packages, and estimates.
 
 CAR-10 was merged as [pull request #17](https://github.com/thiagoksp/carrinho/pull/17) on
-August 14, 2026. Supported dietary restrictions remain hard filters. Foods to avoid or
-prefer are separate soft ranking inputs resolved through the existing generic product
-keys and optionally saved in private household profile schema v2. The catalogue remains
-small, unknown foods are reported rather than guessed, and version 1 profiles remain
-readable.
+August 14, 2026. Supported dietary restrictions remain hard filters. Foods to use less
+or more often are separate soft ranking inputs resolved through existing generic
+product keys and optionally saved in private household profile schema v2. The catalogue
+remains small, unknown foods are reported rather than guessed, and version 1 profiles
+remain readable.
+
+CAR-12 was merged as [pull request #20](https://github.com/thiagoksp/carrinho/pull/20)
+on August 14, 2026. Households can extend generic foods and meal templates through a
+validated private JSON editor. Local entries cannot replace built-in keys, valid
+replacements create restorable backups, and the starter catalogues remain versioned and
+unchanged.
 
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.

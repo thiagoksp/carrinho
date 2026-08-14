@@ -4,7 +4,8 @@ from dataclasses import dataclass
 import re
 import unicodedata
 
-from catalog import load_simulated_catalog, resolve_product_keys
+from catalog import resolve_product_keys
+from local_catalogue import load_effective_price_catalog
 
 
 @dataclass
@@ -198,7 +199,7 @@ def _find_product_preferences(text: str, preference: str) -> list[str] | None:
         try:
             product_keys = resolve_product_keys(
                 food_names,
-                load_simulated_catalog().products,
+                load_effective_price_catalog().products,
             )
         except ValueError:
             return None

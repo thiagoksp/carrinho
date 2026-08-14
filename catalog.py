@@ -160,9 +160,8 @@ def _validate_product(data: object, position: int) -> Product:
     )
 
 
-def load_catalog(path: Path) -> PriceCatalog:
-    """Load a JSON catalog and fail early when its data is invalid."""
-    data = json.loads(path.read_text(encoding="utf-8"))
+def parse_catalog_data(data: object) -> PriceCatalog:
+    """Validate one in-memory price catalogue document."""
     if not isinstance(data, dict):
         raise ValueError("The catalog must be a JSON object.")
 
@@ -192,6 +191,11 @@ def load_catalog(path: Path) -> PriceCatalog:
         description=description,
         products=products,
     )
+
+
+def load_catalog(path: Path) -> PriceCatalog:
+    """Load a JSON catalog and fail early when its data is invalid."""
+    return parse_catalog_data(json.loads(path.read_text(encoding="utf-8")))
 
 
 def load_simulated_catalog() -> PriceCatalog:
