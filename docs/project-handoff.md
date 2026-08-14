@@ -16,7 +16,8 @@ provides the more detailed implementation context referenced from that file.
 4. [`instacart-platform-direction.md`](instacart-platform-direction.md)
 5. [`reference-case.md`](reference-case.md)
 6. [`instacart-list-preparation.md`](instacart-list-preparation.md)
-7. [`roadmap.md`](roadmap.md)
+7. [`llm-meal-selector.md`](llm-meal-selector.md)
+8. [`roadmap.md`](roadmap.md)
 
 ## Source of truth
 
@@ -73,7 +74,13 @@ and user-visible output in Canadian English.
 - A validated browser editor can extend generic foods and meal templates in ignored
   `local-data/custom-catalogue.json`. Valid replacements create a local backup, and the
   latest backup can be restored without changing the built-in starter catalogue.
-- No network request is made and no API key is required.
+- An optional guarded LLM meal selector can be enabled through local environment
+  variables. It uses the OpenAI Responses API target `gpt-5.6-luna`, Structured Outputs,
+  and returns only ordered known meal-template keys. It is disabled by default, stores no
+  prompt or response, and never overrides local dietary validation, quantity
+  calculation, package rounding, or estimates.
+- No network request is made and no API key is required unless the optional LLM selector
+  is explicitly enabled in the local shell.
 - The former No Frills and Toronto pilot and manual-price experiment have been removed
   from the active product. Their rationale remains available in Git history and the
   superseded decision record.
@@ -128,10 +135,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Continue [CAR-13](https://linear.app/thiagoksp/issue/CAR-13), the only issue labelled
-`Next`. Add an optional guarded LLM meal selector that can return ordered known
-meal-template keys. Keep dietary validation, quantities, packages, and estimates local
-and deterministic. CAR-3 continues to track Instacart approval in parallel.
+Continue [CAR-14](https://linear.app/thiagoksp/issue/CAR-14), the only issue labelled
+`Next`. Add portable, reviewable plan and shopping-list exports while preserving the
+existing local text and JSON files. CAR-3 continues to track Instacart approval in
+parallel.
 
 ## Current deterministic selection
 
@@ -160,6 +167,12 @@ validated private JSON editor. Local entries cannot replace built-in keys, valid
 replacements create restorable backups, and the starter catalogues remain versioned and
 unchanged.
 
+CAR-13 added the optional guarded LLM selector. The selector is off by default, uses
+Structured Outputs when enabled, sends only a bounded candidate set, and validates every
+returned key locally before generating a plan. The default OpenAI model is
+`gpt-5.6-luna`, but the provider/model adapter keeps the production boundary ready for
+CAR-15 provider comparison.
+
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.
 
@@ -171,5 +184,6 @@ complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.
 - Never commit or paste an API key, token, password, receipt, address, phone number, or
   other personal information.
 - `.env` files and generated outputs stay local.
+- Do not log or commit optional LLM prompts, responses, API keys, or household secrets.
 - Do not scrape Instacart or retailer sites, automate login or checkout, bypass CAPTCHA,
   or call private endpoints.

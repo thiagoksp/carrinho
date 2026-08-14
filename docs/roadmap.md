@@ -109,16 +109,17 @@ catalogue. Private extensions are saved atomically under ignored `local-data/`, 
 replacements create backups, and the latest backup can be restored. It adds no database,
 account system, retailer SKU, or copied food database.
 
-**Next:** [CAR-13 - Add an optional guarded LLM meal
+**Complete:** [CAR-13 - Add an optional guarded LLM meal
 selector](https://linear.app/thiagoksp/issue/CAR-13)
 
 The LLM may interpret household language and return ordered known meal-template keys.
 Local validation, dietary safety, quantities, packages, and estimates remain
-deterministic and authoritative. The first implementation should use Structured Outputs,
-a provider/model adapter, environment-based configuration, cost guards, and OpenAI
-`gpt-5.6-luna` as the initial model when the feature is explicitly enabled.
+deterministic and authoritative. The implementation uses Structured Outputs, a
+provider/model adapter, environment-based configuration, cost guards, and OpenAI
+`gpt-5.6-luna` as the initial model when the feature is explicitly enabled. The selector
+is off by default and stores no prompt, response, credential, token, or API key.
 
-**Backlog:** [CAR-14 - Add portable plan and shopping-list
+**Next:** [CAR-14 - Add portable plan and shopping-list
 exports](https://linear.app/thiagoksp/issue/CAR-14)
 
 Add copy and print-friendly output while preserving existing local text and JSON files.

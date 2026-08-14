@@ -40,12 +40,16 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 
 - Active Linear team: Carrinho team with the `CAR` issue prefix.
 - Exactly one issue is labelled `Next`:
-  [CAR-13 - Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13).
-  It will introduce an optional LLM boundary that returns ordered known meal-template
-  keys while local validation and deterministic calculations remain authoritative.
-  The issue now requires Structured Outputs, a provider/model adapter, environment-based
-  configuration, cost guards, and an initial OpenAI Responses API target using
-  `gpt-5.6-luna` when explicitly enabled.
+  [CAR-14 - Add portable plan and shopping-list exports](https://linear.app/thiagoksp/issue/CAR-14).
+  It should add copy and print-friendly output while preserving the existing local text
+  and JSON files.
+- [CAR-13 - Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13)
+  is complete. It introduced an optional LLM boundary that returns ordered known
+  meal-template keys while local validation and deterministic calculations remain
+  authoritative. The selector is disabled by default, uses Structured Outputs, has a
+  provider/model adapter, reads configuration from environment variables, applies cost
+  guards, and targets the OpenAI Responses API with `gpt-5.6-luna` when explicitly
+  enabled.
 - [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
   is a future backlog comparison of OpenAI, Gemini, Groq, and Claude options against the
   same guarded meal-selection eval set. It must not add another production provider
@@ -196,6 +200,12 @@ Carrinho does not compare retailers, search for the cheapest basket, claim live 
 select a retailer, scrape stores, automate checkout, or make network requests without
 approved access and contract testing. Actual products, availability, prices, fees, and
 checkout remain inside Instacart.
+
+An optional guarded LLM meal selector is available for local experiments. It is disabled
+by default, uses Structured Outputs, and can return only ordered known meal-template
+keys. Local validation, dietary safety, quantities, packages, and estimates remain
+authoritative. Do not store optional LLM prompts, responses, credentials, tokens, or API
+keys in GitHub, Linear, chat, logs, or generated outputs.
 
 ## Maintenance rule
 

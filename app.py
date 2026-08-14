@@ -14,8 +14,14 @@ from instacart import (
     save_instacart_paste_list,
     save_instacart_payload,
 )
+from llm_selector import LLMSelectorError, suggest_meal_candidate_keys
 from local_catalogue import load_effective_price_catalog, load_local_catalogue
-from planning import Plan, format_planning_quantity, generate_plan
+from planning import (
+    Plan,
+    format_planning_quantity,
+    generate_plan,
+    select_meal_candidate_templates,
+)
 from request_parser import ParsedRequest, parse_request
 
 
@@ -387,6 +393,14 @@ def print_plan(plan: Plan) -> None:
     print(f"\n{format_plan(plan)}")
 
 
+def optional_llm_meal_candidate_keys(
+    request_data: ParsedRequest,
+) -> tuple[str, ...] | None:
+    """Ask the optional guarded LLM selector for known meal-template keys."""
+    candidate_templates = select_meal_candidate_templates(request_data)
+    return suggest_meal_candidate_keys(request_data, candidate_templates)
+
+
 def _next_plan_path(directory: Path) -> Path:
     path = directory / "meal-plan.txt"
     number = 2
@@ -476,7 +490,15 @@ def main() -> None:
     request_data = review_request(complete_request(request_data))
     print("\nInformation confirmed.")
 
-    plan = generate_plan(request_data)
+    try:
+        meal_candidate_keys = optional_llm_meal_candidate_keys(request_data)
+    except LLMSelectorError as error:
+        print(f"\nOptional LLM meal selection is not available: {error}")
+        return
+    except ValueError:
+        meal_candidate_keys = None
+
+    plan = generate_plan(request_data, meal_candidate_keys=meal_candidate_keys)
     if plan is None:
         print(
             "\nThis version plans for 1 to 12 people over 1 to 14 days, "

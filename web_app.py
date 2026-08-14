@@ -18,7 +18,8 @@ from local_catalogue import (
     restore_latest_local_catalogue,
     save_local_catalogue_json,
 )
-from planning import Plan, generate_plan
+from llm_selector import LLMSelectorError, suggest_meal_candidate_keys
+from planning import Plan, generate_plan, select_meal_candidate_templates
 from request_parser import ParsedRequest, parse_request
 
 
@@ -151,7 +152,20 @@ def build_request(form: Mapping[str, str]) -> ParsedRequest:
 
 def create_plan(form: Mapping[str, str]) -> Plan:
     """Create one deterministic plan or raise a friendly validation error."""
-    plan = generate_plan(build_request(form))
+    request = build_request(form)
+    try:
+        meal_candidate_keys = suggest_meal_candidate_keys(
+            request,
+            select_meal_candidate_templates(request),
+        )
+    except LLMSelectorError as error:
+        raise ValueError(
+            f"Optional LLM meal selection is not available: {error}"
+        ) from error
+    except ValueError:
+        meal_candidate_keys = None
+
+    plan = generate_plan(request, meal_candidate_keys=meal_candidate_keys)
     if plan is None:
         raise ValueError("Carrinho could not create a plan from these values.")
     return plan

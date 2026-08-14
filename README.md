@@ -48,6 +48,11 @@ The local browser also includes a validated JSON editor for private generic food
 meal templates. Local extensions use stable text keys, stay under ignored `local-data/`,
 create a backup before replacement, and never replace the versioned starter catalogue.
 
+An optional guarded LLM meal selector is available for experiments. It is disabled by
+default, uses Structured Outputs when enabled, and can return only ordered known
+meal-template keys. Local validation, dietary safety, pantry deductions, package
+rounding, and cost estimates remain deterministic and authoritative.
+
 The program creates three local files when a plan is saved:
 
 - a readable meal plan;
@@ -77,6 +82,7 @@ Project decisions and formats are documented in:
 - [`docs/local-household-data.md`](docs/local-household-data.md)
 - [`docs/local-catalogue.md`](docs/local-catalogue.md)
 - [`docs/meal-catalogue.md`](docs/meal-catalogue.md)
+- [`docs/llm-meal-selector.md`](docs/llm-meal-selector.md)
 - [`docs/legal-ip-checklist.md`](docs/legal-ip-checklist.md)
 - [`docs/project-handoff.md`](docs/project-handoff.md)
 - [`docs/roadmap.md`](docs/roadmap.md)
@@ -92,11 +98,10 @@ Outside contributions are not accepted yet. See [`CONTRIBUTING.md`](CONTRIBUTING
 
 ## Next step
 
-[CAR-13](https://linear.app/thiagoksp/issue/CAR-13) will add an optional guarded LLM
-meal selector. The LLM may return ordered known meal-template keys, but local dietary
-validation, quantities, packages, and estimates remain authoritative. Instacart approval
-is tracked separately in CAR-3; all network integration stays disabled until approved
-access and contract testing are available.
+[CAR-14](https://linear.app/thiagoksp/issue/CAR-14) will add portable, reviewable plan
+and shopping-list exports. Instacart approval is tracked separately in CAR-3; all
+official shopping network integration stays disabled until approved access and contract
+testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).
@@ -106,6 +111,10 @@ cross-account continuity.
 ## Local environment
 
 The project uses Python 3.12 and currently has no third-party runtime dependencies.
+
+The optional LLM selector also uses the Python standard library. It stays off unless
+`CARRINHO_LLM_SELECTOR_ENABLED=1` and a local `OPENAI_API_KEY` are set in the current
+shell. See [`docs/llm-meal-selector.md`](docs/llm-meal-selector.md).
 
 Run Carrinho on Windows:
 
