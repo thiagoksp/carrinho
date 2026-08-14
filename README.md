@@ -1,5 +1,7 @@
 # Carrinho
 
+> Changing ChatGPT or Codex accounts? Start with [`HANDOFF.md`](HANDOFF.md).
+
 Carrinho is a Canadian grocery-planning agent designed to reduce the decisions between
 “we need food” and “the cart is ready to review.”
 
@@ -52,6 +54,7 @@ the final price before the user reviews the list in Instacart.
 
 Project decisions and formats are documented in:
 
+- [`HANDOFF.md`](HANDOFF.md), the single cross-account starting point
 - [`docs/reference-case.md`](docs/reference-case.md)
 - [`docs/instacart-platform-direction.md`](docs/instacart-platform-direction.md)
 - [`docs/instacart-list-preparation.md`](docs/instacart-list-preparation.md)

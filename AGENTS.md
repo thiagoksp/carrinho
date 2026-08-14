@@ -1,5 +1,12 @@
 # Carrinho project instructions
 
+## Start here
+
+At the beginning of every new account or conversation, read `HANDOFF.md` completely.
+Then inspect the Carrinho Linear project and the single open issue labelled `Next`
+before proposing or implementing work. Do not ask the user to reconstruct context that
+is already available in GitHub or Linear.
+
 ## Goal
 
 Build Carrinho step by step: a Canadian grocery agent that receives a budget, number of
@@ -63,3 +70,11 @@ explicitly changes priority. Keep GitHub as the source of code and durable decis
    search terms only from observed results.
 6. Enable an official handoff only after approved access and contract testing.
 7. Treat retailer-specific availability and actual prices as Instacart-owned results.
+
+## Handoff maintenance
+
+Before completing work that changes project state, update Linear first. Update
+`HANDOFF.md` whenever the next issue, external approval, ownership, workflow, or product
+direction changes. Update `docs/roadmap.md` when milestone ordering changes. The goal is
+that a different account can resume from GitHub and Linear without relying on chat
+history.
