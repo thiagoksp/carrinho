@@ -11,6 +11,8 @@ from catalog import PLANNING_UNITS
 
 MEAL_CATALOGUE_SCHEMA = "carrinho.meal-catalogue.v1"
 _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
+COOKING_ENERGY_VALUES = frozenset({"low", "normal", "high"})
+DIETARY_TAG_VALUES = frozenset({"lactose-free"})
 
 
 @dataclass(frozen=True)
@@ -24,6 +26,8 @@ class MealIngredient:
 class MealTemplate:
     key: str
     dish: str
+    cooking_energy: str
+    dietary_tags: tuple[str, ...]
     ingredients: tuple[MealIngredient, ...]
 
 
@@ -82,6 +86,23 @@ def _validate_template(data: object, position: int) -> MealTemplate:
 
     key = _validate_key(_required_text(data, "key", context), f"{context} key")
     dish = _required_text(data, "dish", context)
+    cooking_energy = _required_text(data, "cooking_energy", context)
+    if cooking_energy not in COOKING_ENERGY_VALUES:
+        raise ValueError(f"{context} has an unsupported cooking energy value.")
+
+    raw_dietary_tags = data.get("dietary_tags")
+    if not isinstance(raw_dietary_tags, list) or not raw_dietary_tags:
+        raise ValueError(f"{context} requires dietary tags.")
+    dietary_tags = tuple(
+        _required_text({"dietary_tag": tag}, "dietary_tag", context)
+        for tag in raw_dietary_tags
+    )
+    if len(dietary_tags) != len(set(dietary_tags)):
+        raise ValueError(f"{context} contains duplicate dietary tags.")
+    unsupported_tags = sorted(set(dietary_tags).difference(DIETARY_TAG_VALUES))
+    if unsupported_tags:
+        raise ValueError(f"{context} has unsupported dietary tags.")
+
     raw_ingredients = data.get("ingredients")
     if not isinstance(raw_ingredients, list) or not raw_ingredients:
         raise ValueError(f"{context} requires at least one ingredient.")
@@ -94,7 +115,13 @@ def _validate_template(data: object, position: int) -> MealTemplate:
     if len(product_keys) != len(set(product_keys)):
         raise ValueError(f"{context} contains duplicate product keys.")
 
-    return MealTemplate(key=key, dish=dish, ingredients=ingredients)
+    return MealTemplate(
+        key=key,
+        dish=dish,
+        cooking_energy=cooking_energy,
+        dietary_tags=dietary_tags,
+        ingredients=ingredients,
+    )
 
 
 def load_meal_catalogue(path: Path) -> MealCatalogue:

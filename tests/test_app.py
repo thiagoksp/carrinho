@@ -246,6 +246,8 @@ class TestTerminal(unittest.TestCase):
         assert plan is not None
         content = format_plan(plan)
         self.assertIn("MEAL PLAN", content)
+        self.assertIn("MEAL SELECTION", content)
+        self.assertIn("Selection is deterministic", content)
         self.assertIn("MEAL PREP GUIDANCE", content)
         self.assertIn("SHOPPING LIST", content)
         self.assertIn("Estimated total: CAD$58.25", content)

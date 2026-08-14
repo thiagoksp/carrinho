@@ -36,6 +36,7 @@ class ShoppingItem:
 @dataclass(frozen=True)
 class Plan:
     meals: tuple[Meal, ...]
+    meal_selection_guidance: tuple[str, ...]
     meal_prep_guidance: tuple[str, ...]
     shopping_items: tuple[ShoppingItem, ...]
     pantry_usage: tuple[str, ...]
@@ -56,6 +57,7 @@ class Plan:
 
 
 GRAMS_PER_POUND = 453.59237
+COOKING_ENERGY_RANKS = {"low": 1, "normal": 2, "high": 3}
 
 NUMBER_WORD_VALUES = {
     "one": 1.0,
@@ -104,6 +106,90 @@ def _build_meals(
             meals.append((Meal(day, meal_slot, template.dish), template))
 
     return tuple(meals)
+
+
+def _required_dietary_tags(restrictions: list[str] | None) -> frozenset[str]:
+    if not restrictions:
+        return frozenset()
+    if any("lactose" in _remove_accents(restriction) for restriction in restrictions):
+        return frozenset({"lactose-free"})
+    return frozenset()
+
+
+def _template_pantry_coverage(
+    template: MealTemplate,
+    pantry_items: list[str] | None,
+    products_by_key: dict[str, Product],
+) -> int:
+    return sum(
+        1
+        for ingredient in template.ingredients
+        if any(
+            _item_matches(item, products_by_key[ingredient.product_key])
+            for item in (pantry_items or [])
+        )
+    )
+
+
+def _select_templates(
+    request: ParsedRequest,
+    templates: tuple[MealTemplate, ...],
+    products: tuple[Product, ...],
+) -> tuple[MealTemplate, ...]:
+    required_tags = _required_dietary_tags(request.dietary_restrictions)
+    eligible_templates = tuple(
+        template
+        for template in templates
+        if required_tags.issubset(template.dietary_tags)
+    )
+    if not eligible_templates:
+        raise ValueError("The meal catalogue has no templates for these restrictions.")
+
+    required_meal_count = (request.days or 0) * 2
+    if required_meal_count >= len(eligible_templates):
+        return eligible_templates
+
+    products_by_key = {product.key: product for product in products}
+    request_energy = request.cooking_energy or "normal"
+    return tuple(
+        template
+        for _, template in sorted(
+            enumerate(eligible_templates),
+            key=lambda indexed_template: (
+                abs(
+                    COOKING_ENERGY_RANKS[indexed_template[1].cooking_energy]
+                    - COOKING_ENERGY_RANKS[request_energy]
+                ),
+                -_template_pantry_coverage(
+                    indexed_template[1],
+                    request.pantry_items,
+                    products_by_key,
+                ),
+                indexed_template[0],
+            ),
+        )
+    )
+
+
+def _describe_meal_selection(
+    request: ParsedRequest,
+    selected_templates: tuple[MealTemplate, ...],
+) -> tuple[str, ...]:
+    required_meal_count = (request.days or 0) * 2
+    guidance = [
+        "Selection is deterministic: cooking energy, then pantry coverage."
+    ]
+    if _required_dietary_tags(request.dietary_restrictions):
+        guidance.append("Dietary filter applied: lactose-free meal templates.")
+    if required_meal_count >= len(selected_templates):
+        guidance.append(
+            "The plan needs every eligible template, so catalogue order is preserved."
+        )
+    else:
+        guidance.append(
+            f"Cooking energy preference applied: {request.cooking_energy or 'normal'}."
+        )
+    return tuple(guidance)
 
 
 def _calculate_requirements(
@@ -358,15 +444,20 @@ def _create_plan(
     assert request.people is not None
     assert request.days is not None
 
-    meals_with_templates = _build_meals(request.days, templates)
+    selected_templates = _select_templates(request, templates, catalog.products)
+    meals_with_templates = _build_meals(request.days, selected_templates)
     requirements = _calculate_requirements(
         meals_with_templates,
         request.people,
     )
-    _validate_catalog_coverage(requirements, templates, catalog.products)
+    _validate_catalog_coverage(requirements, selected_templates, catalog.products)
 
     return Plan(
         meals=tuple(meal for meal, _ in meals_with_templates),
+        meal_selection_guidance=_describe_meal_selection(
+            request,
+            selected_templates,
+        ),
         meal_prep_guidance=(
             "Prepare extra portions when the next meal uses food made earlier.",
             "Cook enough rice for up to two days and refrigerate leftovers promptly.",
