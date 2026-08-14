@@ -2,10 +2,12 @@
 
 ## Start here
 
-At the beginning of every new account or conversation, read `HANDOFF.md` completely.
-Then inspect the Carrinho Linear project and the single open issue labelled `Next`
-before proposing or implementing work. Do not ask the user to reconstruct context that
-is already available in GitHub or Linear.
+At the beginning of every new account or conversation on the same computer, read
+`START_HERE.md` completely first. Then inspect the Carrinho Linear project and the
+single open issue labelled `Next` before proposing or implementing work. Read
+`HANDOFF.md` only when deeper history is needed or the local state does not match the
+quick resume file. Do not ask the user to reconstruct context that is already available
+in GitHub or Linear.
 
 ## Goal
 
