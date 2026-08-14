@@ -11,7 +11,7 @@ class TestMealCatalogue(unittest.TestCase):
     def test_loads_the_versioned_default_catalogue(self) -> None:
         catalogue = load_default_meal_catalogue()
 
-        self.assertEqual(len(catalogue.templates), 8)
+        self.assertEqual(len(catalogue.templates), 12)
         self.assertEqual(
             catalogue.templates[0].key,
             "roasted_chicken_rice_vegetables",
@@ -26,6 +26,12 @@ class TestMealCatalogue(unittest.TestCase):
         )
         self.assertEqual(catalogue.templates[0].cooking_energy, "normal")
         self.assertEqual(catalogue.templates[0].dietary_tags, ("lactose-free",))
+        self.assertEqual(catalogue.templates[0].catalogue_tier, "core")
+        self.assertIn("batch-friendly", catalogue.templates[0].selection_tags)
+        self.assertEqual(
+            [template.catalogue_tier for template in catalogue.templates].count("core"),
+            8,
+        )
 
     def test_uses_product_keys_and_units_shared_with_the_price_catalog(self) -> None:
         catalogue = load_default_meal_catalogue()
@@ -78,6 +84,22 @@ class TestMealCatalogue(unittest.TestCase):
         data = self._valid_data()
         data["templates"][0]["dietary_tags"] = ["gluten-free"]
         with self.assertRaisesRegex(ValueError, "unsupported dietary tags"):
+            self._load_data(data)
+
+        data = self._valid_data()
+        data["templates"][0]["catalogue_tier"] = "experimental"
+        with self.assertRaisesRegex(ValueError, "unsupported catalogue tier"):
+            self._load_data(data)
+
+        data = self._valid_data()
+        data["templates"][0]["selection_tags"] = ["cheap"]
+        with self.assertRaisesRegex(ValueError, "unsupported selection tags"):
+            self._load_data(data)
+
+        data = self._valid_data()
+        for template in data["templates"]:
+            template["catalogue_tier"] = "extended"
+        with self.assertRaisesRegex(ValueError, "at least one core template"):
             self._load_data(data)
 
     def _valid_data(self) -> dict[str, object]:

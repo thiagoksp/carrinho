@@ -124,7 +124,8 @@ def _template_pantry_coverage(
     return sum(
         1
         for ingredient in template.ingredients
-        if any(
+        if ingredient.product_key in products_by_key
+        and any(
             _item_matches(item, products_by_key[ingredient.product_key])
             for item in (pantry_items or [])
         )
@@ -146,29 +147,42 @@ def _select_templates(
         raise ValueError("The meal catalogue has no templates for these restrictions.")
 
     required_meal_count = (request.days or 0) * 2
-    if required_meal_count >= len(eligible_templates):
-        return eligible_templates
-
     products_by_key = {product.key: product for product in products}
     request_energy = request.cooking_energy or "normal"
-    return tuple(
-        template
-        for _, template in sorted(
-            enumerate(eligible_templates),
-            key=lambda indexed_template: (
-                abs(
-                    COOKING_ENERGY_RANKS[indexed_template[1].cooking_energy]
-                    - COOKING_ENERGY_RANKS[request_energy]
+
+    def rank(candidates: tuple[MealTemplate, ...]) -> tuple[MealTemplate, ...]:
+        return tuple(
+            template
+            for _, template in sorted(
+                enumerate(candidates),
+                key=lambda indexed_template: (
+                    abs(
+                        COOKING_ENERGY_RANKS[indexed_template[1].cooking_energy]
+                        - COOKING_ENERGY_RANKS[request_energy]
+                    ),
+                    -_template_pantry_coverage(
+                        indexed_template[1],
+                        request.pantry_items,
+                        products_by_key,
+                    ),
+                    indexed_template[0],
                 ),
-                -_template_pantry_coverage(
-                    indexed_template[1],
-                    request.pantry_items,
-                    products_by_key,
-                ),
-                indexed_template[0],
-            ),
+            )
         )
+
+    core_templates = tuple(
+        template
+        for template in eligible_templates
+        if template.catalogue_tier == "core"
     )
+    extended_templates = tuple(
+        template
+        for template in eligible_templates
+        if template.catalogue_tier == "extended"
+    )
+    if core_templates and required_meal_count >= len(core_templates):
+        return core_templates + rank(extended_templates)
+    return rank(eligible_templates)
 
 
 def _describe_meal_selection(
@@ -181,9 +195,12 @@ def _describe_meal_selection(
     ]
     if _required_dietary_tags(request.dietary_restrictions):
         guidance.append("Dietary filter applied: lactose-free meal templates.")
-    if required_meal_count >= len(selected_templates):
+    core_template_count = sum(
+        template.catalogue_tier == "core" for template in selected_templates
+    )
+    if core_template_count and required_meal_count >= core_template_count:
         guidance.append(
-            "The plan needs every eligible template, so catalogue order is preserved."
+            "The plan uses the complete core library, so core catalogue order is preserved."
         )
     else:
         guidance.append(

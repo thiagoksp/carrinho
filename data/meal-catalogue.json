@@ -1,12 +1,14 @@
 {
-  "schema": "carrinho.meal-catalogue.v1",
+  "schema": "carrinho.meal-catalogue.v2",
   "description": "Curated lactose-free meal templates for Canadian grocery planning.",
   "templates": [
     {
       "key": "roasted_chicken_rice_vegetables",
       "dish": "Roasted chicken, rice and vegetables",
+      "catalogue_tier": "core",
       "cooking_energy": "normal",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["batch-friendly", "one-pan"],
       "ingredients": [
         {"product_key": "chicken", "quantity_per_person": 300, "planning_unit": "g"},
         {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
@@ -19,8 +21,10 @@
     {
       "key": "pan_fried_rice_eggs_vegetables",
       "dish": "Pan-fried rice with eggs and vegetables",
+      "catalogue_tier": "core",
       "cooking_energy": "low",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "one-pan"],
       "ingredients": [
         {"product_key": "eggs", "quantity_per_person": 2, "planning_unit": "each"},
         {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
@@ -33,8 +37,10 @@
     {
       "key": "prepared_chicken_rice_vegetables",
       "dish": "Previously prepared chicken, rice and vegetables",
+      "catalogue_tier": "core",
       "cooking_energy": "low",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "leftover"],
       "ingredients": [
         {"product_key": "chicken", "quantity_per_person": 300, "planning_unit": "g"},
         {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
@@ -47,8 +53,10 @@
     {
       "key": "pasta_ground_beef_tomato_sauce",
       "dish": "Pasta with ground beef and tomato sauce",
+      "catalogue_tier": "core",
       "cooking_energy": "normal",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["batch-friendly"],
       "ingredients": [
         {"product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g"},
         {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
@@ -62,8 +70,10 @@
     {
       "key": "prepared_meat_sauce_pasta",
       "dish": "Pasta with previously prepared meat sauce",
+      "catalogue_tier": "core",
       "cooking_energy": "low",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "leftover"],
       "ingredients": [
         {"product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g"},
         {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
@@ -77,8 +87,10 @@
     {
       "key": "bean_tomato_stew_rice",
       "dish": "Quick bean and tomato stew with rice",
+      "catalogue_tier": "core",
       "cooking_energy": "normal",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["batch-friendly", "one-pot"],
       "ingredients": [
         {"product_key": "beans", "quantity_per_person": 0.625, "planning_unit": "can"},
         {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
@@ -92,8 +104,10 @@
     {
       "key": "prepared_bean_stew_rice",
       "dish": "Previously prepared bean stew with rice",
+      "catalogue_tier": "core",
       "cooking_energy": "low",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "leftover"],
       "ingredients": [
         {"product_key": "beans", "quantity_per_person": 0.625, "planning_unit": "can"},
         {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
@@ -107,11 +121,80 @@
     {
       "key": "omelette_potatoes_onion_vegetables",
       "dish": "Omelette with potatoes, onion and vegetables",
+      "catalogue_tier": "core",
       "cooking_energy": "low",
       "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "one-pan"],
       "ingredients": [
         {"product_key": "eggs", "quantity_per_person": 1.5, "planning_unit": "each"},
         {"product_key": "potatoes", "quantity_per_person": 300, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "sheet_pan_chicken_potatoes_vegetables",
+      "dish": "Sheet-pan chicken with potatoes and vegetables",
+      "catalogue_tier": "extended",
+      "cooking_energy": "normal",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["batch-friendly", "one-pan"],
+      "ingredients": [
+        {"product_key": "chicken", "quantity_per_person": 250, "planning_unit": "g"},
+        {"product_key": "potatoes", "quantity_per_person": 250, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "ground_beef_bean_potato_hash",
+      "dish": "Ground beef, bean and potato hash",
+      "catalogue_tier": "extended",
+      "cooking_energy": "normal",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["batch-friendly", "one-pan"],
+      "ingredients": [
+        {"product_key": "ground_beef", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "beans", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "potatoes", "quantity_per_person": 250, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "tomato_egg_rice_bowl",
+      "dish": "Tomato, egg and vegetable rice bowl",
+      "catalogue_tier": "extended",
+      "cooking_energy": "low",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "one-pan"],
+      "ingredients": [
+        {"product_key": "eggs", "quantity_per_person": 1.5, "planning_unit": "each"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "pasta_beans_tomato_sauce",
+      "dish": "Pasta with beans and tomato sauce",
+      "catalogue_tier": "extended",
+      "cooking_energy": "low",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "one-pot"],
+      "ingredients": [
+        {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
+        {"product_key": "beans", "quantity_per_person": 0.5, "planning_unit": "can"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
         {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
         {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
         {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},

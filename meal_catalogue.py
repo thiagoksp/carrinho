@@ -9,10 +9,14 @@ import re
 from catalog import PLANNING_UNITS
 
 
-MEAL_CATALOGUE_SCHEMA = "carrinho.meal-catalogue.v1"
+MEAL_CATALOGUE_SCHEMA = "carrinho.meal-catalogue.v2"
 _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 COOKING_ENERGY_VALUES = frozenset({"low", "normal", "high"})
 DIETARY_TAG_VALUES = frozenset({"lactose-free"})
+CATALOGUE_TIER_VALUES = frozenset({"core", "extended"})
+SELECTION_TAG_VALUES = frozenset(
+    {"batch-friendly", "leftover", "one-pan", "one-pot", "quick"}
+)
 
 
 @dataclass(frozen=True)
@@ -26,8 +30,10 @@ class MealIngredient:
 class MealTemplate:
     key: str
     dish: str
+    catalogue_tier: str
     cooking_energy: str
     dietary_tags: tuple[str, ...]
+    selection_tags: tuple[str, ...]
     ingredients: tuple[MealIngredient, ...]
 
 
@@ -86,6 +92,10 @@ def _validate_template(data: object, position: int) -> MealTemplate:
 
     key = _validate_key(_required_text(data, "key", context), f"{context} key")
     dish = _required_text(data, "dish", context)
+    catalogue_tier = _required_text(data, "catalogue_tier", context)
+    if catalogue_tier not in CATALOGUE_TIER_VALUES:
+        raise ValueError(f"{context} has an unsupported catalogue tier.")
+
     cooking_energy = _required_text(data, "cooking_energy", context)
     if cooking_energy not in COOKING_ENERGY_VALUES:
         raise ValueError(f"{context} has an unsupported cooking energy value.")
@@ -103,6 +113,21 @@ def _validate_template(data: object, position: int) -> MealTemplate:
     if unsupported_tags:
         raise ValueError(f"{context} has unsupported dietary tags.")
 
+    raw_selection_tags = data.get("selection_tags")
+    if not isinstance(raw_selection_tags, list) or not raw_selection_tags:
+        raise ValueError(f"{context} requires selection tags.")
+    selection_tags = tuple(
+        _required_text({"selection_tag": tag}, "selection_tag", context)
+        for tag in raw_selection_tags
+    )
+    if len(selection_tags) != len(set(selection_tags)):
+        raise ValueError(f"{context} contains duplicate selection tags.")
+    unsupported_selection_tags = sorted(
+        set(selection_tags).difference(SELECTION_TAG_VALUES)
+    )
+    if unsupported_selection_tags:
+        raise ValueError(f"{context} has unsupported selection tags.")
+
     raw_ingredients = data.get("ingredients")
     if not isinstance(raw_ingredients, list) or not raw_ingredients:
         raise ValueError(f"{context} requires at least one ingredient.")
@@ -118,8 +143,10 @@ def _validate_template(data: object, position: int) -> MealTemplate:
     return MealTemplate(
         key=key,
         dish=dish,
+        catalogue_tier=catalogue_tier,
         cooking_energy=cooking_energy,
         dietary_tags=dietary_tags,
+        selection_tags=selection_tags,
         ingredients=ingredients,
     )
 
@@ -144,6 +171,8 @@ def load_meal_catalogue(path: Path) -> MealCatalogue:
     template_keys = [template.key for template in templates]
     if len(template_keys) != len(set(template_keys)):
         raise ValueError("The meal catalogue contains duplicate template keys.")
+    if not any(template.catalogue_tier == "core" for template in templates):
+        raise ValueError("The meal catalogue requires at least one core template.")
 
     return MealCatalogue(description=description, templates=templates)
 
