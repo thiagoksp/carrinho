@@ -51,6 +51,10 @@ or lactose intolerance are supported at this stage.
 
 ## Roadmap
 
+Task status is tracked in the Carrinho Linear project and mirrored in
+`docs/roadmap.md`. Work only on the single issue labelled `Next` unless the user
+explicitly changes priority. Keep GitHub as the source of code and durable decisions.
+
 1. Understand the household request.
 2. Produce one meal plan and shopping list.
 3. Attach one Canadian planning estimate per item from one clearly labelled catalog.
