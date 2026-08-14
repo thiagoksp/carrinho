@@ -70,13 +70,13 @@ Project decisions and formats are documented in:
 
 ## Next step
 
-Complete CAR-6 by saving household defaults and pantry quantities in private local JSON
-outside Git. The flow must be explicit, updateable, and covered by privacy-focused tests;
-do not add a database, account system, or network service. The documented iPhone **Paste
-items** and **Cart Assistant** features were not available in the project's Canadian
-Instacart account, so further handoff testing remains gated on an available official
-surface or approved Developer Platform access. Keep all network integration disabled
-until approved access and contract testing are available.
+Complete CAR-7 by selecting meals deterministically from cooking energy, lactose
+intolerance, and pantry inventory. Preserve the reference case, one plan, and one
+retailer-neutral simulated estimate; do not add a database, account system, or network
+service. The documented iPhone **Paste items** and **Cart Assistant** features were not
+available in the project's Canadian Instacart account, so further handoff testing remains
+gated on an available official surface or approved Developer Platform access. Keep all
+network integration disabled until approved access and contract testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).
