@@ -110,10 +110,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Work on [CAR-8](https://linear.app/thiagoksp/issue/CAR-8), the only issue currently
-labelled `Next`: expand the curated meal library with a small, tested set of varied
-templates. Preserve the deterministic selector, reference case, one plan, and do not add
-a database, account system, or network service.
+Work on [CAR-10](https://linear.app/thiagoksp/issue/CAR-10), the only issue currently
+labelled `Next`: separate safety-critical dietary restrictions from soft household food
+preferences. Add validated avoid/prefer product keys and define the candidate boundary
+for a future LLM without adding an LLM, database, account system, or network service.
 
 ## Current deterministic selection
 
@@ -122,6 +122,12 @@ August 14, 2026. Current lactose intolerance is filtered through validated catal
 tags. For plans shorter than the eligible library, Carrinho chooses the closest cooking
 energy and then uses pantry coverage as a stable tie-breaker. When a plan needs every
 eligible template, catalogue order preserves the reference case.
+
+CAR-8 was merged as [pull request #15](https://github.com/thiagoksp/carrinho/pull/15) on
+August 14, 2026. The catalogue now contains 12 validated templates with stable keys,
+core/extended tiers, and semantic selection tags. A future LLM may suggest ordered known
+template keys only; Carrinho validates the candidates and deterministically calculates
+restrictions, quantities, packages, and estimates.
 
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.

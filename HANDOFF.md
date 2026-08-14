@@ -38,10 +38,16 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Active team: `🛒 Carrinho`.
 - Active issue prefix: `CAR`.
 - Exactly one issue is labelled `Next`:
-  [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
-  It is in progress and assigned to Thiago. Add a small, tested set of varied meal
-  templates without changing the deterministic selector, package-aware calculations,
-  retailer-neutral estimate, or reference case.
+  [CAR-10 — Separate hard dietary restrictions from soft food preferences](https://linear.app/thiagoksp/issue/CAR-10).
+  It is in progress and assigned to Thiago. Keep safety-critical dietary restrictions
+  as hard filters, add validated soft avoid/prefer product keys, and define the local
+  candidate contract for a future LLM without adding an LLM or network call yet.
+- [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
+  is complete. Its implementation was merged as
+  [pull request #15](https://github.com/thiagoksp/carrinho/pull/15) on August 14, 2026.
+  The catalogue now contains 12 validated templates with stable keys, core/extended
+  tiers, and semantic selection tags while preserving the reference case and CAD$58.25
+  estimate.
 - [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
   is complete. Its implementation was merged as
   [pull request #13](https://github.com/thiagoksp/carrinho/pull/13) on August 14, 2026.
@@ -69,8 +75,9 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   tracks the external Instacart approval.
 - [CAR-4](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
   is blocked by CAR-3.
-- CAR-8 expands the curated meal library after deterministic selection is stable. This
-  change does not require a database, account, or network service.
+- A future LLM may suggest an ordered list of known meal-template keys only. Carrinho
+  must validate those keys and retain deterministic responsibility for restrictions,
+  quantities, package rounding, and estimates.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.

@@ -72,11 +72,21 @@ It makes cooking energy, lactose intolerance, and pantry inventory influence
 deterministic meal selection while preserving the reference case. Lactose-safe catalogue
 tags are a hard filter; energy and pantry coverage rank shorter plans predictably.
 
-**Next, in progress:** [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
-adds tested meal variety now that the catalogue and selection rules are stable.
+**Complete:** [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8),
+merged through [pull request #15](https://github.com/thiagoksp/carrinho/pull/15) on
+August 14, 2026.
 
-CAR-8 is the sole `Next` issue. The remaining work stays in backlog until it is
-promoted.
+It expands the catalogue from 8 to 12 validated templates with stable keys,
+core/extended tiers, and semantic selection tags. A future LLM may suggest ordered
+known template keys, but local validation and deterministic calculations remain
+authoritative.
+
+**Next, in progress:** [CAR-10 — Separate hard dietary restrictions from soft food
+preferences](https://linear.app/thiagoksp/issue/CAR-10) models medical or safety rules
+as hard filters and household tastes as soft avoid/prefer product keys.
+
+CAR-10 is the sole `Next` issue. It prepares an explicit candidate contract for a future
+LLM without adding an LLM, database, account system, or network service.
 
 ## Milestone 3 — Validate an available official handoff
 
