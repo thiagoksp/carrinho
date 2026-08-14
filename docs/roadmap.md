@@ -56,21 +56,25 @@ It moves meal templates and per-person ingredient quantities from Python into a
 validated, versioned Canadian English data file. The catalogue uses stable generic
 product keys and structured units shared with the price catalogue.
 
-**Next, in progress:** [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6)
-   saves private household defaults and pantry quantities in local JSON outside Git.
-   Product-owned catalogues remain versioned under `data/`; private user data belongs
-   under ignored `local-data/`.
+**Complete:** [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6),
+merged through [pull request #11](https://github.com/thiagoksp/carrinho/pull/11) on
+August 14, 2026.
 
-Then complete the remaining backlog one item at a time:
+It saves optional household defaults and pantry quantities in private local JSON outside
+Git. The user explicitly chooses to use or update it; budget, days, address, retailer,
+receipts, and credentials are not stored.
 
-1. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
+**Next, in progress:** [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
    makes cooking energy, lactose intolerance, and pantry inventory influence
-   deterministic meal selection.
-2. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
+   deterministic meal selection while preserving the reference case.
+
+Then complete the remaining backlog item:
+
+1. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
    adds tested meal variety only after the catalogue and selection rules are stable.
 
-CAR-6 is the sole `Next` issue. The following work stays in backlog and is promoted
-one item at a time.
+CAR-7 is the sole `Next` issue. The remaining work stays in backlog until it is
+promoted.
 
 ## Milestone 3 — Validate an available official handoff
 
