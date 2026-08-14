@@ -25,6 +25,8 @@ Linear project:
 - **`AGENTS.md`:** mandatory collaboration, language, scope, and safety rules.
 - **`docs/project-handoff.md`:** detailed implemented state and operating context.
 - **`docs/roadmap.md`:** milestone sequence mirrored outside Linear.
+- **`docs/legal-ip-checklist.md`:** public-repository, licensing, and future legal
+  review checklist.
 
 Do not treat an old chat as authoritative when it conflicts with Linear or GitHub.
 Slack and Notion are not project-control tools for Carrinho at this stage.
@@ -32,6 +34,7 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 ## Ownership
 
 - Project owner and formal assignee: Thiago (`@tkubrusly`).
+- Repository visibility: public for project review, but not open source.
 
 ## Current checkpoint
 
@@ -90,6 +93,10 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   represent eaters inside one household, not separate login accounts, so a plan can be
   generated for Thiago, Julia, guests, or any selected subset without applying every
   household member's restrictions to every meal plan.
+- [CAR-27](https://linear.app/thiagoksp/issue/CAR-27/review-ip-licensing-and-public-repository-protection)
+  is complete. The repository stays public for Instacart review, but it now has an
+  all-rights-reserved `LICENSE`, a no-outside-contributions policy, an English GitHub
+  description, and a legal/IP checklist for future commercialization review.
 - [CAR-12 - Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
