@@ -41,13 +41,27 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Active team: `🛒 Carrinho`.
 - Active issue prefix: `CAR`.
 - Exactly one issue is labelled `Next`:
-  [CAR-1 — Validate the reference list in Instacart Paste items](https://linear.app/thiagoksp/issue/CAR-1/validate-the-reference-list-in-instacart-paste-items).
-- [CAR-2](https://linear.app/thiagoksp/issue/CAR-2/improve-instacart-matching-from-manual-evidence)
-  is blocked by CAR-1.
+  [CAR-2 — Reconcile recipe quantities with purchasable packages](https://linear.app/thiagoksp/issue/CAR-2).
+  It is currently in progress on branch `codex/car-2-package-reconciliation`.
+  GitHub authentication was restored on August 14, 2026. Draft
+  [pull request #7](https://github.com/thiagoksp/carrinho/pull/7) contains the tested
+  implementation and is ready for review before changing implementation scope.
+- CAR-1 was cancelled because neither **Shopping List → Paste items** nor
+  **Cart Assistant** was available in the project's Canadian Instacart account.
+- A limited public Instacart search confirmed that generic product matching can work,
+  but package size and variable weight prevent an exact quantity promise. Carrinho is
+  not testing every product at every retailer.
 - [CAR-3](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval)
   tracks the external Instacart approval.
 - [CAR-4](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
   is blocked by CAR-3.
+- After CAR-2, the planned product sequence is [CAR-5](https://linear.app/thiagoksp/issue/CAR-5),
+  [CAR-6](https://linear.app/thiagoksp/issue/CAR-6),
+  [CAR-7](https://linear.app/thiagoksp/issue/CAR-7), then
+  [CAR-8](https://linear.app/thiagoksp/issue/CAR-8): externalize the meal catalogue,
+  persist private household and pantry data locally, select meals from household
+  constraints, then expand the curated meal library. These changes do not require a
+  database, account, or network service.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.

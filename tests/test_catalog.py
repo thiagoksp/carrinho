@@ -32,8 +32,10 @@ class TestCatalog(unittest.TestCase):
                     "key": "rice",
                     "name": "Rice",
                     "package_description": "1 kg",
-                    "package_size": 1,
+                    "package_size": 1000,
                     "package_price": 5,
+                    "planning_unit": "g",
+                    "variable_weight": False,
                     "keywords": ["rice"],
                     "instacart_search_term": "rice",
                     "instacart_quantity": 1,
@@ -43,8 +45,10 @@ class TestCatalog(unittest.TestCase):
                     "key": "rice",
                     "name": "Other rice",
                     "package_description": "2 kg",
-                    "package_size": 2,
+                    "package_size": 2000,
                     "package_price": 8,
+                    "planning_unit": "g",
+                    "variable_weight": False,
                     "keywords": ["rice"],
                     "instacart_search_term": "rice",
                     "instacart_quantity": 2,
@@ -144,6 +148,8 @@ class TestCatalog(unittest.TestCase):
             ("instacart_quantity", 0, "invalid quantity or price"),
             ("keywords", [""], "requires at least one keyword"),
             ("instacart_unit", "dozen", "unsupported Instacart unit"),
+            ("planning_unit", "kg", "unsupported planning unit"),
+            ("variable_weight", "yes", "must declare variable_weight"),
         )
         for field, value, message in cases:
             with self.subTest(field=field, value=value):
@@ -156,8 +162,10 @@ class TestCatalog(unittest.TestCase):
                             "key": "rice",
                             "name": "Rice",
                             "package_description": "1 kg",
-                            "package_size": 1,
+                            "package_size": 1000,
                             "package_price": 5,
+                            "planning_unit": "g",
+                            "variable_weight": False,
                             "keywords": ["rice"],
                             "instacart_search_term": "rice",
                             "instacart_quantity": 1,
@@ -173,6 +181,35 @@ class TestCatalog(unittest.TestCase):
 
                     with self.assertRaisesRegex(ValueError, message):
                         load_catalog(path)
+
+    def test_rejects_inconsistent_package_measurements(self) -> None:
+        data = {
+            "currency": "CAD",
+            "price_type": "test",
+            "description": "Invalid test catalog.",
+            "products": [
+                {
+                    "key": "rice",
+                    "name": "Rice",
+                    "package_description": "1 kg",
+                    "package_size": 500,
+                    "package_price": 5,
+                    "planning_unit": "g",
+                    "variable_weight": False,
+                    "keywords": ["rice"],
+                    "instacart_search_term": "rice",
+                    "instacart_quantity": 1,
+                    "instacart_unit": "kg",
+                }
+            ],
+        }
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "catalog.json"
+            path.write_text(json.dumps(data), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "inconsistent package"):
+                load_catalog(path)
 
 
 if __name__ == "__main__":

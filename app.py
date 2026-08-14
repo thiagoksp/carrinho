@@ -8,7 +8,7 @@ from instacart import (
     save_instacart_paste_list,
     save_instacart_payload,
 )
-from planning import Plan, generate_plan
+from planning import Plan, format_planning_quantity, generate_plan
 from request_parser import ParsedRequest, parse_request
 
 
@@ -230,8 +230,38 @@ def format_plan(plan: Plan) -> str:
 
     lines.extend(("", f"SHOPPING LIST — {plan.price_type.upper()} PRICES"))
     for item in plan.shopping_items:
+        required_quantity = format_planning_quantity(
+            item.required_quantity,
+            item.planning_unit,
+            item.name,
+        )
+        purchase_quantity = format_planning_quantity(
+            item.purchase_quantity,
+            item.planning_unit,
+            item.name,
+        )
+        if item.variable_weight:
+            quantity_details = (
+                f"need {required_quantity}; plan about {purchase_quantity}; "
+                "actual package weight may be higher or lower"
+            )
+        elif item.overage_quantity > 0.000001:
+            overage_quantity = format_planning_quantity(
+                item.overage_quantity,
+                item.planning_unit,
+                item.name,
+            )
+            quantity_details = (
+                f"need {required_quantity}; buy {purchase_quantity}; "
+                f"{overage_quantity} extra"
+            )
+        else:
+            quantity_details = (
+                f"need {required_quantity}; buy {purchase_quantity}"
+            )
         lines.append(
             f"- {item.name}: {item.quantity_label} "
+            f"— {quantity_details} "
             f"— {_format_money(plan.currency, item.estimated_price)}"
         )
 

@@ -23,7 +23,8 @@ Carrinho submitted the Canadian Developer Platform interest form on August 13, 2
 Applications are subject to Instacart review and approval. Submission did not provide
 access or a key, so automatic integration remains disabled.
 
-The Instacart iPhone app provides an official manual handoff:
+Instacart documents the following iPhone manual handoff, but it was not available in
+the project's Canadian account on August 14, 2026:
 
 1. Open **Shopping List**.
 2. Select **Paste items**.
@@ -102,8 +103,8 @@ preview and must never be sent automatically.
 
 ## Next step
 
-Run the reference case, inspect the three generated files, and validate the plain-text
-list through the manual iPhone flow. Record product matching and quantity issues before
-changing generic search terms. If development access and a key are approved, run one
-non-checkout contract test against the development server before integrating any network
-call.
+First complete the local package reconciliation model. Do not test every product or
+retailer while the documented manual feature is unavailable. If the manual handoff
+appears later, validate only a small representative set. If development access and a
+key are approved, run one non-checkout contract test against the development server
+before integrating any network call.

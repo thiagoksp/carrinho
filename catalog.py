@@ -8,6 +8,8 @@ import unicodedata
 
 
 INSTACART_UNITS = {"kg", "g", "can", "lb bag", "each", "ml", "package"}
+PLANNING_UNITS = {"g", "ml", "can", "each", "package"}
+GRAMS_PER_POUND = 453.59237
 
 
 @dataclass(frozen=True)
@@ -17,6 +19,8 @@ class Product:
     package_description: str
     package_size: float
     package_price: float
+    planning_unit: str
+    variable_weight: bool
     keywords: tuple[str, ...]
     instacart_search_term: str
     instacart_quantity: float
@@ -50,6 +54,8 @@ def _validate_product(data: object, position: int) -> Product:
         "package_description",
         "package_size",
         "package_price",
+        "planning_unit",
+        "variable_weight",
         "keywords",
         "instacart_search_term",
         "instacart_quantity",
@@ -75,6 +81,7 @@ def _validate_product(data: object, position: int) -> Product:
         "key",
         "name",
         "package_description",
+        "planning_unit",
         "instacart_search_term",
         "instacart_unit",
     )
@@ -107,12 +114,45 @@ def _validate_product(data: object, position: int) -> Product:
     if instacart_unit not in INSTACART_UNITS:
         raise ValueError(f"Product {position} has an unsupported Instacart unit.")
 
+    planning_unit = data["planning_unit"].strip()
+    if planning_unit not in PLANNING_UNITS:
+        raise ValueError(f"Product {position} has an unsupported planning unit.")
+
+    variable_weight = data["variable_weight"]
+    if not isinstance(variable_weight, bool):
+        raise ValueError(
+            f"Product {position} must declare variable_weight as a boolean."
+        )
+
+    unit_conversions = {
+        "kg": ("g", 1000.0),
+        "g": ("g", 1.0),
+        "lb bag": ("g", GRAMS_PER_POUND),
+        "ml": ("ml", 1.0),
+        "can": ("can", 1.0),
+        "each": ("each", 1.0),
+        "package": ("package", 1.0),
+    }
+    converted_unit, multiplier = unit_conversions[instacart_unit]
+    converted_package_size = instacart_quantity * multiplier
+    if converted_unit != planning_unit or not math.isclose(
+        package_size,
+        converted_package_size,
+        rel_tol=0.001,
+        abs_tol=0.01,
+    ):
+        raise ValueError(
+            f"Product {position} has inconsistent package measurements."
+        )
+
     return Product(
         key=_normalize_text(data["key"]),
         name=data["name"].strip(),
         package_description=data["package_description"].strip(),
         package_size=package_size,
         package_price=package_price,
+        planning_unit=planning_unit,
+        variable_weight=variable_weight,
         keywords=tuple(_normalize_text(keyword) for keyword in keywords),
         instacart_search_term=data["instacart_search_term"].strip(),
         instacart_quantity=instacart_quantity,
