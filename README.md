@@ -56,6 +56,7 @@ Project decisions and formats are documented in:
 - [`docs/instacart-platform-direction.md`](docs/instacart-platform-direction.md)
 - [`docs/instacart-list-preparation.md`](docs/instacart-list-preparation.md)
 - [`docs/project-handoff.md`](docs/project-handoff.md)
+- [`docs/roadmap.md`](docs/roadmap.md)
 - [`docs/initial-integration-decision.md`](docs/initial-integration-decision.md), retained
   as a superseded historical decision
 
@@ -66,6 +67,11 @@ plain-text list through Instacart's manual iPhone **Paste items** flow. Record p
 matching and quantity problems before changing search terms or adding another feature.
 Keep all network integration disabled until approved access and contract testing are
 available.
+
+Task status is tracked in the
+[Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).
+The single next task is also mirrored in [`docs/roadmap.md`](docs/roadmap.md) for
+cross-account continuity.
 
 ## Local environment
 

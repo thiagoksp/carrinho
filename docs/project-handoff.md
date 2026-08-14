@@ -12,6 +12,7 @@ account. The repository, not a previous conversation, is the source of truth.
 3. [`instacart-platform-direction.md`](instacart-platform-direction.md)
 4. [`reference-case.md`](reference-case.md)
 5. [`instacart-list-preparation.md`](instacart-list-preparation.md)
+6. [`roadmap.md`](roadmap.md)
 
 ## Source of truth
 
@@ -68,8 +69,10 @@ The current handoff is the manual iPhone **Shopping List → Paste items** flow.
 add a network request until approved access exists and the development contract has
 been tested.
 
-Slack and Linear are not required for the current stage. Add another service only when
-a concrete project need justifies it.
+The [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde)
+tracks task status. Its essential roadmap is mirrored in [`roadmap.md`](roadmap.md) so
+continuity does not depend on one connected account. Slack and Notion are not used for
+project control at this stage.
 
 ## Resume on the same computer
 
@@ -99,6 +102,10 @@ py -3.12 -m venv .venv
 
 Run the approved reference case, inspect all three generated files, and manually test
 `instacart-paste-list.txt` with Instacart's iPhone **Paste items** flow.
+
+This work is tracked as Linear issue
+[THI-6](https://linear.app/thiagoksp/issue/THI-6/validate-the-reference-list-in-instacart-paste-items),
+the only issue currently labelled `Next`.
 
 Record only product-matching or quantity problems observed during that test. Improve
 the generic Instacart search terms from evidence before adding another feature.
