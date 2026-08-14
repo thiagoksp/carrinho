@@ -41,6 +41,17 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   [CAR-13 — Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13).
   It will introduce an optional LLM boundary that returns ordered known meal-template
   keys while local validation and deterministic calculations remain authoritative.
+  The issue now requires Structured Outputs, a provider/model adapter, environment-based
+  configuration, cost guards, and an initial OpenAI Responses API target using
+  `gpt-5.6-luna` when explicitly enabled.
+- [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
+  is a future backlog comparison of OpenAI, Gemini, Groq, and Claude options against the
+  same guarded meal-selection eval set. It must not add another production provider
+  unless evidence supports switching.
+- [CAR-16](https://linear.app/thiagoksp/issue/CAR-16/prepare-catalogue-identities-for-a-future-database)
+  is a future backlog architecture task. JSON, exports, prompts, and LLM contracts keep
+  stable text keys; a future database may add internal ids while preserving unique
+  `stable_key` values.
 - [CAR-12 — Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
@@ -96,6 +107,9 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.
+- Julia is no longer used as a secondary collaborator on future Carrinho tasks. CAR-4
+  now lists Thiago as the sole owner; older canceled or completed history may still
+  mention Julia and should be treated as historical.
 
 ## Resume checklist
 
