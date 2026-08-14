@@ -114,12 +114,27 @@ selector](https://linear.app/thiagoksp/issue/CAR-13)
 
 The LLM may interpret household language and return ordered known meal-template keys.
 Local validation, dietary safety, quantities, packages, and estimates remain
-deterministic and authoritative.
+deterministic and authoritative. The first implementation should use Structured Outputs,
+a provider/model adapter, environment-based configuration, cost guards, and OpenAI
+`gpt-5.6-luna` as the initial model when the feature is explicitly enabled.
 
 **Backlog:** [CAR-14 — Add portable plan and shopping-list
 exports](https://linear.app/thiagoksp/issue/CAR-14)
 
 Add copy and print-friendly output while preserving existing local text and JSON files.
+
+**Backlog:** [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
+
+Compare OpenAI, Gemini, Groq, and Claude options against the same guarded
+meal-selection eval set. Provider switching must stay behind the CAR-13 adapter and a
+second production provider should only be added if cost, quality, reliability, or setup
+evidence supports it.
+
+**Backlog:** [CAR-16](https://linear.app/thiagoksp/issue/CAR-16/prepare-catalogue-identities-for-a-future-database)
+
+Document the identity strategy before any database migration. JSON files, exports,
+prompts, and LLM contracts use stable text keys; a future database may add internal ids
+while preserving unique `stable_key` values.
 
 ## Milestone 4 — Official API integration
 
