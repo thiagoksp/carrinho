@@ -114,7 +114,7 @@ class TestInstacart(unittest.TestCase):
         plan = _base_plan(["rice", "7 eggs"])
         serialized = serialize_instacart_payload(plan)
 
-        self.assertIn("Carrinho list — 2 people for 4 days", serialized)
+        self.assertIn("Carrinho list - 2 people for 4 days", serialized)
         self.assertEqual(json.loads(serialized)["link_type"], "shopping_list")
 
         with tempfile.TemporaryDirectory() as directory:

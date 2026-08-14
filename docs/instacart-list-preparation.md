@@ -61,7 +61,7 @@ The preview uses only the currently required shopping-list fields:
 
 ```json
 {
-  "title": "Carrinho list — 2 people for 4 days",
+  "title": "Carrinho list - 2 people for 4 days",
   "link_type": "shopping_list",
   "line_items": [
     {

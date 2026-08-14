@@ -35,10 +35,9 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 
 ## Current checkpoint
 
-- Active team: `🛒 Carrinho`.
-- Active issue prefix: `CAR`.
+- Active Linear team: Carrinho team with the `CAR` issue prefix.
 - Exactly one issue is labelled `Next`:
-  [CAR-13 — Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13).
+  [CAR-13 - Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13).
   It will introduce an optional LLM boundary that returns ordered known meal-template
   keys while local validation and deterministic calculations remain authoritative.
   The issue now requires Structured Outputs, a provider/model adapter, environment-based
@@ -73,46 +72,59 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
   is a future UX task for keeping first use small while moving richer rules into
   progressive profile prompts, review suggestions, or settings.
-- [CAR-12 — Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
+- [CAR-23](https://linear.app/thiagoksp/issue/CAR-23/use-approved-popularity-and-review-signals-for-product-selection)
+  is a future approved-integration task for using product popularity, ratings, review
+  feedback, and "most bought" style signals only when that data is contractually
+  available. It should help reduce brand decisions without scraping or pretending
+  Carrinho knows Instacart ranking data before approval.
+- [CAR-24](https://linear.app/thiagoksp/issue/CAR-24/track-meal-history-and-variety-preferences)
+  is a future local-history task for reducing repetitive menus. It will track generated
+  meals and household feedback so Carrinho can preserve variety over time without
+  storing sensitive purchase details.
+- [CAR-25](https://linear.app/thiagoksp/issue/CAR-25/verify-codex-and-linear-ownership-before-account-migration)
+  is a future human checkpoint for account migration. Use it before relying on a
+  different GitHub, Linear, or Codex account so old Julia-linked setup does not confuse
+  ownership, permissions, or the single-`Next` workflow.
+- [CAR-12 - Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
   The local browser now provides a validated private JSON editor for generic foods and
   meal templates, atomic saves, local backups, and restore support without a database,
   account system, retailer SKU, or copied food database.
-- [CAR-11 — Add a local browser interface](https://linear.app/thiagoksp/issue/CAR-11)
+- [CAR-11 - Add a local browser interface](https://linear.app/thiagoksp/issue/CAR-11)
   is complete. Carrinho now serves a structured form and the generated plan locally at
   `http://127.0.0.1:8765`, without a dependency, credential, or external request.
-- [CAR-10 — Separate hard dietary restrictions from soft food preferences](https://linear.app/thiagoksp/issue/CAR-10)
+- [CAR-10 - Separate hard dietary restrictions from soft food preferences](https://linear.app/thiagoksp/issue/CAR-10)
   is complete. Its implementation was merged as
   [pull request #17](https://github.com/thiagoksp/carrinho/pull/17) on August 14, 2026.
   Dietary restrictions remain hard filters; catalogue-backed household tastes are soft
   ranking inputs stored in the private local profile. The future LLM boundary accepts
   ordered known template keys only and performs no network call.
-- [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
+- [CAR-8 - Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
   is complete. Its implementation was merged as
   [pull request #15](https://github.com/thiagoksp/carrinho/pull/15) on August 14, 2026.
   The catalogue now contains 12 validated templates with stable keys, core/extended
   tiers, and semantic selection tags while preserving the reference case and CAD$58.25
   estimate.
-- [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
+- [CAR-7 - Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
   is complete. Its implementation was merged as
   [pull request #13](https://github.com/thiagoksp/carrinho/pull/13) on August 14, 2026.
   The selector now filters current lactose-safe templates, prefers the requested cooking
   energy, then uses pantry coverage as a deterministic tie-breaker.
-- [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6)
+- [CAR-6 - Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6)
   is complete. Its implementation was merged as
   [pull request #11](https://github.com/thiagoksp/carrinho/pull/11) on August 14, 2026.
   The optional profile is local, explicit, updateable, and ignored by Git.
-- [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5)
+- [CAR-5 - Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5)
   is complete. Its implementation was merged as
   [pull request #9](https://github.com/thiagoksp/carrinho/pull/9) on August 14, 2026.
   The meal catalogue now uses stable generic product keys and structured units, ready
   for a future approved provider without storing retailer data in recipes.
-- [CAR-2 — Reconcile recipe quantities with purchasable packages](https://linear.app/thiagoksp/issue/CAR-2)
+- [CAR-2 - Reconcile recipe quantities with purchasable packages](https://linear.app/thiagoksp/issue/CAR-2)
   is complete. Its implementation was merged as
   [pull request #7](https://github.com/thiagoksp/carrinho/pull/7) on August 14, 2026,
   after local and CI test verification.
-- CAR-1 was cancelled because neither **Shopping List → Paste items** nor
+- CAR-1 was cancelled because neither **Shopping List -> Paste items** nor
   **Cart Assistant** was available in the project's Canadian Instacart account.
 - A limited public Instacart search confirmed that generic product matching can work,
   but package size and variable weight prevent an exact quantity promise. Carrinho is

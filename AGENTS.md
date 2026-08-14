@@ -42,7 +42,7 @@ for the cheapest basket, or silently replace the requested plan with a cheaper m
 ## Current scope
 
 The product has a terminal interface and a local browser interface bound to
-`127.0.0.1`. A rule-based planner supports 1–12 people for 1–14 days, package-aware
+`127.0.0.1`. A rule-based planner supports 1-12 people for 1-14 days, package-aware
 pantry deductions, a budget balance or shortfall, and one
 retailer-neutral simulated Canadian price catalog. Recipe need is separate from
 purchasable quantity: mass is normalized to grams, volume to millilitres, fixed-size

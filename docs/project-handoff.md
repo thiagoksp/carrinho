@@ -52,7 +52,7 @@ and user-visible output in Canadian English.
   dependencies.
 - The browser server binds only to `127.0.0.1`, provides a structured form, and renders
   the complete plan on one page without an external request.
-- The planner supports 1–12 people for 1–14 days.
+- The planner supports 1-12 people for 1-14 days.
 - Package-aware pantry deductions and lactose intolerance are supported within the
   documented limits.
 - Recipe quantities and purchasable quantities are separate. Mass is normalized to
@@ -79,7 +79,7 @@ and user-visible output in Canadian English.
 Carrinho submitted the Canadian Instacart Developer Platform interest form on
 August 13, 2026. As of August 14, 2026, no approval or API key has been received.
 
-The documented iPhone **Shopping List → Paste items** flow and **Cart Assistant** were
+The documented iPhone **Shopping List -> Paste items** flow and **Cart Assistant** were
 not available in the project's Canadian Instacart account on August 14, 2026. A limited
 public Instacart search was used only to confirm the package-size problem; it is not a
 catalogue, retailer comparison, or network integration in Carrinho. Do not add a network
