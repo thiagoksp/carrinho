@@ -27,6 +27,10 @@ Continue from the current `main` branch of the public repository:
 Do not restart from an earlier conversation or rebuild completed work. The expected
 handoff state is a clean `main` branch with all tests passing.
 
+The repository is public for project review and development transparency, but Carrinho
+is not open source. All rights are reserved under [`LICENSE`](../LICENSE), and outside
+contributions are not accepted yet under [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+
 ## Stable product decisions
 
 - Carrinho serves the Canadian market and uses CAD.
@@ -162,6 +166,8 @@ complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.
 ## Security boundary
 
 - The repository contains no Instacart or OpenAI credential.
+- The repository is public but not open source; do not add an open-source license unless
+  the owner explicitly changes that decision.
 - Never commit or paste an API key, token, password, receipt, address, phone number, or
   other personal information.
 - `.env` files and generated outputs stay local.

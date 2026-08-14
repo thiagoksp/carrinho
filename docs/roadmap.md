@@ -189,6 +189,13 @@ soft preferences, brands, portions, and household-level pantry/budget data disti
 Before a future account switch, verify GitHub, Linear, Codex, local repository access,
 and the single-`Next` workflow. This is a human operating checkpoint, not product code.
 
+**Complete:** [CAR-27](https://linear.app/thiagoksp/issue/CAR-27/review-ip-licensing-and-public-repository-protection)
+
+Keep the repository public for Instacart review while making it clear that Carrinho is
+not open source. The project now has an all-rights-reserved notice, a no-outside-
+contributions policy, an English GitHub description, and a legal/IP checklist for
+future commercialization review.
+
 ## Milestone 4 - Official API integration
 
 **Parallel external dependency:** [CAR-3 - Track Instacart Developer Platform

@@ -69,16 +69,26 @@ the final price before the user reviews the list in Instacart.
 Project decisions and formats are documented in:
 
 - [`HANDOFF.md`](HANDOFF.md), the single cross-account starting point
+- [`LICENSE`](LICENSE), the all-rights-reserved project notice
+- [`CONTRIBUTING.md`](CONTRIBUTING.md), the current no-outside-contributions policy
 - [`docs/reference-case.md`](docs/reference-case.md)
 - [`docs/instacart-platform-direction.md`](docs/instacart-platform-direction.md)
 - [`docs/instacart-list-preparation.md`](docs/instacart-list-preparation.md)
 - [`docs/local-household-data.md`](docs/local-household-data.md)
 - [`docs/local-catalogue.md`](docs/local-catalogue.md)
 - [`docs/meal-catalogue.md`](docs/meal-catalogue.md)
+- [`docs/legal-ip-checklist.md`](docs/legal-ip-checklist.md)
 - [`docs/project-handoff.md`](docs/project-handoff.md)
 - [`docs/roadmap.md`](docs/roadmap.md)
 - [`docs/initial-integration-decision.md`](docs/initial-integration-decision.md), retained
   as a superseded historical decision
+
+## License and contributions
+
+Carrinho is publicly visible for project review and development transparency, but it is
+not open source. All rights are reserved. See [`LICENSE`](LICENSE).
+
+Outside contributions are not accepted yet. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Next step
 
