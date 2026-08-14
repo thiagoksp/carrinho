@@ -32,9 +32,9 @@ At the start of a work session:
 3. work only on the issue labelled `Next` unless the user explicitly changes priority;
 4. update the issue with evidence and move its status when the work changes state.
 
-## Milestone 1 — Reconcile planned quantities with packages
+## Milestone 1 - Reconcile planned quantities with packages
 
-**Complete:** [CAR-2 — Reconcile recipe quantities with purchasable
+**Complete:** [CAR-2 - Reconcile recipe quantities with purchasable
 packages](https://linear.app/thiagoksp/issue/CAR-2), merged through
 [pull request #7](https://github.com/thiagoksp/carrinho/pull/7) on August 14, 2026.
 
@@ -43,12 +43,12 @@ mass, volume, and discrete units; round fixed-size products up to whole packages
 expected overage; and mark variable-weight products as estimates. Keep the catalogue
 simulated and retailer-neutral.
 
-## Milestone 2 — Data-driven households
+## Milestone 2 - Data-driven households
 
 The next product milestone makes the planner adaptable without adding a database,
 account system, or network service.
 
-**Complete:** [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5),
+**Complete:** [CAR-5 - Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5),
 merged through [pull request #9](https://github.com/thiagoksp/carrinho/pull/9) on
 August 14, 2026.
 
@@ -56,7 +56,7 @@ It moves meal templates and per-person ingredient quantities from Python into a
 validated, versioned Canadian English data file. The catalogue uses stable generic
 product keys and structured units shared with the price catalogue.
 
-**Complete:** [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6),
+**Complete:** [CAR-6 - Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6),
 merged through [pull request #11](https://github.com/thiagoksp/carrinho/pull/11) on
 August 14, 2026.
 
@@ -64,7 +64,7 @@ It saves optional household defaults and pantry quantities in private local JSON
 Git. The user explicitly chooses to use or update it; budget, days, address, retailer,
 receipts, and credentials are not stored.
 
-**Complete:** [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7),
+**Complete:** [CAR-7 - Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7),
 merged through [pull request #13](https://github.com/thiagoksp/carrinho/pull/13) on
 August 14, 2026.
 
@@ -72,7 +72,7 @@ It makes cooking energy, lactose intolerance, and pantry inventory influence
 deterministic meal selection while preserving the reference case. Lactose-safe catalogue
 tags are a hard filter; energy and pantry coverage rank shorter plans predictably.
 
-**Complete:** [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8),
+**Complete:** [CAR-8 - Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8),
 merged through [pull request #15](https://github.com/thiagoksp/carrinho/pull/15) on
 August 14, 2026.
 
@@ -81,7 +81,7 @@ core/extended tiers, and semantic selection tags. A future LLM may suggest order
 known template keys, but local validation and deterministic calculations remain
 authoritative.
 
-**Complete:** [CAR-10 — Separate hard dietary restrictions from soft food
+**Complete:** [CAR-10 - Separate hard dietary restrictions from soft food
 preferences](https://linear.app/thiagoksp/issue/CAR-10), merged through
 [pull request #17](https://github.com/thiagoksp/carrinho/pull/17) on August 14, 2026.
 
@@ -89,18 +89,18 @@ It keeps supported dietary restrictions as hard filters, stores catalogue-backed
 household tastes as soft local preferences, and validates an ordered known-key contract
 for a future LLM without adding an LLM or network service.
 
-## Milestone 3 — Standalone usable prototype
+## Milestone 3 - Standalone usable prototype
 
 Instacart is no longer on the critical path. Carrinho should remain useful even if an
 official shopping handoff is unavailable.
 
-**Implemented:** [CAR-11 — Add a local browser interface](https://linear.app/thiagoksp/issue/CAR-11)
+**Implemented:** [CAR-11 - Add a local browser interface](https://linear.app/thiagoksp/issue/CAR-11)
 
 It adds a structured local form and renders the deterministic plan in a browser while
 binding only to `127.0.0.1`. It adds no dependency, credential, or external request and
 keeps the terminal interface working.
 
-**Complete:** [CAR-12 — Let households edit local meals and generic
+**Complete:** [CAR-12 - Let households edit local meals and generic
 foods](https://linear.app/thiagoksp/issue/CAR-12), merged through
 [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
 
@@ -109,7 +109,7 @@ catalogue. Private extensions are saved atomically under ignored `local-data/`, 
 replacements create backups, and the latest backup can be restored. It adds no database,
 account system, retailer SKU, or copied food database.
 
-**Next:** [CAR-13 — Add an optional guarded LLM meal
+**Next:** [CAR-13 - Add an optional guarded LLM meal
 selector](https://linear.app/thiagoksp/issue/CAR-13)
 
 The LLM may interpret household language and return ordered known meal-template keys.
@@ -118,7 +118,7 @@ deterministic and authoritative. The first implementation should use Structured 
 a provider/model adapter, environment-based configuration, cost guards, and OpenAI
 `gpt-5.6-luna` as the initial model when the feature is explicitly enabled.
 
-**Backlog:** [CAR-14 — Add portable plan and shopping-list
+**Backlog:** [CAR-14 - Add portable plan and shopping-list
 exports](https://linear.app/thiagoksp/issue/CAR-14)
 
 Add copy and print-friendly output while preserving existing local text and JSON files.
@@ -170,15 +170,27 @@ Keep first use light: define the minimum inputs for a useful plan and move riche
 into progressive prompts, profile editing, or review suggestions. Preserve a
 deterministic form path for households that do not enable LLM.
 
-## Milestone 4 — Official API integration
+**Backlog:** [CAR-24](https://linear.app/thiagoksp/issue/CAR-24/track-meal-history-and-variety-preferences)
 
-**Parallel external dependency:** [CAR-3 — Track Instacart Developer Platform
+Design local meal-history and feedback rules so Carrinho can avoid repetitive menus,
+rotate proteins and meal styles, and learn when a household is tired of a dish. Keep
+history private and local, and do not store retailer receipts or sensitive checkout
+data.
+
+**Backlog:** [CAR-25](https://linear.app/thiagoksp/issue/CAR-25/verify-codex-and-linear-ownership-before-account-migration)
+
+Before a future account switch, verify GitHub, Linear, Codex, local repository access,
+and the single-`Next` workflow. This is a human operating checkpoint, not product code.
+
+## Milestone 4 - Official API integration
+
+**Parallel external dependency:** [CAR-3 - Track Instacart Developer Platform
 approval](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval)
 
 CAR-3 remains in Backlog until Instacart responds. It is not labelled `Next`, and no code
 change is required while the external state is unchanged.
 
-**Blocked by CAR-3:** [CAR-4 — Implement the approved Instacart development
+**Blocked by CAR-3:** [CAR-4 - Implement the approved Instacart development
 handoff](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
 
 Network behaviour remains disabled until Instacart approves access and the development
@@ -191,6 +203,13 @@ After approved access, design the product-matching layer from Carrinho's generic
 catalogue items to retailer or Instacart product candidates. Capture brand, package
 size, unit, variable-weight status, price, availability, and evidence source only when
 contractually available, and mark ambiguous matches for user review.
+
+**Backlog:** [CAR-23](https://linear.app/thiagoksp/issue/CAR-23/use-approved-popularity-and-review-signals-for-product-selection)
+
+Use approved product-selection signals, such as popularity, ratings, review feedback,
+or "most bought" style data, only when the provider contract allows it. These signals
+can help choose reliable product candidates and reduce brand decisions, but fake test
+data should be used until approved access exists.
 
 ## Product boundaries
 

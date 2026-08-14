@@ -307,7 +307,7 @@ def format_plan(plan: Plan) -> str:
     ]
 
     for meal in plan.meals:
-        lines.append(f"- Day {meal.day} — {meal.meal_slot}: {meal.dish}")
+        lines.append(f"- Day {meal.day} - {meal.meal_slot}: {meal.dish}")
 
     lines.extend(("", "MEAL SELECTION"))
     for guidance in plan.meal_selection_guidance:
@@ -317,7 +317,7 @@ def format_plan(plan: Plan) -> str:
     for guidance in plan.meal_prep_guidance:
         lines.append(f"- {guidance}")
 
-    lines.extend(("", f"SHOPPING LIST — {plan.price_type.upper()} PRICES"))
+    lines.extend(("", f"SHOPPING LIST - {plan.price_type.upper()} PRICES"))
     for item in plan.shopping_items:
         required_quantity = format_planning_quantity(
             item.required_quantity,
@@ -350,8 +350,8 @@ def format_plan(plan: Plan) -> str:
             )
         lines.append(
             f"- {item.name}: {item.quantity_label} "
-            f"— {quantity_details} "
-            f"— {_format_money(plan.currency, item.estimated_price)}"
+            f"- {quantity_details} "
+            f"- {_format_money(plan.currency, item.estimated_price)}"
         )
 
     estimated_total = _format_money(plan.currency, plan.estimated_total)
@@ -495,14 +495,14 @@ def main() -> None:
         paste_list_path = save_instacart_paste_list(plan)
         print(f"\nPlan saved to:\n{plan_path}")
         print(
-            "\nInstacart preview saved locally — no data was sent:\n"
+            "\nInstacart preview saved locally - no data was sent:\n"
             f"{instacart_path}"
         )
         print(f"\nManual Instacart paste list saved to:\n{paste_list_path}")
         print(
             "Open the file in Windows, copy its contents, and send it to your "
             "iPhone through Notes, email, or a message. Then open Shopping List "
-            "→ Paste items."
+            "-> Paste items."
         )
         print(
             "Instacart may interpret a measurement as text. Review the retailer "

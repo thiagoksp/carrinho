@@ -3,7 +3,7 @@
 > Changing ChatGPT or Codex accounts? Start with [`HANDOFF.md`](HANDOFF.md).
 
 Carrinho is a Canadian grocery-planning agent designed to reduce the decisions between
-“we need food” and “the cart is ready to review.”
+"we need food" and "the cart is ready to review."
 
 ## Product direction
 
@@ -27,7 +27,7 @@ as either a balance or a shortfall.
 
 ## Current state
 
-The terminal app and local browser interface support 1–12 people for 1–14 days. The
+The terminal app and local browser interface support 1-12 people for 1-14 days. The
 browser provides a structured form, friendly validation, and the complete plan on one
 page at `http://127.0.0.1:8765`. The terminal interface remains available for natural
 language requests and one-field-at-a-time corrections. The rule-based planner
@@ -52,7 +52,7 @@ The program creates three local files when a plan is saved:
 
 - a readable meal plan;
 - an Instacart JSON preview for a future approved integration;
-- a plain-text list for manually testing the iPhone **Shopping List → Paste items** flow.
+- a plain-text list for manually testing the iPhone **Shopping List -> Paste items** flow.
 
 Nothing is sent automatically, and no API key is required. The current planner supports
 either no dietary restrictions or lactose intolerance. It does not intentionally include

@@ -59,7 +59,7 @@ def create_instacart_payload(plan: Plan) -> dict[str, object]:
     day_label = "day" if plan.days == 1 else "days"
     return {
         "title": (
-            f"Carrinho list — {plan.people} {people_label} "
+            f"Carrinho list - {plan.people} {people_label} "
             f"for {plan.days} {day_label}"
         ),
         "link_type": "shopping_list",

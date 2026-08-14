@@ -332,7 +332,7 @@ def render_customization_page(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Local catalogue — Carrinho</title>
+  <title>Local catalogue - Carrinho</title>
   <style>
 {PAGE_STYLES}
   </style>

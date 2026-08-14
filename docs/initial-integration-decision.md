@@ -36,7 +36,7 @@ request was added to the app.
 - The integration requires approved access and credentials.
 - Carrinho submitted the Canadian Developer Platform interest form on August 13, 2026.
   No approval or API key has been received, so network integration remains disabled.
-- Until access is approved, the official iPhone **Shopping List → Paste items** feature
+- Until access is approved, the official iPhone **Shopping List -> Paste items** feature
   provides a manual handoff that the user can review.
 
 Official sources:
