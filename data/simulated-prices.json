@@ -1,7 +1,7 @@
 {
   "currency": "CAD",
   "price_type": "simulated",
-  "description": "Fictional local values for development; they do not represent current offers.",
+  "description": "Simulated Canadian planning estimates for development; retailer prices and current offers may differ.",
   "products": [
     {
       "key": "chicken",

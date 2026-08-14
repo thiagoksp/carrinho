@@ -8,7 +8,7 @@ BASE_CASE = (
     "I have CAD$80 to feed 2 people for 4 days. "
     "We have low energy for cooking, already have enough rice and 7 eggs, "
     "and at least one person is lactose intolerant. "
-    "We need lunch and dinner. I am in Toronto and will shop at No Frills."
+    "We need lunch and dinner."
 )
 
 
@@ -84,18 +84,6 @@ class TestPlanning(unittest.TestCase):
         names = [item.name for item in plan.shopping_items]
         self.assertIn("Ground beef", names)
         self.assertIn("Chicken thighs", names)
-
-    def test_rejects_a_store_or_location_outside_the_pilot(self) -> None:
-        for location, store in (
-            ("Vancouver, BC", "No Frills"),
-            ("Toronto", "Walmart"),
-        ):
-            with self.subTest(location=location, store=store):
-                request = parse_request(BASE_CASE)
-                request.shopping_location = location
-                request.selected_store = store
-
-                self.assertIsNone(generate_plan(request))
 
     def test_buys_rice_and_eggs_when_they_are_not_in_the_pantry(self) -> None:
         request = ParsedRequest(

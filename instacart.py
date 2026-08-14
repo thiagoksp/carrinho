@@ -1,4 +1,4 @@
-"""Build local previews for a future Instacart shopping-list handoff."""
+"""Build retailer-neutral previews for an Instacart shopping-list handoff."""
 
 import json
 import math

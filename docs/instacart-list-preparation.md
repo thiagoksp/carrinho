@@ -1,6 +1,6 @@
 # Local Instacart list preparation
 
-Date: August 13, 2026.
+Date: August 13, 2026. Updated August 14, 2026.
 
 ## What is prepared
 
@@ -92,9 +92,9 @@ Official sources:
 
 The product remains Canadian. `country_code` is not included in the preview because the
 current endpoint reference does not document that field, although an earlier changelog
-mentioned it. Shopping location remains plain text in the current meal plan only; the
-approved next increment removes it from Carrinho and leaves location and retailer
-selection to Instacart.
+mentioned it. Shopping location and retailer are not part of the Carrinho request,
+planning model, meal plan, or handoff. Location and retailer selection remain inside
+Instacart.
 
 Before the first network call, Canadian behaviour must be verified once against the
 development server with a project-owned Instacart key. Until then, the JSON is a local
@@ -102,7 +102,8 @@ preview and must never be sent automatically.
 
 ## Next step
 
-First remove the transitional No Frills and Toronto requirement from the request and
-planning flow. Then validate one retailer-neutral list through the manual iPhone flow.
-If development access and a key are approved, run one non-checkout contract test against
-the development server before integrating any network call.
+Run the reference case, inspect the three generated files, and validate the plain-text
+list through the manual iPhone flow. Record product matching and quantity issues before
+changing generic search terms. If development access and a key are approved, run one
+non-checkout contract test against the development server before integrating any network
+call.

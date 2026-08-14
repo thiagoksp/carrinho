@@ -15,7 +15,8 @@ class TestCatalog(unittest.TestCase):
 
         self.assertEqual(catalog.currency, "CAD")
         self.assertEqual(catalog.price_type, "simulated")
-        self.assertIn("do not represent current offers", catalog.description)
+        self.assertIn("Simulated Canadian planning estimates", catalog.description)
+        self.assertIn("retailer prices", catalog.description)
         self.assertEqual(len(catalog.products), 13)
         self.assertTrue(
             all(product.package_price >= 0 for product in catalog.products)

@@ -16,8 +16,6 @@ class ParsedRequest:
     cooking_energy: str | None = None
     pantry_items: list[str] | None = None
     dietary_restrictions: list[str] | None = None
-    shopping_location: str | None = None
-    selected_store: str | None = None
 
 
 NUMBER_WORDS = {
@@ -158,77 +156,6 @@ def _find_dietary_restrictions(text: str) -> list[str] | None:
     return None
 
 
-def _clean_text_value(value: str) -> str:
-    return re.sub(r"\s+", " ", value).strip(" ,.;")
-
-
-def _find_shopping_location(text: str) -> str | None:
-    next_field = (
-        r"(?:selected|preferred)\s+store|store\s+preference|"
-        r"i\s+have\s+no\s+store\s+preference|"
-        r"we\s+have\s+no\s+store\s+preference|"
-        r"i\s+prefer|we\s+prefer|i\s+shop|we\s+shop|"
-        r"(?:(?:i|we)\s+)?will\s+shop\s+at"
-    )
-    ending = (
-        rf"(?=,\s*(?:and\s+)?(?:{next_field})"
-        rf"|\s+and\s+(?:{next_field})|[.;]|$)"
-    )
-    patterns = (
-        r"\b(?:i\s+am|we\s+are)\s+shopping\s+in\s+"
-        r"(?P<value>.+?)(?=\s+at\s+.+?(?:[.;]|$))",
-        rf"\b(?:location|city|region)\s*(?:is|:|-)\s*"
-        rf"(?P<value>.+?){ending}",
-        rf"\b(?:i\s+live|we\s+live|i\s+am|we\s+are|"
-        rf"i\s+stay|we\s+stay)\s+in\s+(?P<value>.+?){ending}",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            value = _clean_text_value(match.group("value"))
-            if value:
-                return value
-    return None
-
-
-def _find_selected_store(text: str) -> str | None:
-    normalized_text = _remove_accents(text)
-    no_preference_phrases = (
-        "no store preference",
-        "i have no preferred store",
-        "we have no preferred store",
-        "any store",
-        "whichever store",
-    )
-    if any(phrase in normalized_text for phrase in no_preference_phrases):
-        return "any store"
-
-    ending = (
-        r"(?=,\s*(?:and\s+)?(?:i\s+live|we\s+live|i\s+am|we\s+are|"
-        r"i\s+have|we\s+have)|\s+and\s+(?:i\s+live|we\s+live|"
-        r"i\s+am|we\s+are|i\s+have|we\s+have)|[.;]|$)"
-    )
-    patterns = (
-        rf"\b(?:i\s+am|we\s+are)\s+shopping\s+in\s+.+?\s+at\s+"
-        rf"(?P<value>.+?){ending}",
-        rf"\b(?:selected|preferred)\s+store\s*(?:is|:|-)\s*"
-        rf"(?P<value>.+?){ending}",
-        rf"\b(?:i|we)\s+prefer\s+(?:the\s+store\s+)?"
-        rf"(?P<value>.+?){ending}",
-        rf"\b(?:i|we)\s+(?:usually\s+)?shop\s+at\s+"
-        rf"(?P<value>.+?){ending}",
-        rf"\b(?:(?:i|we)\s+)?will\s+shop\s+at\s+"
-        rf"(?P<value>.+?){ending}",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            value = _clean_text_value(match.group("value"))
-            if value and not value.casefold().startswith("not to cook"):
-                return value
-    return None
-
-
 def parse_request(text: str) -> ParsedRequest:
     """Extract data that is explicitly present in a grocery request."""
     budget, currency = _find_budget(text)
@@ -241,6 +168,4 @@ def parse_request(text: str) -> ParsedRequest:
         cooking_energy=_find_cooking_energy(text),
         pantry_items=_find_pantry_items(text),
         dietary_restrictions=_find_dietary_restrictions(text),
-        shopping_location=_find_shopping_location(text),
-        selected_store=_find_selected_store(text),
     )

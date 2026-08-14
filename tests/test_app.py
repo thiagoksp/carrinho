@@ -18,8 +18,6 @@ def _base_request(budget: float = 80) -> ParsedRequest:
         cooking_energy="low",
         pantry_items=["rice", "7 eggs"],
         dietary_restrictions=["lactose intolerance"],
-        shopping_location="Toronto",
-        selected_store="No Frills",
     )
 
 
@@ -28,8 +26,7 @@ class TestTerminal(unittest.TestCase):
         request_text = (
             "I have $80 to feed 2 people for 4 days. "
             "We have low energy for cooking, we already have rice and 7 eggs, "
-            "and at least one person has lactose intolerance. "
-            "I am shopping in Toronto at No Frills."
+            "and at least one person has lactose intolerance."
         )
 
         with (
@@ -46,10 +43,11 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Cooking energy: low", content)
         self.assertIn("Pantry items: rice, 7 eggs", content)
         self.assertIn("Dietary restrictions: lactose intolerance", content)
-        self.assertIn("Shopping location: Toronto", content)
-        self.assertIn("Selected store: No Frills", content)
+        self.assertNotIn("Shopping location", content)
+        self.assertNotIn("Selected store", content)
         self.assertIn("Information confirmed", content)
         self.assertIn("MEAL PLAN", content)
+        self.assertIn("Retailer: to be selected by the user in Instacart", content)
         self.assertIn("Estimated total: CAD$58.25", content)
         self.assertIn("Budget balance: CAD$21.75", content)
 
@@ -62,8 +60,6 @@ class TestTerminal(unittest.TestCase):
             "1",
             "rice, 7 eggs",
             "lactose intolerance",
-            "Toronto",
-            "No Frills",
             "y",
             "n",
         ]
@@ -75,24 +71,22 @@ class TestTerminal(unittest.TestCase):
             main()
 
         content = output.getvalue()
-        self.assertEqual(user_input.call_count, 11)
+        self.assertEqual(user_input.call_count, 9)
         self.assertIn("Budget: CAD$80", content)
         self.assertIn("People: 2", content)
         self.assertIn("Days: 4", content)
         self.assertIn("Cooking energy: low", content)
         self.assertIn("Pantry items: rice, 7 eggs", content)
         self.assertIn("Dietary restrictions: lactose intolerance", content)
-        self.assertIn("Shopping location: Toronto", content)
-        self.assertIn("Selected store: No Frills", content)
+        self.assertNotIn("Shopping location", content)
+        self.assertNotIn("Selected store", content)
         self.assertIn("MEAL PLAN", content)
 
-    def test_requires_one_store_instead_of_accepting_any_store(self) -> None:
+    def test_does_not_request_a_location_or_retailer(self) -> None:
         responses = [
             "I have CAD$80 for 2 people for 4 days with normal cooking energy. "
             "I already have rice and 7 eggs. I have no dietary restrictions. "
             "I am in Toronto and I have no store preference.",
-            "",
-            "No Frills",
             "y",
             "n",
         ]
@@ -104,20 +98,17 @@ class TestTerminal(unittest.TestCase):
             main()
 
         content = output.getvalue()
-        self.assertTrue(
-            any(
-                "current pilot store is No Frills" in call.args[0]
-                for call in user_input.call_args_list
-            )
-        )
-        self.assertIn("This version supports only No Frills", content)
-        self.assertIn("Selected store: No Frills", content)
+        prompts = " ".join(call.args[0] for call in user_input.call_args_list)
+        self.assertEqual(user_input.call_count, 3)
+        self.assertNotIn("location", prompts.casefold())
+        self.assertNotIn("store", prompts.casefold())
+        self.assertNotIn("Shopping location", content)
+        self.assertNotIn("Selected store", content)
 
     def test_saves_plan_and_both_instacart_files(self) -> None:
         request_text = (
             "I have CAD$80 for 2 people for 4 days with low cooking energy. "
-            "I already have rice and 7 eggs. I have no dietary restrictions. "
-            "I am shopping in Toronto at No Frills."
+            "I already have rice and 7 eggs. I have no dietary restrictions."
         )
         with (
             patch("builtins.input", side_effect=[request_text, "y", "y"]),
@@ -145,6 +136,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("instacart-paste-list.txt", content)
         self.assertIn("Shopping List → Paste items", content)
         self.assertIn("labels for your dietary needs", content)
+        self.assertIn("retailer you select in Instacart", content)
 
     def test_corrects_budget_and_days_without_restarting(self) -> None:
         request_data = _base_request()
@@ -190,7 +182,7 @@ class TestTerminal(unittest.TestCase):
         )
         self.assertEqual(result.dietary_restrictions, [])
 
-    def test_corrects_location_and_store_without_restarting(self) -> None:
+    def test_rejects_removed_location_and_retailer_correction_options(self) -> None:
         request_data = _base_request()
 
         with (
@@ -199,12 +191,8 @@ class TestTerminal(unittest.TestCase):
                 side_effect=[
                     "n",
                     "7",
-                    "Vancouver",
-                    "Toronto",
-                    "n",
-                    "8",
-                    "Loblaws",
-                    "No Frills",
+                    "1",
+                    "60",
                     "y",
                 ],
             ),
@@ -212,10 +200,10 @@ class TestTerminal(unittest.TestCase):
         ):
             result = review_request(request_data)
 
-        self.assertEqual(result.shopping_location, "Toronto")
-        self.assertEqual(result.selected_store, "No Frills")
-        self.assertIn("supports only Toronto, ON", output.getvalue())
-        self.assertIn("supports only No Frills", output.getvalue())
+        self.assertEqual(result.budget, 60)
+        self.assertFalse(hasattr(result, "shopping_location"))
+        self.assertFalse(hasattr(result, "selected_store"))
+        self.assertIn("Choose a number from 1 to 6", output.getvalue())
 
     def test_formats_every_plan_section_in_english(self) -> None:
         plan = generate_plan(_base_request())
@@ -227,9 +215,10 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("SHOPPING LIST", content)
         self.assertIn("Estimated total: CAD$58.25", content)
         self.assertIn("Price source:", content)
-        self.assertIn("Shopping location: Toronto", content)
-        self.assertIn("Selected store: No Frills", content)
-        self.assertIn("one simulated price catalogue", content)
+        self.assertIn("Retailer: to be selected by the user in Instacart", content)
+        self.assertIn("simulated, retailer-neutral Canadian price catalogue", content)
+        self.assertNotIn("Shopping location", content)
+        self.assertNotIn("Selected store", content)
         self.assertIn("PANTRY ITEMS USED", content)
         self.assertNotIn("ALTERNATIVA", content)
         self.assertNotIn("savings", content.casefold())
@@ -261,8 +250,9 @@ class TestTerminal(unittest.TestCase):
             )
             content = first.read_text(encoding="utf-8")
             self.assertIn("SHOPPING LIST", content)
-            self.assertIn("Shopping location: Toronto", content)
-            self.assertIn("Selected store: No Frills", content)
+            self.assertIn("Retailer: to be selected by the user in Instacart", content)
+            self.assertNotIn("Shopping location", content)
+            self.assertNotIn("Selected store", content)
 
 
 if __name__ == "__main__":
