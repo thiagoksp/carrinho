@@ -68,13 +68,13 @@ Project decisions and formats are documented in:
 
 ## Next step
 
-Complete CAR-2 by reviewing the new package reconciliation output: recipe need, whole
-package count, expected purchased quantity, overage, and variable-weight warning. Do
-not test every product or retailer. The documented iPhone **Paste items** and **Cart
-Assistant** features were not available in the project's Canadian Instacart account,
-so further handoff testing remains gated on an available official surface or approved
-Developer Platform access. Keep all network integration disabled until approved access
-and contract testing are available.
+Complete CAR-5 by moving the current meal templates and per-person ingredient quantities
+from Python into a validated, versioned Canadian English data file. Preserve the current
+reference-case output; do not add a database, account system, or network service. The
+documented iPhone **Paste items** and **Cart Assistant** features were not available in
+the project's Canadian Instacart account, so further handoff testing remains gated on an
+available official surface or approved Developer Platform access. Keep all network
+integration disabled until approved access and contract testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).

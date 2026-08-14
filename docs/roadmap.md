@@ -34,8 +34,9 @@ At the start of a work session:
 
 ## Milestone 1 — Reconcile planned quantities with packages
 
-**Next, in progress:** [CAR-2 — Reconcile recipe quantities with purchasable
-packages](https://linear.app/thiagoksp/issue/CAR-2)
+**Complete:** [CAR-2 — Reconcile recipe quantities with purchasable
+packages](https://linear.app/thiagoksp/issue/CAR-2), merged through
+[pull request #7](https://github.com/thiagoksp/carrinho/pull/7) on August 14, 2026.
 
 Keep recipe requirements separate from purchasable quantities. Normalize compatible
 mass, volume, and discrete units; round fixed-size products up to whole packages; show
@@ -47,22 +48,25 @@ simulated and retailer-neutral.
 The next product milestone makes the planner adaptable without adding a database,
 account system, or network service.
 
-1. [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5)
+**Next, in progress:** [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5)
    moves meal templates and per-person ingredient quantities from Python into a
    validated, versioned Canadian English data file. The current reference case remains
    a regression test.
-2. [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6)
+
+Then complete the remaining backlog one item at a time:
+
+1. [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6)
    saves private household defaults and pantry quantities in local JSON outside Git.
    Product-owned catalogues remain versioned under `data/`; private user data belongs
    under ignored `local-data/`.
-3. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
+2. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
    makes cooking energy, lactose intolerance, and pantry inventory influence
    deterministic meal selection.
-4. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
+3. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
    adds tested meal variety only after the catalogue and selection rules are stable.
 
-CAR-2 remains the sole `Next` issue until its pull request is reviewed and merged.
-The following work stays in backlog and is promoted one item at a time.
+CAR-5 is the sole `Next` issue. The following work stays in backlog and is promoted
+one item at a time.
 
 ## Milestone 3 — Validate an available official handoff
 
