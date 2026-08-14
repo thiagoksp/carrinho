@@ -3,6 +3,11 @@
 from pathlib import Path
 import re
 
+from household_profile import (
+    apply_household_defaults,
+    load_household_profile,
+    save_household_profile,
+)
 from instacart import (
     create_instacart_paste_list,
     save_instacart_paste_list,
@@ -328,6 +333,32 @@ def _should_save_plan() -> bool:
         print("Enter 'y' for yes or 'n' for no.")
 
 
+def _should_use_household_profile() -> bool:
+    while True:
+        response = input(
+            "\nA private household profile is available locally. "
+            "Use its defaults and pantry items? (y/n)\n> "
+        ).strip().casefold()
+        if response in {"y", "yes"}:
+            return True
+        if response in {"n", "no"}:
+            return False
+        print("Enter 'y' for yes or 'n' for no.")
+
+
+def _should_save_household_profile() -> bool:
+    while True:
+        response = input(
+            "\nWould you like to save or update household defaults and pantry "
+            "items locally? (y/n)\n> "
+        ).strip().casefold()
+        if response in {"y", "yes"}:
+            return True
+        if response in {"n", "no"}:
+            return False
+        print("Enter 'y' for yes or 'n' for no.")
+
+
 def main() -> None:
     """Read a request, confirm it, and build the current local plan."""
     print("\nCARRINHO")
@@ -339,7 +370,16 @@ def main() -> None:
         print("\nNo request was provided.")
         return
 
-    request_data = review_request(complete_request(parse_request(request_text)))
+    request_data = parse_request(request_text)
+    try:
+        household_profile = load_household_profile()
+    except ValueError as error:
+        print(f"\nSaved household profile was ignored: {error}")
+        household_profile = None
+    if household_profile is not None and _should_use_household_profile():
+        request_data = apply_household_defaults(request_data, household_profile)
+
+    request_data = review_request(complete_request(request_data))
     print("\nInformation confirmed.")
 
     plan = generate_plan(request_data)
@@ -351,6 +391,9 @@ def main() -> None:
         return
 
     print_plan(plan)
+    if _should_save_household_profile():
+        household_path = save_household_profile(request_data)
+        print(f"\nHousehold profile saved locally to:\n{household_path}")
     if _should_save_plan():
         create_instacart_paste_list(plan)
         plan_path = save_plan(plan)

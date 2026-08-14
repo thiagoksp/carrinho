@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from app import format_plan, main, review_request, save_plan
+from household_profile import HouseholdProfile
 from planning import generate_plan
 from request_parser import ParsedRequest
 
@@ -30,7 +31,8 @@ class TestTerminal(unittest.TestCase):
         )
 
         with (
-            patch("builtins.input", side_effect=[request_text, "y", "n"]),
+            patch("builtins.input", side_effect=[request_text, "y", "n", "n"]),
+            patch("app.load_household_profile", return_value=None),
             patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
             main()
@@ -62,16 +64,18 @@ class TestTerminal(unittest.TestCase):
             "lactose intolerance",
             "y",
             "n",
+            "n",
         ]
 
         with (
             patch("builtins.input", side_effect=responses) as user_input,
+            patch("app.load_household_profile", return_value=None),
             patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
             main()
 
         content = output.getvalue()
-        self.assertEqual(user_input.call_count, 9)
+        self.assertEqual(user_input.call_count, 10)
         self.assertIn("Budget: CAD$80", content)
         self.assertIn("People: 2", content)
         self.assertIn("Days: 4", content)
@@ -89,17 +93,19 @@ class TestTerminal(unittest.TestCase):
             "I am in Toronto and I have no store preference.",
             "y",
             "n",
+            "n",
         ]
 
         with (
             patch("builtins.input", side_effect=responses) as user_input,
+            patch("app.load_household_profile", return_value=None),
             patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
             main()
 
         content = output.getvalue()
         prompts = " ".join(call.args[0] for call in user_input.call_args_list)
-        self.assertEqual(user_input.call_count, 3)
+        self.assertEqual(user_input.call_count, 4)
         self.assertNotIn("location", prompts.casefold())
         self.assertNotIn("store", prompts.casefold())
         self.assertNotIn("Shopping location", content)
@@ -111,7 +117,8 @@ class TestTerminal(unittest.TestCase):
             "I already have rice and 7 eggs. I have no dietary restrictions."
         )
         with (
-            patch("builtins.input", side_effect=[request_text, "y", "y"]),
+            patch("builtins.input", side_effect=[request_text, "y", "n", "y"]),
+            patch("app.load_household_profile", return_value=None),
             patch("app.save_plan", return_value=Path("meal-plan.txt")) as text_file,
             patch(
                 "app.save_instacart_payload",
@@ -137,6 +144,34 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Shopping List → Paste items", content)
         self.assertIn("labels for your dietary needs", content)
         self.assertIn("retailer you select in Instacart", content)
+
+    def test_uses_and_updates_a_saved_household_profile_explicitly(self) -> None:
+        request_text = "I have CAD$80 for 4 days."
+        profile = HouseholdProfile(
+            people=2,
+            cooking_energy="low",
+            pantry_items=("rice", "7 eggs"),
+            dietary_restrictions=("lactose intolerance",),
+        )
+
+        with (
+            patch(
+                "builtins.input",
+                side_effect=[request_text, "y", "y", "y", "n"],
+            ),
+            patch("app.load_household_profile", return_value=profile),
+            patch(
+                "app.save_household_profile",
+                return_value=Path("household-profile.json"),
+            ) as save_profile,
+            patch("sys.stdout", new_callable=io.StringIO) as output,
+        ):
+            main()
+
+        saved_request = save_profile.call_args.args[0]
+        self.assertEqual(saved_request.people, 2)
+        self.assertEqual(saved_request.pantry_items, ["rice", "7 eggs"])
+        self.assertIn("Household profile saved locally", output.getvalue())
 
     def test_corrects_budget_and_days_without_restarting(self) -> None:
         request_data = _base_request()
