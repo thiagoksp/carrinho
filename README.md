@@ -61,6 +61,7 @@ Project decisions and formats are documented in:
 - [`docs/reference-case.md`](docs/reference-case.md)
 - [`docs/instacart-platform-direction.md`](docs/instacart-platform-direction.md)
 - [`docs/instacart-list-preparation.md`](docs/instacart-list-preparation.md)
+- [`docs/meal-catalogue.md`](docs/meal-catalogue.md)
 - [`docs/project-handoff.md`](docs/project-handoff.md)
 - [`docs/roadmap.md`](docs/roadmap.md)
 - [`docs/initial-integration-decision.md`](docs/initial-integration-decision.md), retained

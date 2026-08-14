@@ -6,6 +6,7 @@ import re
 import unicodedata
 
 from catalog import PriceCatalog, Product, load_simulated_catalog
+from meal_catalogue import MealTemplate, load_default_meal_catalogue
 from request_parser import ParsedRequest
 
 
@@ -33,12 +34,6 @@ class ShoppingItem:
 
 
 @dataclass(frozen=True)
-class MealTemplate:
-    dish: str
-    ingredients_per_person: tuple[tuple[str, float], ...]
-
-
-@dataclass(frozen=True)
 class Plan:
     meals: tuple[Meal, ...]
     meal_prep_guidance: tuple[str, ...]
@@ -59,101 +54,6 @@ class Plan:
     def budget_balance(self) -> float:
         return round(self.budget - self.estimated_total, 2)
 
-
-MEAL_TEMPLATES = (
-    MealTemplate(
-        "Roasted chicken, rice and vegetables",
-        (
-            ("chicken", 300.0),
-            ("rice", 100.0),
-            ("vegetables", 150.0),
-            ("onions", 50.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-    MealTemplate(
-        "Pan-fried rice with eggs and vegetables",
-        (
-            ("eggs", 2.00),
-            ("rice", 100.0),
-            ("vegetables", 150.0),
-            ("onions", 50.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-    MealTemplate(
-        "Previously prepared chicken, rice and vegetables",
-        (
-            ("chicken", 300.0),
-            ("rice", 100.0),
-            ("vegetables", 150.0),
-            ("onions", 50.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-    MealTemplate(
-        "Pasta with ground beef and tomato sauce",
-        (
-            ("ground_beef", 125.0),
-            ("pasta", 125.0),
-            ("tomato_sauce", 0.25),
-            ("onions", 50.0),
-            ("garlic", 20.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-    MealTemplate(
-        "Pasta with previously prepared meat sauce",
-        (
-            ("ground_beef", 125.0),
-            ("pasta", 125.0),
-            ("tomato_sauce", 0.25),
-            ("onions", 50.0),
-            ("garlic", 20.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-    MealTemplate(
-        "Quick bean and tomato stew with rice",
-        (
-            ("beans", 0.625),
-            ("tomato_sauce", 0.25),
-            ("rice", 100.0),
-            ("onions", 50.0),
-            ("garlic", 20.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-    MealTemplate(
-        "Previously prepared bean stew with rice",
-        (
-            ("beans", 0.625),
-            ("tomato_sauce", 0.25),
-            ("rice", 100.0),
-            ("onions", 50.0),
-            ("garlic", 20.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-    MealTemplate(
-        "Omelette with potatoes, onion and vegetables",
-        (
-            ("eggs", 1.50),
-            ("potatoes", 300.0),
-            ("vegetables", 100.0),
-            ("onions", 50.0),
-            ("oil", 10.0),
-            ("seasoning", 0.01),
-        ),
-    ),
-)
 
 GRAMS_PER_POUND = 453.59237
 
@@ -192,7 +92,7 @@ def _restrictions_supported(restrictions: list[str] | None) -> bool:
 
 def _build_meals(
     days: int,
-    templates: tuple[MealTemplate, ...] = MEAL_TEMPLATES,
+    templates: tuple[MealTemplate, ...],
 ) -> tuple[tuple[Meal, MealTemplate], ...]:
     meals: list[tuple[Meal, MealTemplate]] = []
     meal_slots = ("Lunch", "Dinner")
@@ -211,9 +111,12 @@ def _calculate_requirements(
 ) -> dict[str, float]:
     requirements: dict[str, float] = {}
     for _, template in meals:
-        for key, quantity_per_person in template.ingredients_per_person:
-            requirements[key] = requirements.get(key, 0) + (
-                quantity_per_person * people
+        for ingredient in template.ingredients:
+            requirements[ingredient.product_key] = requirements.get(
+                ingredient.product_key,
+                0,
+            ) + (
+                ingredient.quantity_per_person * people
             )
     return requirements
 
@@ -348,18 +251,41 @@ def _build_shopping_items(
 
 
 def _validate_catalog_coverage(
-    requirements: dict[str, float], products: tuple[Product, ...]
+    requirements: dict[str, float],
+    templates: tuple[MealTemplate, ...],
+    products: tuple[Product, ...],
 ) -> None:
-    available_keys = {product.key for product in products}
-    missing_keys = sorted(
-        key
-        for key, quantity in requirements.items()
-        if quantity > 0 and key not in available_keys
-    )
+    products_by_key = {product.key: product for product in products}
+    available_keys = set(products_by_key)
+    meal_catalogue_keys = {
+        ingredient.product_key
+        for template in templates
+        for ingredient in template.ingredients
+    }
+    missing_keys = sorted(meal_catalogue_keys.difference(available_keys))
     if missing_keys:
         raise ValueError(
             "The catalog does not contain prices for: "
             + ", ".join(missing_keys)
+            + "."
+        )
+
+    incompatible_units = sorted(
+        {
+            f"{template.key}:{ingredient.product_key}"
+            for template in templates
+            for ingredient in template.ingredients
+            if (
+                ingredient.product_key in products_by_key
+                and ingredient.planning_unit
+                != products_by_key[ingredient.product_key].planning_unit
+            )
+        }
+    )
+    if incompatible_units:
+        raise ValueError(
+            "The meal catalogue has incompatible planning units for: "
+            + ", ".join(incompatible_units)
             + "."
         )
 
@@ -437,7 +363,7 @@ def _create_plan(
         meals_with_templates,
         request.people,
     )
-    _validate_catalog_coverage(requirements, catalog.products)
+    _validate_catalog_coverage(requirements, templates, catalog.products)
 
     return Plan(
         meals=tuple(meal for meal, _ in meals_with_templates),
@@ -482,4 +408,5 @@ def generate_plan(
     ):
         return None
 
-    return _create_plan(request, MEAL_TEMPLATES, selected_catalog)
+    meal_catalogue = load_default_meal_catalogue()
+    return _create_plan(request, meal_catalogue.templates, selected_catalog)
