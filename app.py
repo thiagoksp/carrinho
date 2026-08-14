@@ -229,6 +229,10 @@ def format_plan(plan: Plan) -> str:
     for meal in plan.meals:
         lines.append(f"- Day {meal.day} — {meal.meal_slot}: {meal.dish}")
 
+    lines.extend(("", "MEAL SELECTION"))
+    for guidance in plan.meal_selection_guidance:
+        lines.append(f"- {guidance}")
+
     lines.extend(("", "MEAL PREP GUIDANCE"))
     for guidance in plan.meal_prep_guidance:
         lines.append(f"- {guidance}")

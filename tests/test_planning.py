@@ -31,6 +31,68 @@ class TestPlanning(unittest.TestCase):
         )
         self.assertEqual(plan.estimated_total, 58.25)
         self.assertEqual(plan.budget_balance, 21.75)
+        self.assertIn(
+            "The plan needs every eligible template, so catalogue order is preserved.",
+            plan.meal_selection_guidance,
+        )
+        self.assertEqual(
+            [meal.dish for meal in plan.meals],
+            [
+                "Roasted chicken, rice and vegetables",
+                "Pan-fried rice with eggs and vegetables",
+                "Previously prepared chicken, rice and vegetables",
+                "Pasta with ground beef and tomato sauce",
+                "Pasta with previously prepared meat sauce",
+                "Quick bean and tomato stew with rice",
+                "Previously prepared bean stew with rice",
+                "Omelette with potatoes, onion and vegetables",
+            ],
+        )
+
+    def test_prefers_low_effort_meals_for_a_short_low_energy_plan(self) -> None:
+        request = ParsedRequest(
+            budget=100,
+            currency="CAD",
+            people=2,
+            days=1,
+            cooking_energy="low",
+            pantry_items=[],
+            dietary_restrictions=[],
+        )
+
+        plan = generate_plan(request)
+
+        assert plan is not None
+        self.assertEqual(
+            [meal.dish for meal in plan.meals],
+            [
+                "Pan-fried rice with eggs and vegetables",
+                "Previously prepared chicken, rice and vegetables",
+            ],
+        )
+        self.assertIn(
+            "Cooking energy preference applied: low.",
+            plan.meal_selection_guidance,
+        )
+
+    def test_uses_pantry_coverage_to_break_an_effort_tie(self) -> None:
+        request = ParsedRequest(
+            budget=100,
+            currency="CAD",
+            people=2,
+            days=1,
+            cooking_energy="low",
+            pantry_items=["potatoes"],
+            dietary_restrictions=[],
+        )
+
+        plan = generate_plan(request)
+
+        assert plan is not None
+        self.assertEqual(
+            plan.meals[0].dish,
+            "Omelette with potatoes, onion and vegetables",
+        )
 
     def test_uses_exactly_the_seven_eggs(self) -> None:
         plan = generate_plan(parse_request(BASE_CASE))

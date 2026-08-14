@@ -24,6 +24,8 @@ class TestMealCatalogue(unittest.TestCase):
             catalogue.templates[0].ingredients[0].planning_unit,
             "g",
         )
+        self.assertEqual(catalogue.templates[0].cooking_energy, "normal")
+        self.assertEqual(catalogue.templates[0].dietary_tags, ("lactose-free",))
 
     def test_uses_product_keys_and_units_shared_with_the_price_catalog(self) -> None:
         catalogue = load_default_meal_catalogue()
@@ -64,6 +66,18 @@ class TestMealCatalogue(unittest.TestCase):
         ingredient["planning_unit"] = "g"
         ingredient["quantity_per_person"] = 0
         with self.assertRaisesRegex(ValueError, "invalid quantity per person"):
+            self._load_data(data)
+
+    def test_rejects_unsupported_meal_selection_metadata(self) -> None:
+        data = self._valid_data()
+        data["templates"][0]["cooking_energy"] = "very low"
+
+        with self.assertRaisesRegex(ValueError, "unsupported cooking energy"):
+            self._load_data(data)
+
+        data = self._valid_data()
+        data["templates"][0]["dietary_tags"] = ["gluten-free"]
+        with self.assertRaisesRegex(ValueError, "unsupported dietary tags"):
             self._load_data(data)
 
     def _valid_data(self) -> dict[str, object]:
