@@ -1,6 +1,8 @@
 # Carrinho
 
-> Changing ChatGPT or Codex accounts? Start with [`HANDOFF.md`](HANDOFF.md).
+> Changing ChatGPT or Codex accounts on the same computer? Start with
+> [`START_HERE.md`](START_HERE.md). Use [`HANDOFF.md`](HANDOFF.md) only when deeper
+> history is needed.
 
 Carrinho is a Canadian grocery-planning agent designed to reduce the decisions between
 "we need food" and "the cart is ready to review."
@@ -73,7 +75,8 @@ the final price before the user reviews the list in Instacart.
 
 Project decisions and formats are documented in:
 
-- [`HANDOFF.md`](HANDOFF.md), the single cross-account starting point
+- [`START_HERE.md`](START_HERE.md), the short same-computer account-switch starting point
+- [`HANDOFF.md`](HANDOFF.md), the complete cross-account project handoff
 - [`LICENSE`](LICENSE), the all-rights-reserved project notice
 - [`CONTRIBUTING.md`](CONTRIBUTING.md), the current no-outside-contributions policy
 - [`docs/reference-case.md`](docs/reference-case.md)

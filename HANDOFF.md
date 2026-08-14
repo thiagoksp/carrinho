@@ -2,10 +2,18 @@
 
 Updated: August 14, 2026.
 
-This is the single starting point for a new ChatGPT or Codex account. Read this file
-before asking the user to repeat project context.
+This is the complete project handoff for a new ChatGPT or Codex account. On the same
+computer, start with the shorter [`START_HERE.md`](START_HERE.md) file and read this
+full handoff only when deeper history is needed.
 
-## Message to use in a new chat
+## Fast message to use in a new chat on the same computer
+
+> Read `START_HERE.md` first, then inspect the Carrinho Linear project and the single
+> open issue labelled `Next`. Tell me the current state and the next small action in
+> Portuguese. Begin every message with `@@`. Do not ask me to reconstruct chat context.
+> Only read `HANDOFF.md` if you need deeper history.
+
+## Full-history message to use in a new chat
 
 > Read `HANDOFF.md` and follow its resume checklist. Then inspect the Carrinho Linear
 > project, find the only open issue labelled `Next`, and tell me the current state and
@@ -20,6 +28,7 @@ Linear project:
 ## Sources of truth
 
 - **This file:** how to resume and the current checkpoint.
+- **`START_HERE.md`:** short same-computer resume prompt and commands.
 - **Linear:** live task status, ownership, dependencies, and the single `Next` issue.
 - **GitHub `main`:** code, tests, documentation, and durable product decisions.
 - **`AGENTS.md`:** mandatory collaboration, language, scope, and safety rules.
@@ -167,8 +176,10 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 
 ## Resume checklist
 
-1. Read this file completely.
-2. Read `AGENTS.md`, `README.md`, and `docs/project-handoff.md`.
+1. On the same computer, read `START_HERE.md` first. Read this file completely only
+   when deeper history is needed.
+2. Read `AGENTS.md`, `README.md`, and `docs/project-handoff.md` when the quick resume
+   file is not enough.
 3. Open the existing local repository; do not create a second copy on the same computer.
 4. Check the current branch, local changes, latest commit, and remote state.
 5. Open the Linear project and verify that exactly one open issue has the `Next` label.
@@ -219,4 +230,3 @@ Before finishing work that changes the project state:
 5. publish tested changes through the repository workflow;
 6. leave no secrets, personal addresses, receipts, phone numbers, passwords, tokens,
    or API keys in GitHub, Linear, generated files, or chat.
-
