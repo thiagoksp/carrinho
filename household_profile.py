@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from catalog import load_simulated_catalog
+from local_catalogue import load_effective_price_catalog
 from request_parser import ParsedRequest
 
 
@@ -73,7 +73,9 @@ def _validate_profile(data: object) -> HouseholdProfile:
             data.get("preferred_product_keys"),
             "preferred product keys",
         )
-    available_keys = {product.key for product in load_simulated_catalog().products}
+    available_keys = {
+        product.key for product in load_effective_price_catalog().products
+    }
     unknown_keys = set(avoided_product_keys + preferred_product_keys).difference(
         available_keys
     )

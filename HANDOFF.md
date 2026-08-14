@@ -38,9 +38,15 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Active team: `🛒 Carrinho`.
 - Active issue prefix: `CAR`.
 - Exactly one issue is labelled `Next`:
-  [CAR-12 — Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12).
-  It will add a validated local editing or import workflow without a database, account
-  system, retailer SKU, or large copied food dataset.
+  [CAR-13 — Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13).
+  It will introduce an optional LLM boundary that returns ordered known meal-template
+  keys while local validation and deterministic calculations remain authoritative.
+- [CAR-12 — Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
+  is complete. Its implementation was merged as
+  [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
+  The local browser now provides a validated private JSON editor for generic foods and
+  meal templates, atomic saves, local backups, and restore support without a database,
+  account system, retailer SKU, or copied food database.
 - [CAR-11 — Add a local browser interface](https://linear.app/thiagoksp/issue/CAR-11)
   is complete. Carrinho now serves a structured form and the generated plan locally at
   `http://127.0.0.1:8765`, without a dependency, credential, or external request.

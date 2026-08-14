@@ -63,6 +63,12 @@ restrictions or lactose intolerance are supported as hard dietary rules at this 
 Catalogue-backed foods to avoid or prefer are separate soft ranking inputs that can be
 saved in the private local household profile.
 
+Households can extend generic foods and meal templates through one validated private
+JSON document under ignored `local-data/`. Local entries use stable text keys, cannot
+replace built-in entries, and are backed up before a valid replacement is saved. Do not
+add retailer SKUs, live prices, credentials, medical claims, a database, or an account
+system to this workflow.
+
 ## Roadmap
 
 Task status is tracked in the Carrinho Linear project and mirrored in

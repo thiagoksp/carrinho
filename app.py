@@ -3,7 +3,7 @@
 from pathlib import Path
 import re
 
-from catalog import load_simulated_catalog, resolve_product_keys
+from catalog import resolve_product_keys
 from household_profile import (
     apply_household_defaults,
     load_household_profile,
@@ -14,6 +14,7 @@ from instacart import (
     save_instacart_paste_list,
     save_instacart_payload,
 )
+from local_catalogue import load_effective_price_catalog, load_local_catalogue
 from planning import Plan, format_planning_quantity, generate_plan
 from request_parser import ParsedRequest, parse_request
 
@@ -28,7 +29,7 @@ def _display_product_preferences(product_keys: list[str] | None) -> str:
     if not product_keys:
         return "none"
     products_by_key = {
-        product.key: product for product in load_simulated_catalog().products
+        product.key: product for product in load_effective_price_catalog().products
     }
     return ", ".join(
         products_by_key[key].name if key in products_by_key else key
@@ -69,11 +70,11 @@ def print_request_summary(request_data: ParsedRequest) -> None:
     print(f"- Pantry items: {pantry_items}")
     print(f"- Dietary restrictions: {dietary_restrictions}")
     print(
-        "- Foods to avoid: "
+        "- Foods to use less often: "
         f"{_display_product_preferences(request_data.avoided_product_keys)}"
     )
     print(
-        "- Foods to prefer: "
+        "- Foods to use more often: "
         f"{_display_product_preferences(request_data.preferred_product_keys)}"
     )
 
@@ -151,11 +152,11 @@ def _read_dietary_restrictions() -> list[str]:
 
 
 def _read_product_preferences(preference: str) -> list[str]:
-    catalog = load_simulated_catalog()
+    catalog = load_effective_price_catalog()
     available_foods = ", ".join(product.name for product in catalog.products)
     prompts = {
-        "avoid": "Which foods should the plan try to avoid?",
-        "prefer": "Which foods should the plan prefer?",
+        "avoid": "Which foods should the plan try to use less often?",
+        "prefer": "Which foods should the plan try to use more often?",
     }
     while True:
         response = input(
@@ -174,7 +175,7 @@ def _read_product_preferences(preference: str) -> list[str]:
 
 
 def _validate_product_preferences(request_data: ParsedRequest) -> None:
-    catalog = load_simulated_catalog()
+    catalog = load_effective_price_catalog()
     available_keys = {product.key for product in catalog.products}
     avoided_keys = request_data.avoided_product_keys or []
     preferred_keys = request_data.preferred_product_keys or []
@@ -184,7 +185,9 @@ def _validate_product_preferences(request_data: ParsedRequest) -> None:
             "Unknown food preference key: " + ", ".join(sorted(unknown_keys)) + "."
         )
     if set(avoided_keys).intersection(preferred_keys):
-        raise ValueError("The same food cannot be both avoided and preferred.")
+        raise ValueError(
+            "The same food cannot be both used less often and used more often."
+        )
 
 
 def complete_request(request_data: ParsedRequest) -> ParsedRequest:
@@ -243,8 +246,8 @@ def _correct_one_field(request_data: ParsedRequest) -> None:
             "4 - Cooking energy\n"
             "5 - Pantry items\n"
             "6 - Dietary restrictions\n"
-            "7 - Foods to avoid\n"
-            "8 - Foods to prefer\n> "
+            "7 - Foods to use less often\n"
+            "8 - Foods to use more often\n> "
         ).strip()
         choice = options.get(response)
         if choice is not None:
@@ -449,6 +452,16 @@ def main() -> None:
 
     if not request_text:
         print("\nNo request was provided.")
+        return
+
+    try:
+        load_local_catalogue()
+    except ValueError as error:
+        print(
+            "\nThe private local catalogue needs attention: "
+            f"{error} Open the browser interface and choose "
+            "Manage local meals and foods."
+        )
         return
 
     request_data = parse_request(request_text)

@@ -1,6 +1,13 @@
 import unittest
 
-from web_app import HOST, build_request, create_plan, render_page
+from web_app import (
+    CSRF_TOKEN,
+    HOST,
+    build_request,
+    create_plan,
+    render_customization_page,
+    render_page,
+)
 
 
 def _reference_form() -> dict[str, str]:
@@ -61,7 +68,7 @@ class TestWebApp(unittest.TestCase):
         values = _reference_form()
         values["foods_to_avoid"] = "eggs"
         values["foods_to_prefer"] = "eggs"
-        with self.assertRaisesRegex(ValueError, "both avoided and preferred"):
+        with self.assertRaisesRegex(ValueError, "both used less often"):
             build_request(values)
 
     def test_renders_escaped_values_errors_and_plan(self) -> None:
@@ -79,6 +86,28 @@ class TestWebApp(unittest.TestCase):
         self.assertIn("Your Carrinho plan", page)
         self.assertIn("Estimated total: CAD$58.25", page)
         self.assertIn("No request is sent to Instacart", page)
+        self.assertIn("Foods to use less often", page)
+        self.assertIn("Longer plans may still include", page)
+        self.assertIn("Manage local meals and foods", page)
+        self.assertIn(CSRF_TOKEN, page)
+
+    def test_renders_a_safe_local_catalogue_editor(self) -> None:
+        content = '{"schema":"test","value":"</textarea><script>bad()</script>"}'
+
+        page = render_customization_page(
+            content,
+            message="Saved locally.",
+            error="Example <error>.",
+        )
+
+        self.assertIn("Local catalogue JSON", page)
+        self.assertIn("Saved locally.", page)
+        self.assertIn("Example &lt;error&gt;.", page)
+        self.assertNotIn("</textarea><script>bad()</script>", page)
+        self.assertIn("Restore latest backup", page)
+        self.assertIn("my_rice_bowl", page)
+        self.assertIn("Frozen spinach", page)
+        self.assertIn(CSRF_TOKEN, page)
 
 
 if __name__ == "__main__":

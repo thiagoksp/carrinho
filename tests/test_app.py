@@ -25,6 +25,20 @@ def _base_request(budget: float = 80) -> ParsedRequest:
 
 
 class TestTerminal(unittest.TestCase):
+    def test_stops_with_guidance_when_the_local_catalogue_is_invalid(self) -> None:
+        with (
+            patch("builtins.input", return_value="I have CAD$80."),
+            patch(
+                "app.load_local_catalogue",
+                side_effect=ValueError("Invalid local data."),
+            ),
+            patch("sys.stdout", new_callable=io.StringIO) as output,
+        ):
+            main()
+
+        self.assertIn("local catalogue needs attention", output.getvalue())
+        self.assertIn("Manage local meals and foods", output.getvalue())
+
     def test_displays_identified_request_and_plan(self) -> None:
         request_text = (
             "I have $80 to feed 2 people for 4 days. "
@@ -48,8 +62,8 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Cooking energy: low", content)
         self.assertIn("Pantry items: rice, 7 eggs", content)
         self.assertIn("Dietary restrictions: lactose intolerance", content)
-        self.assertIn("Foods to avoid: Canned beans", content)
-        self.assertIn("Foods to prefer: Chicken thighs", content)
+        self.assertIn("Foods to use less often: Canned beans", content)
+        self.assertIn("Foods to use more often: Chicken thighs", content)
         self.assertNotIn("Shopping location", content)
         self.assertNotIn("Selected store", content)
         self.assertIn("Information confirmed", content)
@@ -261,7 +275,7 @@ class TestTerminal(unittest.TestCase):
 
         self.assertEqual(result.avoided_product_keys, ["eggs"])
         self.assertEqual(result.preferred_product_keys, ["chicken"])
-        self.assertIn("cannot be both avoided and preferred", output.getvalue())
+        self.assertIn("cannot be both used less often", output.getvalue())
 
     def test_rejects_removed_location_and_retailer_correction_options(self) -> None:
         request_data = _base_request()

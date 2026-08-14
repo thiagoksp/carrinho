@@ -20,8 +20,8 @@ Status: this is the current retailer-neutral implementation baseline.
 - Cooking energy: low.
 - Pantry: enough rice and exactly 7 eggs.
 - Dietary restriction: the entire plan must avoid intentional dairy ingredients.
-- Foods to avoid or prefer: none supplied, so the established catalogue order remains
-  the deterministic baseline.
+- Foods to use less or more often: none supplied, so the established catalogue order
+  remains the deterministic baseline.
 
 ## Expected response
 

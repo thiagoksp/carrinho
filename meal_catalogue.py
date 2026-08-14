@@ -151,9 +151,12 @@ def _validate_template(data: object, position: int) -> MealTemplate:
     )
 
 
-def load_meal_catalogue(path: Path) -> MealCatalogue:
-    """Load one versioned meal catalogue from JSON."""
-    data = json.loads(path.read_text(encoding="utf-8"))
+def parse_meal_catalogue_data(
+    data: object,
+    *,
+    require_core: bool = True,
+) -> MealCatalogue:
+    """Validate one in-memory meal catalogue document."""
     if not isinstance(data, dict):
         raise ValueError("The meal catalogue must be a JSON object.")
     if data.get("schema") != MEAL_CATALOGUE_SCHEMA:
@@ -171,10 +174,17 @@ def load_meal_catalogue(path: Path) -> MealCatalogue:
     template_keys = [template.key for template in templates]
     if len(template_keys) != len(set(template_keys)):
         raise ValueError("The meal catalogue contains duplicate template keys.")
-    if not any(template.catalogue_tier == "core" for template in templates):
+    if require_core and not any(
+        template.catalogue_tier == "core" for template in templates
+    ):
         raise ValueError("The meal catalogue requires at least one core template.")
 
     return MealCatalogue(description=description, templates=templates)
+
+
+def load_meal_catalogue(path: Path) -> MealCatalogue:
+    """Load one versioned meal catalogue from JSON."""
+    return parse_meal_catalogue_data(json.loads(path.read_text(encoding="utf-8")))
 
 
 def load_default_meal_catalogue() -> MealCatalogue:

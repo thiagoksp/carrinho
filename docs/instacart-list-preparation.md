@@ -103,8 +103,7 @@ preview and must never be sent automatically.
 
 ## Next step
 
-First complete the local package reconciliation model. Do not test every product or
-retailer while the documented manual feature is unavailable. If the manual handoff
-appears later, validate only a small representative set. If development access and a
-key are approved, run one non-checkout contract test against the development server
-before integrating any network call.
+Do not test every product or retailer while the documented manual feature is
+unavailable. If the manual handoff appears later, validate only a small representative
+set. If development access and a key are approved, run one non-checkout contract test
+against the development server before integrating any network call.
