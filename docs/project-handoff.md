@@ -5,14 +5,18 @@ Updated: August 14, 2026.
 This file preserves the project state when work moves to another ChatGPT or Codex
 account. The repository, not a previous conversation, is the source of truth.
 
+The single cross-account starting point is [`HANDOFF.md`](../HANDOFF.md). This document
+provides the more detailed implementation context referenced from that file.
+
 ## Read first
 
-1. [`AGENTS.md`](../AGENTS.md)
-2. [`README.md`](../README.md)
-3. [`instacart-platform-direction.md`](instacart-platform-direction.md)
-4. [`reference-case.md`](reference-case.md)
-5. [`instacart-list-preparation.md`](instacart-list-preparation.md)
-6. [`roadmap.md`](roadmap.md)
+1. [`HANDOFF.md`](../HANDOFF.md)
+2. [`AGENTS.md`](../AGENTS.md)
+3. [`README.md`](../README.md)
+4. [`instacart-platform-direction.md`](instacart-platform-direction.md)
+5. [`reference-case.md`](reference-case.md)
+6. [`instacart-list-preparation.md`](instacart-list-preparation.md)
+7. [`roadmap.md`](roadmap.md)
 
 ## Source of truth
 
@@ -104,7 +108,7 @@ Run the approved reference case, inspect all three generated files, and manually
 `instacart-paste-list.txt` with Instacart's iPhone **Paste items** flow.
 
 This work is tracked as Linear issue
-[THI-6](https://linear.app/thiagoksp/issue/THI-6/validate-the-reference-list-in-instacart-paste-items),
+[CAR-1](https://linear.app/thiagoksp/issue/CAR-1/validate-the-reference-list-in-instacart-paste-items),
 the only issue currently labelled `Next`.
 
 Record only product-matching or quantity problems observed during that test. Improve
