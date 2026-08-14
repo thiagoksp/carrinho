@@ -48,7 +48,10 @@ and user-visible output in Canadian English.
 
 ## Implemented state
 
-- Python 3.12 terminal application with no third-party runtime dependencies.
+- Python 3.12 terminal and local browser interfaces with no third-party runtime
+  dependencies.
+- The browser server binds only to `127.0.0.1`, provides a structured form, and renders
+  the complete plan on one page without an external request.
 - The planner supports 1–12 people for 1–14 days.
 - Package-aware pantry deductions and lactose intolerance are supported within the
   documented limits.
@@ -102,6 +105,14 @@ Run Carrinho:
 .\.venv\Scripts\python.exe app.py
 ```
 
+Run the local browser interface:
+
+```powershell
+.\.venv\Scripts\python.exe web_app.py
+```
+
+Open <http://127.0.0.1:8765> and press `Ctrl+C` in the terminal to stop it.
+
 If `.venv` does not exist:
 
 ```powershell
@@ -110,10 +121,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Track [CAR-3](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval),
-the only issue currently labelled `Next`. It is an external dependency in Backlog. Do
-not implement network behaviour while the external state is unchanged; wait for an
-Instacart approval, rejection, or request for information.
+Continue [CAR-12](https://linear.app/thiagoksp/issue/CAR-12), the only issue labelled
+`Next`. Add a validated local editing or import workflow for household meal templates
+and generic foods. Do not add a database, account system, retailer SKU, or large copied
+food dataset. CAR-3 continues to track Instacart approval in parallel.
 
 ## Current deterministic selection
 

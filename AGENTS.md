@@ -41,8 +41,9 @@ for the cheapest basket, or silently replace the requested plan with a cheaper m
 
 ## Current scope
 
-The interface is a terminal app. A rule-based planner supports 1–12 people for 1–14
-days, package-aware pantry deductions, a budget balance or shortfall, and one
+The product has a terminal interface and a local browser interface bound to
+`127.0.0.1`. A rule-based planner supports 1–12 people for 1–14 days, package-aware
+pantry deductions, a budget balance or shortfall, and one
 retailer-neutral simulated Canadian price catalog. Recipe need is separate from
 purchasable quantity: mass is normalized to grams, volume to millilitres, fixed-size
 products round up to whole packages, and variable-weight products remain approximate.
@@ -71,11 +72,11 @@ explicitly changes priority. Keep GitHub as the source of code and durable decis
 1. Understand the household request.
 2. Produce one meal plan and shopping list.
 3. Attach one Canadian planning estimate per item from one clearly labelled catalog.
-4. Prepare one retailer-neutral Instacart preview and manual paste list.
-5. Validate product matching through the manual Instacart flow and improve generic
-   search terms only from observed results.
-6. Enable an official handoff only after approved access and contract testing.
-7. Treat retailer-specific availability and actual prices as Instacart-owned results.
+4. Provide a usable standalone local browser interface.
+5. Let households edit local meals and generic foods through validated workflows.
+6. Add an optional guarded LLM selector that returns known meal-template keys only.
+7. Add portable, reviewable exports.
+8. Enable an official Instacart handoff only after approved access and contract testing.
 
 ## Handoff maintenance
 

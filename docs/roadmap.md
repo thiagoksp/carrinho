@@ -89,23 +89,42 @@ It keeps supported dietary restrictions as hard filters, stores catalogue-backed
 household tastes as soft local preferences, and validates an ordered known-key contract
 for a future LLM without adding an LLM or network service.
 
-## Milestone 3 — Validate an available official handoff
+## Milestone 3 — Standalone usable prototype
 
-CAR-1 was cancelled after the project's Canadian account did not expose either the
-documented iPhone **Shopping List → Paste items** flow or **Cart Assistant**. A limited
-public product search was enough to identify package reconciliation as the useful
-generic problem; Carrinho will not test every product across multiple retailers.
+Instacart is no longer on the critical path. Carrinho should remain useful even if an
+official shopping handoff is unavailable.
 
-Resume handoff validation only when an official Instacart surface is available. Change
-generic search terms or structured measurements only from observed evidence, add
-regression tests, and keep the output retailer-neutral.
+**Implemented:** [CAR-11 — Add a local browser interface](https://linear.app/thiagoksp/issue/CAR-11)
+
+It adds a structured local form and renders the deterministic plan in a browser while
+binding only to `127.0.0.1`. It adds no dependency, credential, or external request and
+keeps the terminal interface working.
+
+**Next:** [CAR-12 — Let households edit local meals and generic
+foods](https://linear.app/thiagoksp/issue/CAR-12)
+
+Provide a validated local editing or import workflow with stable text keys and a small
+starter catalogue. Do not add a database, account system, retailer SKU, or copied food
+database.
+
+**Backlog:** [CAR-13 — Add an optional guarded LLM meal
+selector](https://linear.app/thiagoksp/issue/CAR-13)
+
+The LLM may interpret household language and return ordered known meal-template keys.
+Local validation, dietary safety, quantities, packages, and estimates remain
+deterministic and authoritative.
+
+**Backlog:** [CAR-14 — Add portable plan and shopping-list
+exports](https://linear.app/thiagoksp/issue/CAR-14)
+
+Add copy and print-friendly output while preserving existing local text and JSON files.
 
 ## Milestone 4 — Official API integration
 
-**Next, external dependency:** [CAR-3 — Track Instacart Developer Platform
+**Parallel external dependency:** [CAR-3 — Track Instacart Developer Platform
 approval](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval)
 
-CAR-3 is the sole `Next` issue and remains in Backlog until Instacart responds. No code
+CAR-3 remains in Backlog until Instacart responds. It is not labelled `Next`, and no code
 change is required while the external state is unchanged.
 
 **Blocked by CAR-3:** [CAR-4 — Implement the approved Instacart development
