@@ -75,14 +75,12 @@ Project decisions and formats are documented in:
 
 ## Next step
 
-Complete CAR-10 by separating safety-critical dietary restrictions from soft food
-preferences. Household avoid/prefer choices must use validated generic product keys.
-The work should also define a narrow future-LLM candidate contract without adding an LLM,
-database, account system, or network service. The documented iPhone **Paste items** and
-**Cart Assistant** features were not available in the project's Canadian Instacart
-account, so further handoff testing remains gated on an available official surface or
-approved Developer Platform access. Keep all network integration disabled until
-approved access and contract testing are available.
+Track CAR-3 while waiting for Instacart to respond to the Developer Platform interest
+form. No code change is required while that external state is unchanged. The documented
+iPhone **Paste items** and **Cart Assistant** features were not available in the
+project's Canadian Instacart account, so further handoff testing remains gated on an
+available official surface or approved Developer Platform access. Keep all network
+integration disabled until approved access and contract testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).

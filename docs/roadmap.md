@@ -81,12 +81,13 @@ core/extended tiers, and semantic selection tags. A future LLM may suggest order
 known template keys, but local validation and deterministic calculations remain
 authoritative.
 
-**Next, in progress:** [CAR-10 — Separate hard dietary restrictions from soft food
-preferences](https://linear.app/thiagoksp/issue/CAR-10) models medical or safety rules
-as hard filters and household tastes as soft avoid/prefer product keys.
+**Complete:** [CAR-10 — Separate hard dietary restrictions from soft food
+preferences](https://linear.app/thiagoksp/issue/CAR-10), merged through
+[pull request #17](https://github.com/thiagoksp/carrinho/pull/17) on August 14, 2026.
 
-CAR-10 is the sole `Next` issue. It prepares an explicit candidate contract for a future
-LLM without adding an LLM, database, account system, or network service.
+It keeps supported dietary restrictions as hard filters, stores catalogue-backed
+household tastes as soft local preferences, and validates an ordered known-key contract
+for a future LLM without adding an LLM or network service.
 
 ## Milestone 3 — Validate an available official handoff
 
@@ -101,8 +102,11 @@ regression tests, and keep the output retailer-neutral.
 
 ## Milestone 4 — Official API integration
 
-**External dependency:** [CAR-3 — Track Instacart Developer Platform
+**Next, external dependency:** [CAR-3 — Track Instacart Developer Platform
 approval](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval)
+
+CAR-3 is the sole `Next` issue and remains in Backlog until Instacart responds. No code
+change is required while the external state is unchanged.
 
 **Blocked by CAR-3:** [CAR-4 — Implement the approved Instacart development
 handoff](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
