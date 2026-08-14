@@ -110,17 +110,18 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Work on [CAR-7](https://linear.app/thiagoksp/issue/CAR-7), the only issue currently
-labelled `Next`: select meals deterministically from cooking energy, lactose intolerance,
-and pantry inventory. Preserve the reference case, keep one plan, and do not add a
-database, account system, or network service.
+Work on [CAR-8](https://linear.app/thiagoksp/issue/CAR-8), the only issue currently
+labelled `Next`: expand the curated meal library with a small, tested set of varied
+templates. Preserve the deterministic selector, reference case, one plan, and do not add
+a database, account system, or network service.
 
-## Planned sequence after CAR-7
+## Current deterministic selection
 
-Once CAR-7 is reviewed and merged, promote the next backlog item in this order:
-
-1. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
-   Add variety after the catalogue and selection rules have stable coverage.
+CAR-7 was merged as [pull request #13](https://github.com/thiagoksp/carrinho/pull/13) on
+August 14, 2026. Current lactose intolerance is filtered through validated catalogue
+tags. For plans shorter than the eligible library, Carrinho chooses the closest cooking
+energy and then uses pantry coverage as a stable tie-breaker. When a plan needs every
+eligible template, catalogue order preserves the reference case.
 
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.

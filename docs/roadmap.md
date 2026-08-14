@@ -64,16 +64,18 @@ It saves optional household defaults and pantry quantities in private local JSON
 Git. The user explicitly chooses to use or update it; budget, days, address, retailer,
 receipts, and credentials are not stored.
 
-**Next, in progress:** [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
-   makes cooking energy, lactose intolerance, and pantry inventory influence
-   deterministic meal selection while preserving the reference case.
+**Complete:** [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7),
+merged through [pull request #13](https://github.com/thiagoksp/carrinho/pull/13) on
+August 14, 2026.
 
-Then complete the remaining backlog item:
+It makes cooking energy, lactose intolerance, and pantry inventory influence
+deterministic meal selection while preserving the reference case. Lactose-safe catalogue
+tags are a hard filter; energy and pantry coverage rank shorter plans predictably.
 
-1. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
-   adds tested meal variety only after the catalogue and selection rules are stable.
+**Next, in progress:** [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
+adds tested meal variety now that the catalogue and selection rules are stable.
 
-CAR-7 is the sole `Next` issue. The remaining work stays in backlog until it is
+CAR-8 is the sole `Next` issue. The remaining work stays in backlog until it is
 promoted.
 
 ## Milestone 3 — Validate an available official handoff
