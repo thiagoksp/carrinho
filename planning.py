@@ -259,6 +259,22 @@ def _select_templates(
     return rank(eligible_templates)
 
 
+def select_meal_candidate_templates(
+    request: ParsedRequest,
+    catalog: PriceCatalog | None = None,
+    meal_catalogue: MealCatalogue | None = None,
+) -> tuple[MealTemplate, ...]:
+    """Return locally eligible meal templates in deterministic fallback order."""
+    selected_catalog = catalog or load_effective_price_catalog()
+    selected_meals = meal_catalogue or load_effective_meal_catalogue()
+    _validate_preference_keys(request, selected_catalog.products)
+    return _select_templates(
+        request,
+        selected_meals.templates,
+        selected_catalog.products,
+    )
+
+
 def _describe_meal_selection(
     request: ParsedRequest,
     selected_templates: tuple[MealTemplate, ...],
@@ -534,12 +550,22 @@ def _create_plan(
     request: ParsedRequest,
     templates: tuple[MealTemplate, ...],
     catalog: PriceCatalog,
+    meal_candidate_keys: list[str] | tuple[str, ...] | None = None,
 ) -> Plan:
     assert request.budget is not None
     assert request.people is not None
     assert request.days is not None
 
-    selected_templates = _select_templates(request, templates, catalog.products)
+    if meal_candidate_keys is None:
+        selected_templates = _select_templates(request, templates, catalog.products)
+        llm_selected = False
+    else:
+        selected_templates = validate_meal_candidate_keys(
+            meal_candidate_keys,
+            request,
+            MealCatalogue(description="Selected meal candidates", templates=templates),
+        )
+        llm_selected = True
     meals_with_templates = _build_meals(request.days, selected_templates)
     requirements = _calculate_requirements(
         meals_with_templates,
@@ -552,6 +578,13 @@ def _create_plan(
         meal_selection_guidance=_describe_meal_selection(
             request,
             selected_templates,
+        )
+        + (
+            (
+                "Optional LLM meal order was validated against known local templates.",
+            )
+            if llm_selected
+            else ()
         ),
         meal_prep_guidance=(
             "Prepare extra portions when the next meal uses food made earlier.",
@@ -581,6 +614,7 @@ def generate_plan(
     request: ParsedRequest,
     catalog: PriceCatalog | None = None,
     meal_catalogue: MealCatalogue | None = None,
+    meal_candidate_keys: list[str] | tuple[str, ...] | None = None,
 ) -> Plan | None:
     """Generate one meal plan and shopping list from a single price catalog."""
     selected_catalog = catalog or load_effective_price_catalog()
@@ -598,4 +632,9 @@ def generate_plan(
     _validate_preference_keys(request, selected_catalog.products)
 
     selected_meals = meal_catalogue or load_effective_meal_catalogue()
-    return _create_plan(request, selected_meals.templates, selected_catalog)
+    return _create_plan(
+        request,
+        selected_meals.templates,
+        selected_catalog,
+        meal_candidate_keys,
+    )

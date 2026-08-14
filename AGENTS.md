@@ -55,6 +55,12 @@ credential. The former No Frills and Toronto pilot and its manual-price research
 have been removed from the active product; the superseded decision remains in the
 documentation as history.
 
+An optional guarded LLM meal selector exists for local experiments. It is disabled by
+default, uses Structured Outputs, can return only ordered known meal-template keys, and
+never overrides local dietary validation, quantity calculation, package rounding, or
+estimates. Do not store LLM prompts, responses, credentials, tokens, or API keys in
+GitHub, Linear, chat, logs, or generated outputs.
+
 An Instacart Developer Platform interest form was submitted on August 13, 2026. As of
 August 14, 2026, no approval or API key has been received. The documented iPhone
 **Paste items** flow and **Cart Assistant** were not available in the project's Canadian

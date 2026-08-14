@@ -3,7 +3,11 @@ import unittest
 
 from catalog import load_simulated_catalog
 from meal_catalogue import MealCatalogue, load_default_meal_catalogue
-from planning import generate_plan, validate_meal_candidate_keys
+from planning import (
+    generate_plan,
+    select_meal_candidate_templates,
+    validate_meal_candidate_keys,
+)
 from request_parser import ParsedRequest, parse_request
 
 
@@ -100,6 +104,31 @@ class TestPlanning(unittest.TestCase):
                 request,
                 unsafe_catalogue,
             )
+
+    def test_generates_plan_from_validated_llm_candidate_order(self) -> None:
+        request = ParsedRequest(
+            budget=100,
+            currency="CAD",
+            people=2,
+            days=1,
+            cooking_energy="low",
+            pantry_items=[],
+            dietary_restrictions=[],
+        )
+        candidates = select_meal_candidate_templates(request)
+
+        plan = generate_plan(
+            request,
+            meal_candidate_keys=(candidates[1].key, candidates[0].key),
+        )
+
+        assert plan is not None
+        self.assertEqual(plan.meals[0].dish, candidates[1].dish)
+        self.assertEqual(plan.meals[1].dish, candidates[0].dish)
+        self.assertIn(
+            "Optional LLM meal order was validated against known local templates.",
+            plan.meal_selection_guidance,
+        )
 
     def test_generates_eight_meals_within_the_budget(self) -> None:
         plan = generate_plan(parse_request(BASE_CASE))

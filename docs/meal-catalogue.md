@@ -39,23 +39,26 @@ eight-meal reference sequence.
 
 Future dietary restrictions must remain hard constraints. Future likes and disliked
 foods must be separate soft preferences, rather than being represented as medical or
-dietary tags. An LLM may eventually suggest candidates, but this validated catalogue
-and deterministic selector remain the source of truth for what can be planned.
+dietary tags. The optional LLM selector may suggest candidates, but this validated
+catalogue and deterministic selector remain the source of truth for what can be planned.
 
-## Future LLM boundary
+## Optional LLM boundary
 
-A future LLM may receive stable template keys, dish names, catalogue tiers, cooking
-energy, dietary tags, selection tags, and generic product keys. It may return an ordered
-list of known template keys as a suggestion. It must not generate authoritative product
-quantities, prices, dietary compatibility, or retailer identifiers.
+When explicitly enabled, the LLM may receive stable template keys, dish names,
+catalogue tiers, cooking energy, dietary tags, selection tags, and generic product
+keys. It may return an ordered list of known template keys as a suggestion. It must not
+generate authoritative product quantities, cost estimates, dietary compatibility, or
+retailer identifiers.
 
 Carrinho will validate every returned key and restriction before the deterministic
 planner calculates ingredient totals, pantry deductions, packages, and estimates. This
 keeps an LLM useful for preference matching without making it the source of truth.
 
 The public `validate_meal_candidate_keys` boundary accepts only an ordered list of known,
-unique template keys and rejects candidates that violate current hard dietary tags. It
-does not make a network call or grant an LLM authority over calculations.
+unique template keys and rejects candidates that violate current hard dietary tags. The
+LLM adapter is disabled by default, uses Structured Outputs when enabled, and never
+grants an LLM authority over calculations. See
+[`llm-meal-selector.md`](llm-meal-selector.md).
 
 ## Integration boundary
 
