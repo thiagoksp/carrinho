@@ -1,26 +1,49 @@
-# Instruções do projeto Carrinho
+# Carrinho project instructions
 
-## Objetivo
+## Goal
 
-Construir, passo a passo, um agente de mercado que recebe orçamento, dias, disposição para cozinhar e itens existentes; gera plano de refeições e lista de compras; e futuramente pesquisa preços e monta carrinhos.
+Build Carrinho step by step: a Canadian grocery agent that receives a budget, number of
+days and people, cooking energy, pantry items, dietary restrictions, shopping area, and
+one selected store. It produces one meal plan, one shopping list, one selected working
+price per item, and one reviewable cart handoff.
 
-## Forma de trabalhar
+Carrinho is not a price-comparison product. Do not rank retailers, combine stores, search
+for the cheapest basket, or silently replace the requested plan with a cheaper menu.
 
-- Avance em etapas pequenas, explicadas em linguagem acessível.
-- Reduza o número de decisões apresentadas ao usuário.
-- Antes de cada nova etapa, confirme o resultado da etapa anterior.
-- Não implemente funcionalidades além da etapa solicitada.
-- Não adicione bibliotecas, serviços, plugins ou infraestrutura sem necessidade concreta.
-- Preserve simplicidade e facilidade de aprendizado acima de arquitetura prematura.
+## Working style
 
-## Escopo atual
+- Advance in small steps and explain them in accessible language.
+- Minimize the number of decisions presented to the user.
+- Verify the result of each stage before starting the next one.
+- Do not implement features beyond the requested stage.
+- Do not add libraries, services, plugins, or infrastructure without a concrete need.
+- Prefer simplicity and ease of learning over premature architecture.
 
-A interface inicial é o terminal. O programa identifica, completa, permite corrigir e confirma os dados, incluindo localização das compras e loja preferida. O planejamento por regras ajusta pessoas, dias, embalagens, quantidades existentes e orçamento em CAD, sem serviços externos. Quando necessário, tenta uma alternativa econômica e informa se ela ainda ultrapassar o orçamento. Os preços vêm de um catálogo JSON explicitamente simulado e substituível. No Frills em Toronto é a primeira loja piloto registrada; a futura entrega automática considera a API oficial da Instacart, que não deve ser tratada como fonte de preços do planejador nem como garantia de seleção da loja. Ao salvar, o programa cria uma prévia JSON e uma lista de texto para colagem manual no recurso Paste items do iPhone, somente no disco local e sem credenciais ou rede. As inscrições na Developer Platform estavam fechadas e sem lista de espera na última verificação. Somente ausência de restrições ou restrição à lactose são suportadas nesta etapa.
+## Language and naming
 
-## Evolução prevista
+- Documentation, filenames, modules, identifiers, schemas, CLI commands, generated
+  filenames, tests, and user-visible output must use Canadian English.
+- Docstrings must be in English.
+- Code comments may be in Portuguese, but every code comment must begin with `# @@`.
+- Keep `Carrinho` as the project name.
 
-1. Texto do usuário para plano de refeições e lista de compras.
-2. Quantidades e respeito ao orçamento.
-3. Pesquisa de produtos e preços reais.
-4. Otimização por loja ou combinação de lojas.
-5. Montagem do carrinho de compras.
+## Current scope
+
+The interface is a terminal app. A rule-based planner supports 1–12 people for 1–14
+days, package-aware pantry deductions, a budget balance or shortfall, and a single
+simulated price catalog. This version accepts only No Frills in Toronto. The app saves a
+meal plan, an Instacart JSON preview, and a plain-text list for the manual iPhone
+**Paste items** flow. It performs no network request and uses no credential.
+
+An Instacart Developer Platform interest form was submitted on August 13, 2026, but no
+approval or API key has been received. Manual price observations remain local,
+self-declared, unverified, and isolated from planning. Only no dietary restrictions or
+lactose intolerance are supported at this stage.
+
+## Roadmap
+
+1. Understand the household request.
+2. Produce one meal plan and shopping list.
+3. Attach one selected working price per item from the chosen retailer and location.
+4. Produce one reviewable cart handoff.
+5. Enable an official cart integration only after approved access and contract testing.

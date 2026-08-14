@@ -1,36 +1,83 @@
 # Carrinho
 
-Carrinho será um agente de mercado que reduz o número de decisões entre “preciso me alimentar” e “minhas compras estão prontas”.
+Carrinho is a Canadian grocery-planning agent designed to reduce the decisions between
+“we need food” and “the cart is ready to review.”
 
-## Visão do produto
+## Product direction
 
-O usuário informa, em linguagem normal:
+The user describes a household situation in natural language:
 
-- orçamento disponível;
-- quantidade de dias;
-- energia ou disposição para cozinhar;
-- alimentos que já tem em casa.
+- available budget in Canadian dollars;
+- number of people and days;
+- cooking energy;
+- food already available at home;
+- dietary restrictions;
+- shopping area and selected store.
 
-O sistema deverá gerar um plano de refeições e uma lista de compras. Em versões futuras, poderá pesquisar preços reais, comparar lojas e montar o carrinho de compras.
+Carrinho produces one practical meal plan, one shopping list, one selected working price
+per item, and one cart handoff. It is not a store or price comparison product: it does
+not rank retailers, combine carts, or silently replace the meal plan with a cheaper one.
+The budget remains visible as either a balance or a shortfall.
 
-## Estado atual
+## Current state
 
-O projeto possui uma entrada pelo terminal. Ela identifica e completa os dados, incluindo localização das compras e loja preferida; durante a confirmação, permite corrigir um campo por vez sem reiniciar. O planejamento por regras atende de 1 a 12 pessoas por 1 a 14 dias, ajusta quantidades por embalagem e desconta o estoque informado em kg, g, litros, latas, dúzias, unidades e frações de pacotes. Quando o plano normal ultrapassa o orçamento em CAD, tenta automaticamente uma alternativa econômica e informa com honestidade se ainda faltar dinheiro. Os valores vêm de um catálogo JSON claramente identificado como simulado, que pode ser substituído por outra fonte. No Frills em Toronto foi registrada como a primeira loja piloto; a futura entrega automática será estudada pela integração oficial da Instacart, sem tratar essa integração como fonte de preços e sem garantir a seleção da loja. Ao salvar, o programa cria o plano, uma prévia JSON e uma lista de texto formatada para testar manualmente o recurso **Paste items** da Shopping List no iPhone. Nada é enviado automaticamente e nenhuma chave é exigida. Nesta etapa, aceita somente ausência de restrições ou restrição à lactose.
+The terminal app understands and completes an English request, allows one field at a
+time to be corrected, and supports 1–12 people for 1–14 days. Its rule-based planner
+adjusts package quantities and accounts for pantry amounts expressed in kilograms,
+grams, litres, cans, dozens, units, and package fractions. The current values come from
+one JSON catalog that is explicitly labelled as simulated.
 
-Em 13 de agosto de 2026, a página oficial da Instacart informa que novas inscrições na Developer Platform estão fechadas e não há lista de espera. Por isso, a integração de rede permanece desligada; o caminho disponível é copiar a lista de texto, colá-la no aplicativo e revisar os produtos antes de adicioná-los ao carrinho.
+The current terminal pilot accepts only No Frills in Toronto, Ontario. The program
+creates three local files when a plan is saved:
 
-O cenário de referência aprovado está documentado em [`docs/caso-base.md`](docs/caso-base.md). A escolha da primeira loja e seus limites estão em [`docs/decisao-primeira-integracao.md`](docs/decisao-primeira-integracao.md). O formato da prévia local está em [`docs/preparacao-instacart.md`](docs/preparacao-instacart.md).
+- a readable meal plan;
+- an Instacart JSON preview for a future approved integration;
+- a plain-text list for manually testing the iPhone **Shopping List → Paste items** flow.
 
-## Próxima etapa
+Nothing is sent automatically, and no API key is required. The current planner supports
+either no dietary restrictions or lactose intolerance. It does not intentionally include
+dairy ingredients, but users must still review product labels.
 
-Validar a lista de texto uma vez no recurso **Shopping List → Paste items** do iPhone. Quando a Instacart reabrir as inscrições, solicitar uma chave de desenvolvimento e testar uma única prévia no ambiente oficial antes de adicionar rede ao aplicativo.
+An Instacart Developer Platform interest form was submitted on August 13, 2026.
+Applications are subject to Instacart review and approval; submission did not provide
+access or an API key. Network integration therefore remains disabled.
 
-## Ambiente local
+A separate manual-price importer creates an Excel-compatible CSV and stores local,
+self-declared observations with package, exact store location, date, channel, and source.
+The CSV hash preserves an import trail but does not prove that a value is authentic,
+licensed, live, or verified. These observations are isolated from the planner and cannot
+change its budget calculations.
 
-O projeto usa Python 3.12 e não possui dependências externas nesta etapa.
+Project decisions and formats are documented in:
 
-Para abrir o Carrinho no Windows:
+- [`docs/reference-case.md`](docs/reference-case.md)
+- [`docs/initial-integration-decision.md`](docs/initial-integration-decision.md)
+- [`docs/instacart-list-preparation.md`](docs/instacart-list-preparation.md)
+- [`docs/manual-price-observations.md`](docs/manual-price-observations.md)
+
+## Next step
+
+Record one manual No Frills price observation without using it in the plan, validate the
+manual iPhone paste flow once, and wait for the Instacart application response.
+
+## Local environment
+
+The project uses Python 3.12 and currently has no third-party runtime dependencies.
+
+Run Carrinho on Windows:
 
 ```powershell
 .\.venv\Scripts\python.exe app.py
+```
+
+Create the manual-price CSV template:
+
+```powershell
+.\.venv\Scripts\python.exe manual_prices.py create-template
+```
+
+Run the test suite:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```

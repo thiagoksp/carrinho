@@ -1,399 +1,389 @@
-"""Entrada inicial do Carrinho pelo terminal."""
+"""Run Carrinho's initial terminal experience."""
 
 from pathlib import Path
 import re
 
 from instacart import (
-    criar_lista_colar_instacart,
-    salvar_lista_colar_instacart,
-    salvar_payload_instacart,
+    create_instacart_paste_list,
+    save_instacart_paste_list,
+    save_instacart_payload,
 )
-from pedido import PedidoEntendido, entender_pedido
-from planejamento import Plano, gerar_plano
+from pilot import (
+    PILOT_LOCATION,
+    PILOT_STORE,
+    matches_pilot_location,
+    matches_pilot_store,
+)
+from planning import Plan, generate_plan
+from request_parser import ParsedRequest, parse_request
 
 
-def _mostrar(valor: object | None) -> str:
-    return str(valor) if valor is not None else "não identificado"
+def _display(value: object | None) -> str:
+    return str(value) if value is not None else "not identified"
 
 
-def mostrar_resumo(dados: PedidoEntendido) -> None:
-    """Exibe somente os dados identificados, sem criar um plano ainda."""
-    if dados.orcamento is None:
-        orcamento = "não identificado"
+def print_request_summary(request_data: ParsedRequest) -> None:
+    """Show only the identified request data before building a plan."""
+    if request_data.budget is None:
+        budget = "not identified"
     else:
-        moeda = dados.moeda or ""
-        valor = f"{dados.orcamento:g}"
-        orcamento = f"{moeda}${valor}" if moeda == "CAD" else f"{moeda} {valor}".strip()
+        currency = request_data.currency or ""
+        value = f"{request_data.budget:g}"
+        budget = (
+            f"{currency}${value}"
+            if currency == "CAD"
+            else f"{currency} {value}".strip()
+        )
 
-    if dados.itens_em_casa is None:
-        itens = "não identificados"
+    if request_data.pantry_items is None:
+        pantry_items = "not identified"
     else:
-        itens = ", ".join(dados.itens_em_casa) or "nenhum"
+        pantry_items = ", ".join(request_data.pantry_items) or "none"
 
-    if dados.restricoes is None:
-        restricoes = "não identificadas"
+    if request_data.dietary_restrictions is None:
+        dietary_restrictions = "not identified"
     else:
-        restricoes = ", ".join(dados.restricoes) or "nenhuma"
+        dietary_restrictions = (
+            ", ".join(request_data.dietary_restrictions) or "none"
+        )
 
-    print("\nO Carrinho entendeu:")
-    print(f"- Orçamento: {orcamento}")
-    print(f"- Pessoas: {_mostrar(dados.pessoas)}")
-    print(f"- Dias: {_mostrar(dados.dias)}")
-    print(f"- Disposição para cozinhar: {_mostrar(dados.disposicao)}")
-    print(f"- Itens em casa: {itens}")
-    print(f"- Restrições: {restricoes}")
-    print(f"- Localização das compras: {_mostrar(dados.localizacao)}")
-    print(f"- Loja preferida: {_mostrar(dados.loja_preferida)}")
+    print("\nCarrinho understood:")
+    print(f"- Budget: {budget}")
+    print(f"- People: {_display(request_data.people)}")
+    print(f"- Days: {_display(request_data.days)}")
+    print(f"- Cooking energy: {_display(request_data.cooking_energy)}")
+    print(f"- Pantry items: {pantry_items}")
+    print(f"- Dietary restrictions: {dietary_restrictions}")
+    print(f"- Shopping location: {_display(request_data.shopping_location)}")
+    print(f"- Selected store: {_display(request_data.selected_store)}")
 
 
-def _ler_orcamento() -> tuple[float, str]:
+def _read_budget() -> tuple[float, str]:
     while True:
-        resposta = input("\nQual é o orçamento em CAD? (ex.: 80)\n> ").strip()
-        texto = resposta if re.search(r"[A-Za-z$]", resposta) else f"CAD${resposta}"
-        parcial = entender_pedido(texto)
-        if parcial.orcamento is not None and parcial.orcamento > 0:
-            return parcial.orcamento, parcial.moeda or "CAD"
-        print("Não consegui entender. Digite somente o valor, como 80.")
+        response = input("\nWhat is your budget in CAD? (for example, 80)\n> ").strip()
+        text = response if re.search(r"[A-Za-z$]", response) else f"CAD${response}"
+        partial_request = parse_request(text)
+        if partial_request.budget is not None and partial_request.budget > 0:
+            return partial_request.budget, partial_request.currency or "CAD"
+        print("I could not understand that. Enter only the amount, such as 80.")
 
 
-def _ler_quantidade(pergunta: str, unidade: str, atributo: str) -> int:
+def _read_quantity(question: str, unit: str, attribute: str) -> int:
     while True:
-        resposta = input(f"\n{pergunta}\n> ").strip()
-        parcial = entender_pedido(f"{resposta} {unidade}")
-        quantidade = getattr(parcial, atributo)
-        if quantidade is not None and quantidade > 0:
-            return quantidade
-        print("Digite uma quantidade maior que zero.")
+        response = input(f"\n{question}\n> ").strip()
+        partial_request = parse_request(f"{response} {unit}")
+        quantity = getattr(partial_request, attribute)
+        if quantity is not None and quantity > 0:
+            return quantity
+        print("Enter a quantity greater than zero.")
 
 
-def _ler_disposicao() -> str:
-    opcoes = {"1": "baixa", "2": "normal", "3": "alta"}
+def _read_cooking_energy() -> str:
+    options = {"1": "low", "2": "normal", "3": "high"}
     while True:
-        resposta = input(
-            "\nQual é a disposição para cozinhar?\n"
-            "1 - Baixa\n2 - Normal\n3 - Alta\n> "
+        response = input(
+            "\nHow much energy do you have for cooking?\n"
+            "1 - Low\n2 - Normal\n3 - High\n> "
         ).strip().casefold()
-        disposicao = opcoes.get(resposta, resposta)
-        if disposicao in opcoes.values():
-            return disposicao
-        print("Escolha 1, 2 ou 3.")
+        cooking_energy = options.get(response, response)
+        if cooking_energy in options.values():
+            return cooking_energy
+        print("Choose 1, 2, or 3.")
 
 
-def _dividir_resposta(resposta: str) -> list[str]:
+def _split_response(response: str) -> list[str]:
     return [
         item.strip().casefold()
-        for item in re.split(r"\s*,\s*|\s+e\s+", resposta)
+        for item in re.split(r"\s*,\s*|\s+and\s+", response, flags=re.IGNORECASE)
         if item.strip()
     ]
 
 
-def _ler_itens() -> list[str]:
+def _read_pantry_items() -> list[str]:
     while True:
-        resposta = input(
-            "\nO que você já tem em casa? "
-            "Separe os itens com vírgulas; se não tiver nada, digite 'nada'.\n> "
+        response = input(
+            "\nWhat do you already have at home? Separate items with commas; "
+            "enter 'nothing' if your pantry is empty.\n> "
         ).strip()
-        if resposta.casefold() in {"nada", "nenhum", "nenhuma"}:
+        if response.casefold() in {"nothing", "none"}:
             return []
-        itens = _dividir_resposta(resposta)
-        if itens:
-            return itens
-        print("Informe os itens ou digite 'nada'.")
+        pantry_items = _split_response(response)
+        if pantry_items:
+            return pantry_items
+        print("Enter the items or type 'nothing'.")
 
 
-def _ler_restricoes() -> list[str]:
+def _read_dietary_restrictions() -> list[str]:
     while True:
-        resposta = input(
-            "\nExiste alguma restrição alimentar? "
-            "Se não existir, digite 'nenhuma'.\n> "
+        response = input(
+            "\nAre there any dietary restrictions? Enter 'none' if there are not.\n> "
         ).strip()
-        if resposta.casefold() in {"não", "nao", "nenhuma", "nenhum"}:
+        if response.casefold() in {"no", "none"}:
             return []
 
-        parcial = entender_pedido(resposta)
-        restricoes = parcial.restricoes or _dividir_resposta(resposta)
-        if restricoes:
-            return restricoes
-        print("Informe a restrição ou digite 'nenhuma'.")
+        partial_request = parse_request(response)
+        dietary_restrictions = (
+            partial_request.dietary_restrictions or _split_response(response)
+        )
+        if dietary_restrictions:
+            return dietary_restrictions
+        print("Enter the restriction or type 'none'.")
 
 
-def _ler_localizacao() -> str:
+def _read_shopping_location() -> str:
     while True:
-        resposta = input(
-            "\nEm qual cidade ou região você fará as compras? "
-            "(ex.: Toronto ou M5V 2T6)\n> "
+        response = input(
+            "\nThe current pilot supports Toronto. Enter Toronto or a Toronto "
+            "postal code (for example, M5V 2T6).\n> "
         ).strip()
-        if resposta:
-            return resposta
-        print("Informe uma cidade, região ou código postal.")
+        if matches_pilot_location(response):
+            return response
+        print(f"This version supports only {PILOT_LOCATION}.")
 
 
-def _ler_loja() -> str:
-    respostas_livres = {
-        "qualquer",
-        "qualquer loja",
-        "sem preferencia",
-        "sem preferência",
-        "tanto faz",
-        "nenhuma",
-        "nenhum",
-        "não",
-        "nao",
-    }
+def _read_store() -> str:
     while True:
-        resposta = input(
-            "\nTem alguma loja preferida? "
-            "Digite o nome ou 'qualquer'.\n> "
+        response = input(
+            f"\nThe current pilot store is {PILOT_STORE}. "
+            f"Enter '{PILOT_STORE}' to continue.\n> "
         ).strip()
-        if resposta.casefold() in respostas_livres:
-            return "qualquer loja"
-        if resposta:
-            return resposta
-        print("Informe uma loja ou digite 'qualquer'.")
+        if matches_pilot_store(response):
+            return PILOT_STORE
+        print(f"This version supports only {PILOT_STORE}.")
 
 
-def completar_dados(dados: PedidoEntendido) -> PedidoEntendido:
-    """Pergunta somente os dados que não apareceram no texto inicial."""
-    if dados.orcamento is None:
-        dados.orcamento, dados.moeda = _ler_orcamento()
-    if dados.pessoas is None:
-        dados.pessoas = _ler_quantidade("Para quantas pessoas?", "pessoas", "pessoas")
-    if dados.dias is None:
-        dados.dias = _ler_quantidade("Por quantos dias?", "dias", "dias")
-    if dados.disposicao is None:
-        dados.disposicao = _ler_disposicao()
-    if dados.itens_em_casa is None:
-        dados.itens_em_casa = _ler_itens()
-    if dados.restricoes is None:
-        dados.restricoes = _ler_restricoes()
-    if dados.localizacao is None:
-        dados.localizacao = _ler_localizacao()
-    if dados.loja_preferida is None:
-        dados.loja_preferida = _ler_loja()
-    return dados
+def complete_request(request_data: ParsedRequest) -> ParsedRequest:
+    """Ask only for data that was not present in the initial request."""
+    if request_data.budget is None:
+        request_data.budget, request_data.currency = _read_budget()
+    if request_data.people is None:
+        request_data.people = _read_quantity(
+            "How many people are you feeding?",
+            "people",
+            "people",
+        )
+    if request_data.days is None:
+        request_data.days = _read_quantity("For how many days?", "days", "days")
+    if request_data.cooking_energy is None:
+        request_data.cooking_energy = _read_cooking_energy()
+    if request_data.pantry_items is None:
+        request_data.pantry_items = _read_pantry_items()
+    if request_data.dietary_restrictions is None:
+        request_data.dietary_restrictions = _read_dietary_restrictions()
+    if not matches_pilot_location(request_data.shopping_location):
+        request_data.shopping_location = _read_shopping_location()
+    if not matches_pilot_store(request_data.selected_store):
+        request_data.selected_store = _read_store()
+    return request_data
 
 
-def _confirmar_dados() -> bool:
+def _confirm_request() -> bool:
     while True:
-        resposta = input("\nEsses dados estão corretos? (s/n)\n> ").strip().casefold()
-        if resposta in {"s", "sim"}:
+        response = input("\nIs this information correct? (y/n)\n> ").strip().casefold()
+        if response in {"y", "yes"}:
             return True
-        if resposta in {"n", "não", "nao"}:
+        if response in {"n", "no"}:
             return False
-        print("Responda com 's' para sim ou 'n' para não.")
+        print("Enter 'y' for yes or 'n' for no.")
 
 
-def _corrigir_um_dado(dados: PedidoEntendido) -> None:
-    opcoes = {
-        "1": "orcamento",
-        "2": "pessoas",
-        "3": "dias",
-        "4": "disposicao",
-        "5": "itens",
-        "6": "restricoes",
-        "7": "localizacao",
-        "8": "loja",
+def _correct_one_field(request_data: ParsedRequest) -> None:
+    options = {
+        "1": "budget",
+        "2": "people",
+        "3": "days",
+        "4": "cooking_energy",
+        "5": "pantry_items",
+        "6": "dietary_restrictions",
+        "7": "shopping_location",
+        "8": "selected_store",
     }
 
     while True:
-        resposta = input(
-            "\nQual dado você quer corrigir?\n"
-            "1 - Orçamento\n"
-            "2 - Pessoas\n"
-            "3 - Dias\n"
-            "4 - Disposição para cozinhar\n"
-            "5 - Itens em casa\n"
-            "6 - Restrições alimentares\n"
-            "7 - Localização das compras\n"
-            "8 - Loja preferida\n> "
+        response = input(
+            "\nWhich detail would you like to correct?\n"
+            "1 - Budget\n"
+            "2 - People\n"
+            "3 - Days\n"
+            "4 - Cooking energy\n"
+            "5 - Pantry items\n"
+            "6 - Dietary restrictions\n"
+            "7 - Shopping location\n"
+            "8 - Selected store\n> "
         ).strip()
-        escolha = opcoes.get(resposta)
-        if escolha is not None:
+        choice = options.get(response)
+        if choice is not None:
             break
-        print("Escolha um número de 1 a 8.")
+        print("Choose a number from 1 to 8.")
 
-    if escolha == "orcamento":
-        dados.orcamento, dados.moeda = _ler_orcamento()
-    elif escolha == "pessoas":
-        dados.pessoas = _ler_quantidade(
-            "Para quantas pessoas?", "pessoas", "pessoas"
+    if choice == "budget":
+        request_data.budget, request_data.currency = _read_budget()
+    elif choice == "people":
+        request_data.people = _read_quantity(
+            "How many people are you feeding?",
+            "people",
+            "people",
         )
-    elif escolha == "dias":
-        dados.dias = _ler_quantidade("Por quantos dias?", "dias", "dias")
-    elif escolha == "disposicao":
-        dados.disposicao = _ler_disposicao()
-    elif escolha == "itens":
-        dados.itens_em_casa = _ler_itens()
-    elif escolha == "restricoes":
-        dados.restricoes = _ler_restricoes()
-    elif escolha == "localizacao":
-        dados.localizacao = _ler_localizacao()
+    elif choice == "days":
+        request_data.days = _read_quantity("For how many days?", "days", "days")
+    elif choice == "cooking_energy":
+        request_data.cooking_energy = _read_cooking_energy()
+    elif choice == "pantry_items":
+        request_data.pantry_items = _read_pantry_items()
+    elif choice == "dietary_restrictions":
+        request_data.dietary_restrictions = _read_dietary_restrictions()
+    elif choice == "shopping_location":
+        request_data.shopping_location = _read_shopping_location()
     else:
-        dados.loja_preferida = _ler_loja()
+        request_data.selected_store = _read_store()
 
 
-def revisar_dados(dados: PedidoEntendido) -> PedidoEntendido:
-    """Permite corrigir um campo por vez até o usuário confirmar o resumo."""
+def review_request(request_data: ParsedRequest) -> ParsedRequest:
+    """Let the user correct one field at a time until the summary is confirmed."""
     while True:
-        mostrar_resumo(dados)
-        if _confirmar_dados():
-            return dados
-        _corrigir_um_dado(dados)
+        print_request_summary(request_data)
+        if _confirm_request():
+            return request_data
+        _correct_one_field(request_data)
 
 
-def _formatar_dinheiro(moeda: str, valor: float) -> str:
-    prefixos = {"CAD": "CAD$", "USD": "US$", "BRL": "R$"}
-    prefixo = prefixos.get(moeda, f"{moeda} ")
-    return f"{prefixo}{valor:.2f}"
+def _format_money(currency: str, value: float) -> str:
+    prefixes = {"CAD": "CAD$", "USD": "US$", "BRL": "R$"}
+    prefix = prefixes.get(currency, f"{currency} ")
+    return f"{prefix}{value:.2f}"
 
 
-def formatar_plano(plano: Plano) -> str:
-    """Produz o mesmo conteúdo para o terminal e para o arquivo salvo."""
-    linhas: list[str] = []
+def format_plan(plan: Plan) -> str:
+    """Build the same English output for the terminal and the saved file."""
+    lines = [
+        "MEAL PLAN",
+        f"For {plan.people} person(s) over {plan.days} day(s).",
+        f"Shopping location: {_display(plan.shopping_location)}.",
+        f"Selected store: {_display(plan.selected_store)}.",
+        "The current estimate uses one simulated price catalogue for this trip.",
+    ]
 
-    if plano.economico:
-        linhas.append("ALTERNATIVA ECONÔMICA")
-        linhas.append("O plano inicial ultrapassou o orçamento e foi simplificado.")
-        if plano.total_plano_normal is not None:
-            economia = plano.total_plano_normal - plano.total_estimado
-            linhas.append(
-                f"Economia estimada: {_formatar_dinheiro(plano.moeda, economia)}"
-            )
-        linhas.append("")
+    for meal in plan.meals:
+        lines.append(f"- Day {meal.day} — {meal.meal_slot}: {meal.dish}")
 
-    linhas.append("PLANO DE REFEIÇÕES")
-    linhas.append(f"Para {plano.pessoas} pessoa(s) durante {plano.dias} dia(s).")
-    linhas.append(f"Localização das compras: {_mostrar(plano.localizacao)}.")
-    linhas.append(f"Loja preferida: {_mostrar(plano.loja_preferida)}.")
-    linhas.append(
-        "Nesta etapa, localização e loja ainda não alteram os preços simulados."
+    lines.extend(("", "MEAL PREP GUIDANCE"))
+    for guidance in plan.meal_prep_guidance:
+        lines.append(f"- {guidance}")
+
+    lines.extend(("", f"SHOPPING LIST — {plan.price_type.upper()} PRICES"))
+    for item in plan.shopping_items:
+        lines.append(
+            f"- {item.name}: {item.quantity_label} "
+            f"— {_format_money(plan.currency, item.estimated_price)}"
+        )
+
+    estimated_total = _format_money(plan.currency, plan.estimated_total)
+    lines.extend(("", f"Estimated total: {estimated_total}"))
+    if plan.budget_balance >= 0:
+        budget_balance = _format_money(plan.currency, plan.budget_balance)
+        lines.append(f"Budget balance: {budget_balance}")
+    else:
+        budget_shortfall = _format_money(plan.currency, abs(plan.budget_balance))
+        lines.append(f"Budget shortfall: {budget_shortfall}")
+
+    lines.append(f"Price source: {plan.price_description}")
+
+    lines.extend(("", "PANTRY ITEMS USED"))
+    if plan.pantry_usage:
+        for usage in plan.pantry_usage:
+            lines.append(f"- {usage}")
+    else:
+        lines.append("- No main ingredient from the plan was identified at home.")
+
+    lines.extend(
+        (
+            "",
+            "Important: the plan does not intentionally use dairy ingredients, "
+            "but product labels must still be checked.",
+        )
     )
-    for refeicao in plano.refeicoes:
-        linhas.append(
-            f"- Dia {refeicao.dia} — {refeicao.momento}: {refeicao.prato}"
-        )
-
-    linhas.extend(("", "COMO REDUZIR O TRABALHO"))
-    for orientacao in plano.reaproveitamento:
-        linhas.append(f"- {orientacao}")
-
-    linhas.extend(("", f"LISTA DE COMPRAS — PREÇOS {plano.tipo_precos.upper()}"))
-    for item in plano.compras:
-        linhas.append(
-            f"- {item.nome}: {item.quantidade} "
-            f"— {_formatar_dinheiro(plano.moeda, item.preco_estimado)}"
-        )
-
-    total = _formatar_dinheiro(plano.moeda, plano.total_estimado)
-    linhas.extend(("", f"Total estimado: {total}"))
-    if plano.margem >= 0:
-        margem = _formatar_dinheiro(plano.moeda, plano.margem)
-        linhas.append(f"Margem do orçamento: {margem}")
-    else:
-        excesso = _formatar_dinheiro(plano.moeda, abs(plano.margem))
-        linhas.append(f"Valor acima do orçamento: {excesso}")
-
-    linhas.append(f"Fonte dos preços: {plano.descricao_precos}")
-
-    linhas.extend(("", "ITENS QUE JÁ ESTÃO EM CASA"))
-    if plano.uso_itens_casa:
-        for uso in plano.uso_itens_casa:
-            linhas.append(f"- {uso}")
-    else:
-        linhas.append(
-            "- Nenhum ingrediente principal do plano foi identificado em casa."
-        )
-
-    linhas.extend((
-        "",
-        "Atenção: o plano não usa ingredientes lácteos intencionalmente, "
-        "mas os rótulos dos produtos devem ser conferidos."
-    ))
-    return "\n".join(linhas)
+    return "\n".join(lines)
 
 
-def mostrar_plano(plano: Plano) -> None:
-    """Apresenta o plano e seus custos simulados."""
-    print(f"\n{formatar_plano(plano)}")
+def print_plan(plan: Plan) -> None:
+    """Show the plan and its current estimated costs."""
+    print(f"\n{format_plan(plan)}")
 
 
-def _proximo_caminho(diretorio: Path) -> Path:
-    caminho = diretorio / "plano-carrinho.txt"
-    numero = 2
-    while caminho.exists():
-        caminho = diretorio / f"plano-carrinho-{numero}.txt"
-        numero += 1
-    return caminho
+def _next_plan_path(directory: Path) -> Path:
+    path = directory / "meal-plan.txt"
+    number = 2
+    while path.exists():
+        path = directory / f"meal-plan-{number}.txt"
+        number += 1
+    return path
 
 
-def salvar_plano(plano: Plano, diretorio: Path | None = None) -> Path:
-    """Salva um novo arquivo sem substituir resultados anteriores."""
-    pasta = diretorio or Path(__file__).resolve().parent / "resultados"
-    pasta.mkdir(parents=True, exist_ok=True)
-    caminho = _proximo_caminho(pasta)
-    caminho.write_text(f"{formatar_plano(plano)}\n", encoding="utf-8")
-    return caminho
+def save_plan(plan: Plan, output_directory: Path | None = None) -> Path:
+    """Save a new plan without replacing an earlier result."""
+    directory = output_directory or Path(__file__).resolve().parent / "outputs"
+    directory.mkdir(parents=True, exist_ok=True)
+    path = _next_plan_path(directory)
+    path.write_text(f"{format_plan(plan)}\n", encoding="utf-8")
+    return path
 
 
-def _quer_salvar_plano() -> bool:
+def _should_save_plan() -> bool:
     while True:
-        resposta = input(
-            "\nDeseja salvar o plano e a prévia local da Instacart? (s/n)\n> "
-        ).strip()
-        resposta = resposta.casefold()
-        if resposta in {"s", "sim"}:
+        response = input(
+            "\nWould you like to save the plan and local Instacart preview? (y/n)\n> "
+        ).strip().casefold()
+        if response in {"y", "yes"}:
             return True
-        if resposta in {"n", "não", "nao"}:
+        if response in {"n", "no"}:
             return False
-        print("Responda com 's' para sim ou 'n' para não.")
+        print("Enter 'y' for yes or 'n' for no.")
 
 
 def main() -> None:
-    """Recebe um pedido e mostra os dados básicos identificados."""
+    """Read a request, confirm it, and build the current local plan."""
     print("\nCARRINHO")
-    print("Planejamento simples de refeições e compras.")
+    print("Simple meal planning and grocery-cart preparation.")
 
-    pedido = input("\nConte sua situação:\n> ").strip()
+    request_text = input("\nTell us about your situation:\n> ").strip()
 
-    if not pedido:
-        print("\nNenhum pedido foi informado.")
+    if not request_text:
+        print("\nNo request was provided.")
         return
 
-    dados = revisar_dados(completar_dados(entender_pedido(pedido)))
-    print("\nDados confirmados.")
+    request_data = review_request(complete_request(parse_request(request_text)))
+    print("\nInformation confirmed.")
 
-    plano = gerar_plano(dados)
-    if plano is None:
+    plan = generate_plan(request_data)
+    if plan is None:
         print(
-            "\nEsta versão planeja de 1 a 12 pessoas por 1 a 14 dias, "
-            "em CAD, sem restrições ou somente com restrição à lactose."
+            "\nThis version plans for 1 to 12 people over 1 to 14 days, "
+            "in CAD, with no dietary restrictions or lactose intolerance only."
         )
-    else:
-        mostrar_plano(plano)
-        if _quer_salvar_plano():
-            criar_lista_colar_instacart(plano)
-            caminho_plano = salvar_plano(plano)
-            caminho_instacart = salvar_payload_instacart(plano)
-            caminho_colar = salvar_lista_colar_instacart(plano)
-            print(f"\nPlano salvo em:\n{caminho_plano}")
-            print(
-                "\nPrévia Instacart salva localmente — nenhum dado foi enviado:\n"
-                f"{caminho_instacart}"
-            )
-            print(
-                "\nLista formatada para teste manual na Instacart:\n"
-                f"{caminho_colar}"
-            )
-            print(
-                "Abra esse arquivo no Windows, copie o conteúdo e envie ao iPhone "
-                "por Notes, e-mail ou mensagem. Depois: Shopping List → Paste items."
-            )
-            print(
-                "A Instacart pode interpretar a medida como texto. "
-                "Revise produtos, quantidades, ingredientes e rótulos conforme "
-                "suas restrições "
-                "antes de adicionar ao carrinho."
-            )
+        return
+
+    print_plan(plan)
+    if _should_save_plan():
+        create_instacart_paste_list(plan)
+        plan_path = save_plan(plan)
+        instacart_path = save_instacart_payload(plan)
+        paste_list_path = save_instacart_paste_list(plan)
+        print(f"\nPlan saved to:\n{plan_path}")
+        print(
+            "\nInstacart preview saved locally — no data was sent:\n"
+            f"{instacart_path}"
+        )
+        print(f"\nManual Instacart paste list saved to:\n{paste_list_path}")
+        print(
+            "Open the file in Windows, copy its contents, and send it to your "
+            "iPhone through Notes, email, or a message. Then open Shopping List "
+            "→ Paste items."
+        )
+        print(
+            "Instacart may interpret a measurement as text. Review the selected "
+            "store, products, quantities, ingredients, and labels for your "
+            "dietary needs before adding items to the cart."
+        )
 
 
 if __name__ == "__main__":

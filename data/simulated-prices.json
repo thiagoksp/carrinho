@@ -1,0 +1,150 @@
+{
+  "currency": "CAD",
+  "price_type": "simulated",
+  "description": "Fictional local values for development; they do not represent current offers.",
+  "products": [
+    {
+      "key": "chicken",
+      "name": "Chicken thighs",
+      "package_description": "1.2 kg",
+      "package_size": 1.2,
+      "package_price": 13.0,
+      "keywords": ["chicken"],
+      "instacart_search_term": "chicken thighs",
+      "instacart_quantity": 1.2,
+      "instacart_unit": "kg"
+    },
+    {
+      "key": "ground_beef",
+      "name": "Ground beef",
+      "package_description": "500 g",
+      "package_size": 0.5,
+      "package_price": 7.0,
+      "keywords": ["ground beef", "beef"],
+      "instacart_search_term": "ground beef",
+      "instacart_quantity": 500,
+      "instacart_unit": "g"
+    },
+    {
+      "key": "pasta",
+      "name": "Dry pasta",
+      "package_description": "900 g package",
+      "package_size": 0.9,
+      "package_price": 2.5,
+      "keywords": ["pasta"],
+      "instacart_search_term": "dry pasta",
+      "instacart_quantity": 900,
+      "instacart_unit": "g"
+    },
+    {
+      "key": "tomato_sauce",
+      "name": "Canned tomato sauce",
+      "package_description": "1 can",
+      "package_size": 1.0,
+      "package_price": 2.5,
+      "keywords": ["tomato", "tomato sauce"],
+      "instacart_search_term": "tomato sauce",
+      "instacart_quantity": 1,
+      "instacart_unit": "can"
+    },
+    {
+      "key": "beans",
+      "name": "Canned beans",
+      "package_description": "1 can",
+      "package_size": 1.0,
+      "package_price": 1.75,
+      "keywords": ["bean", "beans"],
+      "instacart_search_term": "canned beans",
+      "instacart_quantity": 1,
+      "instacart_unit": "can"
+    },
+    {
+      "key": "vegetables",
+      "name": "Frozen mixed vegetables",
+      "package_description": "1.5 kg package",
+      "package_size": 1.5,
+      "package_price": 6.0,
+      "keywords": ["vegetable", "vegetables"],
+      "instacart_search_term": "frozen mixed vegetables",
+      "instacart_quantity": 1.5,
+      "instacart_unit": "kg"
+    },
+    {
+      "key": "potatoes",
+      "name": "Potatoes",
+      "package_description": "5 lb bag",
+      "package_size": 2.27,
+      "package_price": 5.0,
+      "keywords": ["potato", "potatoes"],
+      "instacart_search_term": "potatoes",
+      "instacart_quantity": 5,
+      "instacart_unit": "lb bag"
+    },
+    {
+      "key": "onions",
+      "name": "Onions",
+      "package_description": "3 lb bag",
+      "package_size": 1.36,
+      "package_price": 4.0,
+      "keywords": ["onion", "onions"],
+      "instacart_search_term": "yellow onions",
+      "instacart_quantity": 3,
+      "instacart_unit": "lb bag"
+    },
+    {
+      "key": "garlic",
+      "name": "Garlic",
+      "package_description": "200 g package",
+      "package_size": 0.2,
+      "package_price": 1.5,
+      "keywords": ["garlic"],
+      "instacart_search_term": "garlic",
+      "instacart_quantity": 200,
+      "instacart_unit": "g"
+    },
+    {
+      "key": "oil",
+      "name": "Vegetable oil",
+      "package_description": "946 ml bottle",
+      "package_size": 0.946,
+      "package_price": 5.0,
+      "keywords": ["oil", "vegetable oil", "olive oil"],
+      "instacart_search_term": "vegetable oil",
+      "instacart_quantity": 946,
+      "instacart_unit": "ml"
+    },
+    {
+      "key": "seasoning",
+      "name": "All-purpose seasoning",
+      "package_description": "1 package",
+      "package_size": 1.0,
+      "package_price": 4.0,
+      "keywords": ["salt", "pepper", "paprika", "seasoning", "spices"],
+      "instacart_search_term": "all-purpose seasoning",
+      "instacart_quantity": 1,
+      "instacart_unit": "package"
+    },
+    {
+      "key": "rice",
+      "name": "Rice",
+      "package_description": "2 kg bag",
+      "package_size": 2.0,
+      "package_price": 6.0,
+      "keywords": ["rice"],
+      "instacart_search_term": "rice",
+      "instacart_quantity": 2,
+      "instacart_unit": "kg"
+    },
+    {
+      "key": "eggs",
+      "name": "Large eggs",
+      "package_description": "1 dozen",
+      "package_size": 12.0,
+      "package_price": 4.5,
+      "keywords": ["egg", "eggs"],
+      "instacart_search_term": "large eggs",
+      "instacart_quantity": 12,
+      "instacart_unit": "each"
+    }
+  ]
+}

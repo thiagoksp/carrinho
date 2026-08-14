@@ -4,139 +4,168 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from app import formatar_plano, main, revisar_dados, salvar_plano
-from pedido import PedidoEntendido
-from planejamento import gerar_plano
+from app import format_plan, main, review_request, save_plan
+from planning import generate_plan
+from request_parser import ParsedRequest
+
+
+def _base_request(budget: float = 80) -> ParsedRequest:
+    return ParsedRequest(
+        budget=budget,
+        currency="CAD",
+        people=2,
+        days=4,
+        cooking_energy="low",
+        pantry_items=["rice", "7 eggs"],
+        dietary_restrictions=["lactose intolerance"],
+        shopping_location="Toronto",
+        selected_store="No Frills",
+    )
 
 
 class TestTerminal(unittest.TestCase):
-    def test_mostra_os_dados_identificados(self) -> None:
-        pedido = (
-            "Tenho CAD$80 para alimentar 2 pessoas por 4 dias. "
-            "Estamos com pouca disposição para cozinhar, já temos arroz e 7 ovos, "
-            "e pelo menos uma pessoa tem intolerância à lactose. "
-            "Estou em Toronto e prefiro a loja Walmart."
+    def test_displays_identified_request_and_plan(self) -> None:
+        request_text = (
+            "I have $80 to feed 2 people for 4 days. "
+            "We have low energy for cooking, we already have rice and 7 eggs, "
+            "and at least one person has lactose intolerance. "
+            "I am shopping in Toronto at No Frills."
         )
 
         with (
-            patch("builtins.input", side_effect=[pedido, "s", "n"]),
-            patch("sys.stdout", new_callable=io.StringIO) as saida,
+            patch("builtins.input", side_effect=[request_text, "y", "n"]),
+            patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
             main()
 
-        self.assertIn("O Carrinho entendeu", saida.getvalue())
-        self.assertIn("Orçamento: CAD$80", saida.getvalue())
-        self.assertIn("Pessoas: 2", saida.getvalue())
-        self.assertIn("Dias: 4", saida.getvalue())
-        self.assertIn("Disposição para cozinhar: baixa", saida.getvalue())
-        self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
-        self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
-        self.assertIn("Localização das compras: Toronto", saida.getvalue())
-        self.assertIn("Loja preferida: Walmart", saida.getvalue())
-        self.assertIn("Dados confirmados", saida.getvalue())
-        self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
-        self.assertIn("Total estimado: CAD$58.25", saida.getvalue())
-        self.assertIn("Margem do orçamento: CAD$21.75", saida.getvalue())
+        content = output.getvalue()
+        self.assertIn("Carrinho understood", content)
+        self.assertIn("Budget: CAD$80", content)
+        self.assertIn("People: 2", content)
+        self.assertIn("Days: 4", content)
+        self.assertIn("Cooking energy: low", content)
+        self.assertIn("Pantry items: rice, 7 eggs", content)
+        self.assertIn("Dietary restrictions: lactose intolerance", content)
+        self.assertIn("Shopping location: Toronto", content)
+        self.assertIn("Selected store: No Frills", content)
+        self.assertIn("Information confirmed", content)
+        self.assertIn("MEAL PLAN", content)
+        self.assertIn("Estimated total: CAD$58.25", content)
+        self.assertIn("Budget balance: CAD$21.75", content)
 
-    def test_pergunta_somente_os_dados_ausentes(self) -> None:
-        respostas = [
-            "Preciso organizar minha alimentação.",
+    def test_asks_only_for_missing_information(self) -> None:
+        responses = [
+            "I need help planning meals.",
             "80",
             "2",
             "4",
             "1",
-            "arroz, 7 ovos",
-            "intolerância à lactose",
+            "rice, 7 eggs",
+            "lactose intolerance",
             "Toronto",
-            "qualquer",
-            "s",
+            "No Frills",
+            "y",
             "n",
         ]
 
         with (
-            patch("builtins.input", side_effect=respostas) as entrada,
-            patch("sys.stdout", new_callable=io.StringIO) as saida,
+            patch("builtins.input", side_effect=responses) as user_input,
+            patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
             main()
 
-        self.assertEqual(entrada.call_count, 11)
-        self.assertIn("Orçamento: CAD$80", saida.getvalue())
-        self.assertIn("Pessoas: 2", saida.getvalue())
-        self.assertIn("Dias: 4", saida.getvalue())
-        self.assertIn("Disposição para cozinhar: baixa", saida.getvalue())
-        self.assertIn("Itens em casa: arroz, 7 ovos", saida.getvalue())
-        self.assertIn("Restrições: intolerância à lactose", saida.getvalue())
-        self.assertIn("Localização das compras: Toronto", saida.getvalue())
-        self.assertIn("Loja preferida: qualquer loja", saida.getvalue())
-        self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
+        content = output.getvalue()
+        self.assertEqual(user_input.call_count, 11)
+        self.assertIn("Budget: CAD$80", content)
+        self.assertIn("People: 2", content)
+        self.assertIn("Days: 4", content)
+        self.assertIn("Cooking energy: low", content)
+        self.assertIn("Pantry items: rice, 7 eggs", content)
+        self.assertIn("Dietary restrictions: lactose intolerance", content)
+        self.assertIn("Shopping location: Toronto", content)
+        self.assertIn("Selected store: No Frills", content)
+        self.assertIn("MEAL PLAN", content)
 
-    def test_ao_salvar_gera_plano_e_listas_instacart(self) -> None:
-        pedido = (
-            "Tenho CAD$80 para 2 pessoas por 4 dias, pouca energia, "
-            "já tenho arroz e 7 ovos, sem restrições. "
-            "Estou em Toronto e prefiro a loja No Frills."
+    def test_requires_one_store_instead_of_accepting_any_store(self) -> None:
+        responses = [
+            "I have CAD$80 for 2 people for 4 days with normal cooking energy. "
+            "I already have rice and 7 eggs. I have no dietary restrictions. "
+            "I am in Toronto and I have no store preference.",
+            "",
+            "No Frills",
+            "y",
+            "n",
+        ]
+
+        with (
+            patch("builtins.input", side_effect=responses) as user_input,
+            patch("sys.stdout", new_callable=io.StringIO) as output,
+        ):
+            main()
+
+        content = output.getvalue()
+        self.assertTrue(
+            any(
+                "current pilot store is No Frills" in call.args[0]
+                for call in user_input.call_args_list
+            )
+        )
+        self.assertIn("This version supports only No Frills", content)
+        self.assertIn("Selected store: No Frills", content)
+
+    def test_saves_plan_and_both_instacart_files(self) -> None:
+        request_text = (
+            "I have CAD$80 for 2 people for 4 days with low cooking energy. "
+            "I already have rice and 7 eggs. I have no dietary restrictions. "
+            "I am shopping in Toronto at No Frills."
         )
         with (
-            patch("builtins.input", side_effect=[pedido, "s", "s"]),
-            patch("app.salvar_plano", return_value=Path("plano.txt")) as texto,
+            patch("builtins.input", side_effect=[request_text, "y", "y"]),
+            patch("app.save_plan", return_value=Path("meal-plan.txt")) as text_file,
             patch(
-                "app.salvar_payload_instacart",
-                return_value=Path("lista-instacart.json"),
-            ) as json_instacart,
+                "app.save_instacart_payload",
+                return_value=Path("instacart-list.json"),
+            ) as json_file,
             patch(
-                "app.salvar_lista_colar_instacart",
-                return_value=Path("lista-instacart-colar.txt"),
-            ) as lista_colar,
-            patch("sys.stdout", new_callable=io.StringIO) as saida,
+                "app.save_instacart_paste_list",
+                return_value=Path("instacart-paste-list.txt"),
+            ) as paste_file,
+            patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
             main()
 
-        texto.assert_called_once()
-        json_instacart.assert_called_once()
-        lista_colar.assert_called_once()
-        self.assertIs(texto.call_args.args[0], json_instacart.call_args.args[0])
-        self.assertIs(texto.call_args.args[0], lista_colar.call_args.args[0])
-        self.assertIn("nenhum dado foi enviado", saida.getvalue())
-        self.assertIn("lista-instacart.json", saida.getvalue())
-        self.assertIn("lista-instacart-colar.txt", saida.getvalue())
-        self.assertIn("Shopping List → Paste items", saida.getvalue())
-        self.assertIn("rótulos conforme suas restrições", saida.getvalue())
+        text_file.assert_called_once()
+        json_file.assert_called_once()
+        paste_file.assert_called_once()
+        self.assertIs(text_file.call_args.args[0], json_file.call_args.args[0])
+        self.assertIs(text_file.call_args.args[0], paste_file.call_args.args[0])
+        content = output.getvalue()
+        self.assertIn("no data was sent", content)
+        self.assertIn("instacart-list.json", content)
+        self.assertIn("instacart-paste-list.txt", content)
+        self.assertIn("Shopping List → Paste items", content)
+        self.assertIn("labels for your dietary needs", content)
 
-    def test_corrige_orcamento_e_dias_sem_reiniciar(self) -> None:
-        dados = PedidoEntendido(
-            orcamento=80,
-            moeda="CAD",
-            pessoas=2,
-            dias=4,
-            disposicao="baixa",
-            itens_em_casa=["arroz", "7 ovos"],
-            restricoes=["intolerância à lactose"],
-        )
+    def test_corrects_budget_and_days_without_restarting(self) -> None:
+        request_data = _base_request()
 
         with (
             patch(
                 "builtins.input",
-                side_effect=["n", "1", "60", "n", "3", "5", "s"],
+                side_effect=["n", "1", "60", "n", "3", "5", "y"],
             ),
-            patch("sys.stdout", new_callable=io.StringIO) as saida,
+            patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
-            resultado = revisar_dados(dados)
+            result = review_request(request_data)
 
-        self.assertEqual(resultado.orcamento, 60)
-        self.assertEqual(resultado.dias, 5)
-        self.assertIn("Orçamento: CAD$60", saida.getvalue())
-        self.assertIn("Dias: 5", saida.getvalue())
+        self.assertEqual(result.budget, 60)
+        self.assertEqual(result.days, 5)
+        self.assertIn("Budget: CAD$60", output.getvalue())
+        self.assertIn("Days: 5", output.getvalue())
 
-    def test_corrige_estoque_e_restricoes_sem_reiniciar(self) -> None:
-        dados = PedidoEntendido(
-            orcamento=80,
-            moeda="CAD",
-            pessoas=2,
-            dias=4,
-            disposicao="baixa",
-            itens_em_casa=["arroz"],
-            restricoes=["intolerância à lactose"],
-        )
+    def test_corrects_pantry_and_restrictions_without_restarting(self) -> None:
+        request_data = _base_request()
+        request_data.pantry_items = ["rice"]
 
         with (
             patch(
@@ -144,35 +173,25 @@ class TestTerminal(unittest.TestCase):
                 side_effect=[
                     "n",
                     "5",
-                    "1 kg de arroz, meia dúzia de ovos",
+                    "1 kg of rice, half a dozen eggs",
                     "n",
                     "6",
-                    "nenhuma",
-                    "s",
+                    "none",
+                    "y",
                 ],
             ),
             patch("sys.stdout", new_callable=io.StringIO),
         ):
-            resultado = revisar_dados(dados)
+            result = review_request(request_data)
 
         self.assertEqual(
-            resultado.itens_em_casa,
-            ["1 kg de arroz", "meia dúzia de ovos"],
+            result.pantry_items,
+            ["1 kg of rice", "half a dozen eggs"],
         )
-        self.assertEqual(resultado.restricoes, [])
+        self.assertEqual(result.dietary_restrictions, [])
 
-    def test_corrige_localizacao_e_loja_sem_reiniciar(self) -> None:
-        dados = PedidoEntendido(
-            orcamento=80,
-            moeda="CAD",
-            pessoas=2,
-            dias=4,
-            disposicao="baixa",
-            itens_em_casa=["arroz", "7 ovos"],
-            restricoes=[],
-            localizacao="Toronto",
-            loja_preferida="qualquer loja",
-        )
+    def test_corrects_location_and_store_without_restarting(self) -> None:
+        request_data = _base_request()
 
         with (
             patch(
@@ -180,83 +199,70 @@ class TestTerminal(unittest.TestCase):
                 side_effect=[
                     "n",
                     "7",
-                    "North York",
+                    "Vancouver",
+                    "Toronto",
                     "n",
                     "8",
+                    "Loblaws",
                     "No Frills",
-                    "s",
+                    "y",
                 ],
             ),
-            patch("sys.stdout", new_callable=io.StringIO),
+            patch("sys.stdout", new_callable=io.StringIO) as output,
         ):
-            resultado = revisar_dados(dados)
+            result = review_request(request_data)
 
-        self.assertEqual(resultado.localizacao, "North York")
-        self.assertEqual(resultado.loja_preferida, "No Frills")
+        self.assertEqual(result.shopping_location, "Toronto")
+        self.assertEqual(result.selected_store, "No Frills")
+        self.assertIn("supports only Toronto, ON", output.getvalue())
+        self.assertIn("supports only No Frills", output.getvalue())
 
-    def test_formata_todas_as_secoes_do_plano(self) -> None:
-        dados = PedidoEntendido(
-            orcamento=80,
-            moeda="CAD",
-            pessoas=2,
-            dias=4,
-            disposicao="baixa",
-            itens_em_casa=["arroz", "7 ovos"],
-            restricoes=["intolerância à lactose"],
-            localizacao="Toronto",
-            loja_preferida="No Frills",
-        )
-        plano = gerar_plano(dados)
+    def test_formats_every_plan_section_in_english(self) -> None:
+        plan = generate_plan(_base_request())
 
-        assert plano is not None
-        conteudo = formatar_plano(plano)
-        self.assertIn("PLANO DE REFEIÇÕES", conteudo)
-        self.assertIn("COMO REDUZIR O TRABALHO", conteudo)
-        self.assertIn("LISTA DE COMPRAS", conteudo)
-        self.assertIn("Total estimado: CAD$58.25", conteudo)
-        self.assertIn("Fonte dos preços:", conteudo)
-        self.assertIn("Localização das compras: Toronto", conteudo)
-        self.assertIn("Loja preferida: No Frills", conteudo)
-        self.assertIn("ainda não alteram os preços simulados", conteudo)
-        self.assertIn("ITENS QUE JÁ ESTÃO EM CASA", conteudo)
+        assert plan is not None
+        content = format_plan(plan)
+        self.assertIn("MEAL PLAN", content)
+        self.assertIn("MEAL PREP GUIDANCE", content)
+        self.assertIn("SHOPPING LIST", content)
+        self.assertIn("Estimated total: CAD$58.25", content)
+        self.assertIn("Price source:", content)
+        self.assertIn("Shopping location: Toronto", content)
+        self.assertIn("Selected store: No Frills", content)
+        self.assertIn("one simulated price catalogue", content)
+        self.assertIn("PANTRY ITEMS USED", content)
+        self.assertNotIn("ALTERNATIVA", content)
+        self.assertNotIn("savings", content.casefold())
 
-    def test_salva_novos_arquivos_sem_sobrescrever(self) -> None:
-        dados = PedidoEntendido(
-            orcamento=80,
-            moeda="CAD",
-            pessoas=2,
-            dias=4,
-            disposicao="baixa",
-            itens_em_casa=["arroz", "7 ovos"],
-            restricoes=["intolerância à lactose"],
-            localizacao="Toronto",
-            loja_preferida="No Frills",
-        )
-        plano = gerar_plano(dados)
+    def test_reports_shortfall_without_switching_to_an_economic_plan(self) -> None:
+        plan = generate_plan(_base_request(budget=20))
 
-        assert plano is not None
-        with tempfile.TemporaryDirectory() as pasta:
-            primeiro = salvar_plano(plano, Path(pasta))
-            segundo = salvar_plano(plano, Path(pasta))
+        assert plan is not None
+        content = format_plan(plan)
+        self.assertEqual(plan.estimated_total, 58.25)
+        self.assertEqual(plan.budget_balance, -38.25)
+        self.assertIn("Budget shortfall: CAD$38.25", content)
+        self.assertNotIn("economic", content.casefold())
+        self.assertNotIn("savings", content.casefold())
 
-            self.assertEqual(primeiro.name, "plano-carrinho.txt")
-            self.assertEqual(segundo.name, "plano-carrinho-2.txt")
+    def test_saves_new_files_without_overwriting(self) -> None:
+        plan = generate_plan(_base_request())
+
+        assert plan is not None
+        with tempfile.TemporaryDirectory() as directory:
+            first = save_plan(plan, Path(directory))
+            second = save_plan(plan, Path(directory))
+
+            self.assertEqual(first.name, "meal-plan.txt")
+            self.assertEqual(second.name, "meal-plan-2.txt")
             self.assertEqual(
-                primeiro.read_text(encoding="utf-8"),
-                segundo.read_text(encoding="utf-8"),
+                first.read_text(encoding="utf-8"),
+                second.read_text(encoding="utf-8"),
             )
-            self.assertIn(
-                "LISTA DE COMPRAS",
-                primeiro.read_text(encoding="utf-8"),
-            )
-            self.assertIn(
-                "Localização das compras: Toronto",
-                primeiro.read_text(encoding="utf-8"),
-            )
-            self.assertIn(
-                "Loja preferida: No Frills",
-                primeiro.read_text(encoding="utf-8"),
-            )
+            content = first.read_text(encoding="utf-8")
+            self.assertIn("SHOPPING LIST", content)
+            self.assertIn("Shopping location: Toronto", content)
+            self.assertIn("Selected store: No Frills", content)
 
 
 if __name__ == "__main__":
