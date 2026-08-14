@@ -177,6 +177,13 @@ rotate proteins and meal styles, and learn when a household is tired of a dish. 
 history private and local, and do not store retailer receipts or sensitive checkout
 data.
 
+**Backlog:** [CAR-26](https://linear.app/thiagoksp/issue/CAR-26/design-household-member-dietary-profiles)
+
+Design local household member dietary profiles so one household can select which eaters
+are included in a plan. Profiles should represent dietary/planning needs, not separate
+login accounts. Selected profiles combine hard restrictions conservatively while keeping
+soft preferences, brands, portions, and household-level pantry/budget data distinct.
+
 **Backlog:** [CAR-25](https://linear.app/thiagoksp/issue/CAR-25/verify-codex-and-linear-ownership-before-account-migration)
 
 Before a future account switch, verify GitHub, Linear, Codex, local repository access,
