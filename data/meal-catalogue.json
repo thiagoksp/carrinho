@@ -1,0 +1,106 @@
+{
+  "schema": "carrinho.meal-catalogue.v1",
+  "description": "Curated lactose-free meal templates for Canadian grocery planning.",
+  "templates": [
+    {
+      "key": "roasted_chicken_rice_vegetables",
+      "dish": "Roasted chicken, rice and vegetables",
+      "ingredients": [
+        {"product_key": "chicken", "quantity_per_person": 300, "planning_unit": "g"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "pan_fried_rice_eggs_vegetables",
+      "dish": "Pan-fried rice with eggs and vegetables",
+      "ingredients": [
+        {"product_key": "eggs", "quantity_per_person": 2, "planning_unit": "each"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "prepared_chicken_rice_vegetables",
+      "dish": "Previously prepared chicken, rice and vegetables",
+      "ingredients": [
+        {"product_key": "chicken", "quantity_per_person": 300, "planning_unit": "g"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "pasta_ground_beef_tomato_sauce",
+      "dish": "Pasta with ground beef and tomato sauce",
+      "ingredients": [
+        {"product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g"},
+        {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "prepared_meat_sauce_pasta",
+      "dish": "Pasta with previously prepared meat sauce",
+      "ingredients": [
+        {"product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g"},
+        {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "bean_tomato_stew_rice",
+      "dish": "Quick bean and tomato stew with rice",
+      "ingredients": [
+        {"product_key": "beans", "quantity_per_person": 0.625, "planning_unit": "can"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "prepared_bean_stew_rice",
+      "dish": "Previously prepared bean stew with rice",
+      "ingredients": [
+        {"product_key": "beans", "quantity_per_person": 0.625, "planning_unit": "can"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    },
+    {
+      "key": "omelette_potatoes_onion_vegetables",
+      "dish": "Omelette with potatoes, onion and vegetables",
+      "ingredients": [
+        {"product_key": "eggs", "quantity_per_person": 1.5, "planning_unit": "each"},
+        {"product_key": "potatoes", "quantity_per_person": 300, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ]
+    }
+  ]
+}
