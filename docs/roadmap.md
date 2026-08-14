@@ -151,6 +151,25 @@ brand-only choices, frequency preferences, and future review feedback. The model
 preserve different enforcement levels while allowing an LLM to suggest pending rules only
 after local validation and user confirmation.
 
+**Backlog:** [CAR-19](https://linear.app/thiagoksp/issue/CAR-19/design-ingredient-substitution-rules)
+
+Design catalogue-backed ingredient substitutions so Carrinho can suggest similar
+ingredients without losing meal intent, dietary safety, package calculations, or
+household rules. LLMs may propose candidates, but local rules approve safety and impact.
+
+**Backlog:** [CAR-21](https://linear.app/thiagoksp/issue/CAR-21/design-configurable-shopping-strategy-preferences)
+
+Design shopping strategy preferences such as cheapest acceptable item, brand-only rule,
+package-size preference, or review-required substitution. This must not turn Carrinho
+into retailer comparison; it only chooses among available candidates when approved data
+or user review exists.
+
+**Backlog:** [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
+
+Keep first use light: define the minimum inputs for a useful plan and move richer rules
+into progressive prompts, profile editing, or review suggestions. Preserve a
+deterministic form path for households that do not enable LLM.
+
 ## Milestone 4 — Official API integration
 
 **Parallel external dependency:** [CAR-3 — Track Instacart Developer Platform
@@ -165,6 +184,13 @@ handoff](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instaca
 Network behaviour remains disabled until Instacart approves access and the development
 contract is reviewed. Never store an API key in Linear, GitHub, chat, logs, or generated
 project files.
+
+**Backlog:** [CAR-20](https://linear.app/thiagoksp/issue/CAR-20/map-generic-grocery-items-to-retailer-product-candidates)
+
+After approved access, design the product-matching layer from Carrinho's generic
+catalogue items to retailer or Instacart product candidates. Capture brand, package
+size, unit, variable-weight status, price, availability, and evidence source only when
+contractually available, and mark ambiguous matches for user review.
 
 ## Product boundaries
 
