@@ -19,6 +19,8 @@ def _base_request(budget: float = 80) -> ParsedRequest:
         cooking_energy="low",
         pantry_items=["rice", "7 eggs"],
         dietary_restrictions=["lactose intolerance"],
+        avoided_product_keys=[],
+        preferred_product_keys=[],
     )
 
 
@@ -27,7 +29,8 @@ class TestTerminal(unittest.TestCase):
         request_text = (
             "I have $80 to feed 2 people for 4 days. "
             "We have low energy for cooking, we already have rice and 7 eggs, "
-            "and at least one person has lactose intolerance."
+            "and at least one person has lactose intolerance. "
+            "I don't like beans. My favourite food is chicken."
         )
 
         with (
@@ -45,6 +48,8 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Cooking energy: low", content)
         self.assertIn("Pantry items: rice, 7 eggs", content)
         self.assertIn("Dietary restrictions: lactose intolerance", content)
+        self.assertIn("Foods to avoid: Canned beans", content)
+        self.assertIn("Foods to prefer: Chicken thighs", content)
         self.assertNotIn("Shopping location", content)
         self.assertNotIn("Selected store", content)
         self.assertIn("Information confirmed", content)
@@ -217,7 +222,7 @@ class TestTerminal(unittest.TestCase):
         )
         self.assertEqual(result.dietary_restrictions, [])
 
-    def test_rejects_removed_location_and_retailer_correction_options(self) -> None:
+    def test_registers_catalogue_backed_food_preferences(self) -> None:
         request_data = _base_request()
 
         with (
@@ -226,8 +231,11 @@ class TestTerminal(unittest.TestCase):
                 side_effect=[
                     "n",
                     "7",
-                    "1",
-                    "60",
+                    "mushrooms",
+                    "onions, beans",
+                    "n",
+                    "8",
+                    "chicken and eggs",
                     "y",
                 ],
             ),
@@ -235,10 +243,39 @@ class TestTerminal(unittest.TestCase):
         ):
             result = review_request(request_data)
 
+        self.assertEqual(result.avoided_product_keys, ["onions", "beans"])
+        self.assertEqual(result.preferred_product_keys, ["chicken", "eggs"])
+        self.assertIn("Unknown food preference: mushrooms", output.getvalue())
+        self.assertIn("Available generic foods", output.getvalue())
+
+    def test_requires_conflicting_food_preferences_to_be_corrected(self) -> None:
+        request_data = _base_request()
+        request_data.avoided_product_keys = ["eggs"]
+        request_data.preferred_product_keys = ["eggs"]
+
+        with (
+            patch("builtins.input", side_effect=["y", "8", "chicken", "y"]),
+            patch("sys.stdout", new_callable=io.StringIO) as output,
+        ):
+            result = review_request(request_data)
+
+        self.assertEqual(result.avoided_product_keys, ["eggs"])
+        self.assertEqual(result.preferred_product_keys, ["chicken"])
+        self.assertIn("cannot be both avoided and preferred", output.getvalue())
+
+    def test_rejects_removed_location_and_retailer_correction_options(self) -> None:
+        request_data = _base_request()
+
+        with (
+            patch("builtins.input", side_effect=["n", "9", "1", "60", "y"]),
+            patch("sys.stdout", new_callable=io.StringIO) as output,
+        ):
+            result = review_request(request_data)
+
         self.assertEqual(result.budget, 60)
         self.assertFalse(hasattr(result, "shopping_location"))
         self.assertFalse(hasattr(result, "selected_store"))
-        self.assertIn("Choose a number from 1 to 6", output.getvalue())
+        self.assertIn("Choose a number from 1 to 8", output.getvalue())
 
     def test_formats_every_plan_section_in_english(self) -> None:
         plan = generate_plan(_base_request())

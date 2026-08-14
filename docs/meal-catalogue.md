@@ -28,11 +28,14 @@ plan can be generated.
 ## Deterministic selection
 
 Carrinho treats the current lactose constraint as a hard filter through the
-`lactose-free` tag. It then prefers meals whose `cooking_energy` is closest to the
-household request and uses matching pantry ingredients as a deterministic tie-breaker.
-Catalogue order is preserved whenever a plan needs every eligible template, so the
-core reference case remains stable. Extended templates add variety without changing the
-established eight-meal reference sequence.
+`lactose-free` tag. It then ranks meals with fewer avoided ingredients, prefers meals
+whose `cooking_energy` is closest to the household request, ranks meals with more
+preferred ingredients, and finally uses matching pantry ingredients as a deterministic
+tie-breaker.
+Food likes and dislikes are soft: they change ranking but never bypass a hard dietary
+filter. Catalogue order is preserved for the reference case when no soft preferences
+are supplied. Extended templates add variety without changing the established
+eight-meal reference sequence.
 
 Future dietary restrictions must remain hard constraints. Future likes and disliked
 foods must be separate soft preferences, rather than being represented as medical or
@@ -49,6 +52,10 @@ quantities, prices, dietary compatibility, or retailer identifiers.
 Carrinho will validate every returned key and restriction before the deterministic
 planner calculates ingredient totals, pantry deductions, packages, and estimates. This
 keeps an LLM useful for preference matching without making it the source of truth.
+
+The public `validate_meal_candidate_keys` boundary accepts only an ordered list of known,
+unique template keys and rejects candidates that violate current hard dietary tags. It
+does not make a network call or grant an LLM authority over calculations.
 
 ## Integration boundary
 

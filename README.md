@@ -37,6 +37,11 @@ rounding. The current values come from
 one retailer-neutral JSON catalog that is explicitly labelled as simulated. A planning
 request does not require a city or retailer.
 
+Dietary restrictions are hard safety filters. Foods the household avoids or prefers are
+separate soft ranking inputs backed by the existing generic product keys. The built-in
+vocabulary remains deliberately small, and a household can save its own selections in
+the private local profile without Carrinho copying a large external food database.
+
 The program creates three local files when a plan is saved:
 
 - a readable meal plan;

@@ -3,6 +3,7 @@
 from pathlib import Path
 import re
 
+from catalog import load_simulated_catalog, resolve_product_keys
 from household_profile import (
     apply_household_defaults,
     load_household_profile,
@@ -19,6 +20,20 @@ from request_parser import ParsedRequest, parse_request
 
 def _display(value: object | None) -> str:
     return str(value) if value is not None else "not identified"
+
+
+def _display_product_preferences(product_keys: list[str] | None) -> str:
+    if product_keys is None:
+        return "not identified"
+    if not product_keys:
+        return "none"
+    products_by_key = {
+        product.key: product for product in load_simulated_catalog().products
+    }
+    return ", ".join(
+        products_by_key[key].name if key in products_by_key else key
+        for key in product_keys
+    )
 
 
 def print_request_summary(request_data: ParsedRequest) -> None:
@@ -53,6 +68,14 @@ def print_request_summary(request_data: ParsedRequest) -> None:
     print(f"- Cooking energy: {_display(request_data.cooking_energy)}")
     print(f"- Pantry items: {pantry_items}")
     print(f"- Dietary restrictions: {dietary_restrictions}")
+    print(
+        "- Foods to avoid: "
+        f"{_display_product_preferences(request_data.avoided_product_keys)}"
+    )
+    print(
+        "- Foods to prefer: "
+        f"{_display_product_preferences(request_data.preferred_product_keys)}"
+    )
 
 
 def _read_budget() -> tuple[float, str]:
@@ -127,6 +150,43 @@ def _read_dietary_restrictions() -> list[str]:
         print("Enter the restriction or type 'none'.")
 
 
+def _read_product_preferences(preference: str) -> list[str]:
+    catalog = load_simulated_catalog()
+    available_foods = ", ".join(product.name for product in catalog.products)
+    prompts = {
+        "avoid": "Which foods should the plan try to avoid?",
+        "prefer": "Which foods should the plan prefer?",
+    }
+    while True:
+        response = input(
+            f"\n{prompts[preference]} Separate foods with commas; "
+            "enter 'none' if there are not any.\n> "
+        ).strip()
+        if response.casefold() in {"no", "none"}:
+            return []
+        try:
+            return list(
+                resolve_product_keys(_split_response(response), catalog.products)
+            )
+        except ValueError as error:
+            print(error)
+            print(f"Available generic foods: {available_foods}.")
+
+
+def _validate_product_preferences(request_data: ParsedRequest) -> None:
+    catalog = load_simulated_catalog()
+    available_keys = {product.key for product in catalog.products}
+    avoided_keys = request_data.avoided_product_keys or []
+    preferred_keys = request_data.preferred_product_keys or []
+    unknown_keys = set(avoided_keys + preferred_keys).difference(available_keys)
+    if unknown_keys:
+        raise ValueError(
+            "Unknown food preference key: " + ", ".join(sorted(unknown_keys)) + "."
+        )
+    if set(avoided_keys).intersection(preferred_keys):
+        raise ValueError("The same food cannot be both avoided and preferred.")
+
+
 def complete_request(request_data: ParsedRequest) -> ParsedRequest:
     """Ask only for data that was not present in the initial request."""
     if request_data.budget is None:
@@ -145,6 +205,10 @@ def complete_request(request_data: ParsedRequest) -> ParsedRequest:
         request_data.pantry_items = _read_pantry_items()
     if request_data.dietary_restrictions is None:
         request_data.dietary_restrictions = _read_dietary_restrictions()
+    if request_data.avoided_product_keys is None:
+        request_data.avoided_product_keys = []
+    if request_data.preferred_product_keys is None:
+        request_data.preferred_product_keys = []
     return request_data
 
 
@@ -166,6 +230,8 @@ def _correct_one_field(request_data: ParsedRequest) -> None:
         "4": "cooking_energy",
         "5": "pantry_items",
         "6": "dietary_restrictions",
+        "7": "avoided_product_keys",
+        "8": "preferred_product_keys",
     }
 
     while True:
@@ -176,12 +242,14 @@ def _correct_one_field(request_data: ParsedRequest) -> None:
             "3 - Days\n"
             "4 - Cooking energy\n"
             "5 - Pantry items\n"
-            "6 - Dietary restrictions\n> "
+            "6 - Dietary restrictions\n"
+            "7 - Foods to avoid\n"
+            "8 - Foods to prefer\n> "
         ).strip()
         choice = options.get(response)
         if choice is not None:
             break
-        print("Choose a number from 1 to 6.")
+        print("Choose a number from 1 to 8.")
 
     if choice == "budget":
         request_data.budget, request_data.currency = _read_budget()
@@ -197,8 +265,12 @@ def _correct_one_field(request_data: ParsedRequest) -> None:
         request_data.cooking_energy = _read_cooking_energy()
     elif choice == "pantry_items":
         request_data.pantry_items = _read_pantry_items()
-    else:
+    elif choice == "dietary_restrictions":
         request_data.dietary_restrictions = _read_dietary_restrictions()
+    elif choice == "avoided_product_keys":
+        request_data.avoided_product_keys = _read_product_preferences("avoid")
+    else:
+        request_data.preferred_product_keys = _read_product_preferences("prefer")
 
 
 def review_request(request_data: ParsedRequest) -> ParsedRequest:
@@ -206,7 +278,12 @@ def review_request(request_data: ParsedRequest) -> ParsedRequest:
     while True:
         print_request_summary(request_data)
         if _confirm_request():
-            return request_data
+            try:
+                _validate_product_preferences(request_data)
+            except ValueError as error:
+                print(f"\n{error} Correct one of the food preference fields.")
+            else:
+                return request_data
         _correct_one_field(request_data)
 
 
@@ -353,8 +430,8 @@ def _should_use_household_profile() -> bool:
 def _should_save_household_profile() -> bool:
     while True:
         response = input(
-            "\nWould you like to save or update household defaults and pantry "
-            "items locally? (y/n)\n> "
+            "\nWould you like to save or update household defaults, pantry items, "
+            "and food preferences locally? (y/n)\n> "
         ).strip().casefold()
         if response in {"y", "yes"}:
             return True

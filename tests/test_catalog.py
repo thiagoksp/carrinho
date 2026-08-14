@@ -4,12 +4,32 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from catalog import PriceCatalog, load_catalog, load_simulated_catalog
+from catalog import (
+    PriceCatalog,
+    load_catalog,
+    load_simulated_catalog,
+    resolve_product_keys,
+)
 from planning import generate_plan
 from request_parser import ParsedRequest
 
 
 class TestCatalog(unittest.TestCase):
+    def test_resolves_common_food_names_to_stable_product_keys(self) -> None:
+        catalog = load_simulated_catalog()
+
+        self.assertEqual(
+            resolve_product_keys(
+                ["onion", "Ground beef", "egg", "onions"],
+                catalog.products,
+            ),
+            ("onions", "ground_beef", "eggs"),
+        )
+        with self.assertRaisesRegex(ValueError, "Unknown food preference: mushrooms"):
+            resolve_product_keys(["mushrooms"], catalog.products)
+        with self.assertRaisesRegex(ValueError, "at least one food preference"):
+            resolve_product_keys([], catalog.products)
+
     def test_loads_simulated_catalog_with_metadata(self) -> None:
         catalog = load_simulated_catalog()
 

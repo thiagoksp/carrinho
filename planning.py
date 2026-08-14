@@ -6,7 +6,7 @@ import re
 import unicodedata
 
 from catalog import PriceCatalog, Product, load_simulated_catalog
-from meal_catalogue import MealTemplate, load_default_meal_catalogue
+from meal_catalogue import MealCatalogue, MealTemplate, load_default_meal_catalogue
 from request_parser import ParsedRequest
 
 
@@ -116,6 +116,60 @@ def _required_dietary_tags(restrictions: list[str] | None) -> frozenset[str]:
     return frozenset()
 
 
+def validate_meal_candidate_keys(
+    candidate_keys: list[str] | tuple[str, ...],
+    request: ParsedRequest,
+    meal_catalogue: MealCatalogue | None = None,
+) -> tuple[MealTemplate, ...]:
+    """Validate an ordered future-LLM candidate list against local hard rules."""
+    if not isinstance(candidate_keys, (list, tuple)) or any(
+        not isinstance(key, str) or not key.strip() for key in candidate_keys
+    ):
+        raise ValueError("Meal candidate keys must be a list of non-empty strings.")
+    if not candidate_keys:
+        raise ValueError("Meal candidate keys must not be empty.")
+    if not _restrictions_supported(request.dietary_restrictions):
+        raise ValueError("Meal candidates cannot use unsupported dietary restrictions.")
+    normalized_keys = tuple(key.strip() for key in candidate_keys)
+    if len(normalized_keys) != len(set(normalized_keys)):
+        raise ValueError("Meal candidate keys must not contain duplicates.")
+
+    selected_catalogue = meal_catalogue or load_default_meal_catalogue()
+    templates_by_key = {
+        template.key: template for template in selected_catalogue.templates
+    }
+    unknown_keys = [key for key in normalized_keys if key not in templates_by_key]
+    if unknown_keys:
+        raise ValueError("Unknown meal candidate key: " + ", ".join(unknown_keys) + ".")
+
+    required_tags = _required_dietary_tags(request.dietary_restrictions)
+    selected_templates = tuple(templates_by_key[key] for key in normalized_keys)
+    if any(
+        not required_tags.issubset(template.dietary_tags)
+        for template in selected_templates
+    ):
+        raise ValueError("A meal candidate does not satisfy the dietary restrictions.")
+    return selected_templates
+
+
+def _validate_preference_keys(
+    request: ParsedRequest,
+    products: tuple[Product, ...],
+) -> None:
+    avoided_keys = tuple(request.avoided_product_keys or ())
+    preferred_keys = tuple(request.preferred_product_keys or ())
+    available_keys = {product.key for product in products}
+    unknown_keys = set(avoided_keys + preferred_keys).difference(available_keys)
+    if unknown_keys:
+        raise ValueError("Unknown food preference key: " + ", ".join(sorted(unknown_keys)) + ".")
+    if len(avoided_keys) != len(set(avoided_keys)) or len(preferred_keys) != len(
+        set(preferred_keys)
+    ):
+        raise ValueError("Food preference keys must not contain duplicates.")
+    if set(avoided_keys).intersection(preferred_keys):
+        raise ValueError("The same food cannot be both avoided and preferred.")
+
+
 def _template_pantry_coverage(
     template: MealTemplate,
     pantry_items: list[str] | None,
@@ -149,6 +203,8 @@ def _select_templates(
     required_meal_count = (request.days or 0) * 2
     products_by_key = {product.key: product for product in products}
     request_energy = request.cooking_energy or "normal"
+    avoided_keys = frozenset(request.avoided_product_keys or ())
+    preferred_keys = frozenset(request.preferred_product_keys or ())
 
     def rank(candidates: tuple[MealTemplate, ...]) -> tuple[MealTemplate, ...]:
         return tuple(
@@ -156,9 +212,21 @@ def _select_templates(
             for _, template in sorted(
                 enumerate(candidates),
                 key=lambda indexed_template: (
+                    len(
+                        avoided_keys.intersection(
+                            ingredient.product_key
+                            for ingredient in indexed_template[1].ingredients
+                        )
+                    ),
                     abs(
                         COOKING_ENERGY_RANKS[indexed_template[1].cooking_energy]
                         - COOKING_ENERGY_RANKS[request_energy]
+                    ),
+                    -len(
+                        preferred_keys.intersection(
+                            ingredient.product_key
+                            for ingredient in indexed_template[1].ingredients
+                        )
                     ),
                     -_template_pantry_coverage(
                         indexed_template[1],
@@ -181,6 +249,8 @@ def _select_templates(
         if template.catalogue_tier == "extended"
     )
     if core_templates and required_meal_count >= len(core_templates):
+        if avoided_keys or preferred_keys:
+            return rank(core_templates) + rank(extended_templates)
         return core_templates + rank(extended_templates)
     return rank(eligible_templates)
 
@@ -195,6 +265,10 @@ def _describe_meal_selection(
     ]
     if _required_dietary_tags(request.dietary_restrictions):
         guidance.append("Dietary filter applied: lactose-free meal templates.")
+    if request.avoided_product_keys or request.preferred_product_keys:
+        guidance.append(
+            "Soft food preferences influenced meal ranking after dietary filters."
+        )
     core_template_count = sum(
         template.catalogue_tier == "core" for template in selected_templates
     )
@@ -515,6 +589,8 @@ def generate_plan(
         and _restrictions_supported(request.dietary_restrictions)
     ):
         return None
+
+    _validate_preference_keys(request, selected_catalog.products)
 
     meal_catalogue = load_default_meal_catalogue()
     return _create_plan(request, meal_catalogue.templates, selected_catalog)
