@@ -119,10 +119,18 @@ provider/model adapter, environment-based configuration, cost guards, and OpenAI
 `gpt-5.6-luna` as the initial model when the feature is explicitly enabled. The selector
 is off by default and stores no prompt, response, credential, token, or API key.
 
-**Next:** [CAR-14 - Add portable plan and shopping-list
+**Complete:** [CAR-14 - Add portable plan and shopping-list
 exports](https://linear.app/thiagoksp/issue/CAR-14)
 
-Add copy and print-friendly output while preserving existing local text and JSON files.
+It adds browser copy, print-friendly output, and local downloads for the meal plan,
+Instacart paste list, and Instacart JSON preview while preserving the existing terminal
+text and JSON exports.
+
+**Next:** [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
+
+Keep first use light: define the minimum inputs for a useful plan and move richer rules
+into progressive prompts, profile editing, or review suggestions. Preserve a
+deterministic form path for households that do not enable LLM.
 
 **Backlog:** [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
 
@@ -164,12 +172,6 @@ Design shopping strategy preferences such as cheapest acceptable item, brand-onl
 package-size preference, or review-required substitution. This must not turn Carrinho
 into retailer comparison; it only chooses among available candidates when approved data
 or user review exists.
-
-**Backlog:** [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
-
-Keep first use light: define the minimum inputs for a useful plan and move richer rules
-into progressive prompts, profile editing, or review suggestions. Preserve a
-deterministic form path for households that do not enable LLM.
 
 **Backlog:** [CAR-24](https://linear.app/thiagoksp/issue/CAR-24/track-meal-history-and-variety-preferences)
 

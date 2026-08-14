@@ -49,9 +49,12 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 
 - Active Linear team: Carrinho team with the `CAR` issue prefix.
 - Exactly one issue is labelled `Next`:
-  [CAR-14 - Add portable plan and shopping-list exports](https://linear.app/thiagoksp/issue/CAR-14).
-  It should add copy and print-friendly output while preserving the existing local text
-  and JSON files.
+  [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22).
+  It should keep Carrinho easy to try before asking for richer household rules.
+- [CAR-14 - Add portable plan and shopping-list exports](https://linear.app/thiagoksp/issue/CAR-14)
+  is complete. It added browser copy, print-friendly output, and local downloads for the
+  meal plan, Instacart paste list, and Instacart JSON preview while preserving existing
+  terminal text and JSON exports.
 - [CAR-13 - Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13)
   is complete. It introduced an optional LLM boundary that returns ordered known
   meal-template keys while local validation and deterministic calculations remain
@@ -86,7 +89,7 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   is a future design task for configurable shopping strategy, such as cheapest acceptable
   item versus brand-only rules, without turning Carrinho into a retailer-comparison tool.
 - [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
-  is a future UX task for keeping first use small while moving richer rules into
+  is the next UX task for keeping first use small while moving richer rules into
   progressive profile prompts, review suggestions, or settings.
 - [CAR-23](https://linear.app/thiagoksp/issue/CAR-23/use-approved-popularity-and-review-signals-for-product-selection)
   is a future approved-integration task for using product popularity, ratings, review
@@ -206,6 +209,9 @@ Carrinho is a Canadian grocery-planning agent. It receives budget, people, days,
 cooking energy, pantry items, and dietary restrictions. It produces one meal plan, one
 shopping list, one clearly labelled simulated Canadian planning estimate, and one
 retailer-neutral Instacart handoff.
+
+The local browser result supports copying the generated plan, printing a clean plan
+page, and downloading the meal plan, Instacart paste list, and Instacart JSON preview.
 
 Carrinho does not compare retailers, search for the cheapest basket, claim live prices,
 select a retailer, scrape stores, automate checkout, or make network requests without

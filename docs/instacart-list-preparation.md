@@ -10,6 +10,10 @@ When a result is saved, Carrinho creates three local files:
 - `instacart-list.json`, a preview of a future approved request body;
 - `instacart-paste-list.txt`, one product per line for manual pasting.
 
+The local browser can also download these same portable artifacts directly from the
+generated plan page. The browser page can copy the readable plan and print a clean plan
+view without creating an account, sending a request, or opening Instacart.
+
 No network call is made. The preview does not contain prices, budget, shopping location,
 selected store, credentials, headers, or a service endpoint.
 

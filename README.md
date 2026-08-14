@@ -65,6 +65,10 @@ Nothing is sent automatically, and no API key is required. The current planner s
 either no dietary restrictions or lactose intolerance. It does not intentionally include
 dairy ingredients, but users must still review product labels.
 
+The browser result also supports copying the plan, printing a clean plan page, and
+downloading the plan, Instacart paste list, and Instacart JSON preview directly from the
+local page.
+
 An Instacart Developer Platform interest form was submitted on August 13, 2026.
 Applications are subject to Instacart review and approval; submission did not provide
 access or an API key. Network integration therefore remains disabled.
@@ -101,10 +105,10 @@ Outside contributions are not accepted yet. See [`CONTRIBUTING.md`](CONTRIBUTING
 
 ## Next step
 
-[CAR-14](https://linear.app/thiagoksp/issue/CAR-14) will add portable, reviewable plan
-and shopping-list exports. Instacart approval is tracked separately in CAR-3; all
-official shopping network integration stays disabled until approved access and contract
-testing are available.
+[CAR-22](https://linear.app/thiagoksp/issue/CAR-22) will simplify first-run household
+setup so Carrinho stays easy to try before asking for richer rules. Instacart approval
+is tracked separately in CAR-3; all official shopping network integration stays disabled
+until approved access and contract testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).

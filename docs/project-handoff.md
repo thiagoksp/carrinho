@@ -70,6 +70,8 @@ and user-visible output in Canadian English.
   - `meal-plan.txt`;
   - `instacart-list.json`;
   - `instacart-paste-list.txt`.
+- The browser result can copy the generated plan, print a clean plan page, and download
+  the meal plan, Instacart paste list, and Instacart JSON preview from the local page.
 - Generated files remain local and are excluded from Git.
 - A validated browser editor can extend generic foods and meal templates in ignored
   `local-data/custom-catalogue.json`. Valid replacements create a local backup, and the
@@ -135,10 +137,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Continue [CAR-14](https://linear.app/thiagoksp/issue/CAR-14), the only issue labelled
-`Next`. Add portable, reviewable plan and shopping-list exports while preserving the
-existing local text and JSON files. CAR-3 continues to track Instacart approval in
-parallel.
+Continue [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup),
+the only issue labelled `Next`. Simplify first-run household setup so Carrinho stays
+easy to try before asking for richer rules. CAR-3 continues to track Instacart approval
+in parallel.
 
 ## Current deterministic selection
 
@@ -172,6 +174,10 @@ Structured Outputs when enabled, sends only a bounded candidate set, and validat
 returned key locally before generating a plan. The default OpenAI model is
 `gpt-5.6-luna`, but the provider/model adapter keeps the production boundary ready for
 CAR-15 provider comparison.
+
+CAR-14 added portable browser exports. The standalone page now provides copy, print,
+meal-plan download, Instacart paste-list download, and Instacart JSON preview download
+without sending any request to Instacart or another service.
 
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.

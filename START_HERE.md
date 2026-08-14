@@ -28,11 +28,11 @@ Expected current state:
 
 - repository: <https://github.com/thiagoksp/carrinho>
 - branch: `main`
-- latest merged PR: <https://github.com/thiagoksp/carrinho/pull/29>
+- latest merged PR: check `git log -1 --oneline` and the GitHub pull request history
 - Linear project:
   <https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde>
 - exactly one Linear issue should have the `Next` label:
-  [CAR-14 - Add portable plan and shopping-list exports](https://linear.app/thiagoksp/issue/CAR-14)
+  [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22)
 
 ## Current product boundary
 

@@ -10,6 +10,7 @@ from urllib.parse import parse_qs
 
 from app import format_plan
 from catalog import resolve_product_keys
+from instacart import create_instacart_paste_list, serialize_instacart_payload
 from local_catalogue import (
     empty_local_catalogue_json,
     load_effective_price_catalog,
@@ -64,6 +65,10 @@ PAGE_STYLES = """
     .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
     .actions form { display: block; }
     .actions button, .actions .button { display: inline-block; }
+    .export-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .export-actions form { display: inline; }
+    .copy-status { flex-basis: 100%; min-height: 1.2em; color: #5e6d67;
+      font-size: 0.9rem; }
     .json-editor { min-height: 520px; font-family: Consolas, monospace;
       font-size: 0.9rem; line-height: 1.45; }
     details { margin-top: 20px; }
@@ -71,6 +76,13 @@ PAGE_STYLES = """
     @media (max-width: 640px) {
       form { grid-template-columns: 1fr; }
       .wide, button { grid-column: 1; }
+    }
+    @media print {
+      body { background: #fff; color: #000; }
+      main { width: auto; margin: 0; }
+      header, .card, .actions, .export-actions, footer { display: none; }
+      .result { border: 0; box-shadow: none; padding: 0; margin: 0; }
+      pre { color: #000; font-size: 11pt; line-height: 1.35; }
     }
 """
 
@@ -171,6 +183,28 @@ def create_plan(form: Mapping[str, str]) -> Plan:
     return plan
 
 
+def _hidden_form_fields(values: Mapping[str, str]) -> str:
+    fields = [("csrf_token", CSRF_TOKEN)]
+    fields.extend(
+        (name, values.get(name, ""))
+        for name in (
+            "budget",
+            "people",
+            "days",
+            "cooking_energy",
+            "pantry_items",
+            "dietary_restrictions",
+            "foods_to_avoid",
+            "foods_to_prefer",
+        )
+    )
+    return "\n".join(
+        f'<input type="hidden" name="{escape(name, quote=True)}" '
+        f'value="{escape(value, quote=True)}">'
+        for name, value in fields
+    )
+
+
 def _selected(value: str, expected: str) -> str:
     return " selected" if value == expected else ""
 
@@ -198,10 +232,29 @@ def render_page(
     )
     result_html = ""
     if plan is not None:
+        plan_text = format_plan(plan)
+        hidden_fields = _hidden_form_fields(form)
         result_html = (
             '<section class="result" aria-live="polite">'
             "<h2>Your Carrinho plan</h2>"
-            f"<pre>{escape(format_plan(plan))}</pre>"
+            f'<pre id="plan-output">{escape(plan_text)}</pre>'
+            '<div class="export-actions">'
+            '<button type="button" data-copy-target="plan-output">Copy plan</button>'
+            '<button type="button" data-print-plan>Print plan</button>'
+            '<form method="post" action="/download/plan">'
+            f"{hidden_fields}"
+            '<button type="submit">Download plan text</button>'
+            "</form>"
+            '<form method="post" action="/download/instacart-paste-list">'
+            f"{hidden_fields}"
+            '<button type="submit">Download Instacart paste list</button>'
+            "</form>"
+            '<form method="post" action="/download/instacart-json">'
+            f"{hidden_fields}"
+            '<button type="submit">Download Instacart JSON preview</button>'
+            "</form>"
+            '<div class="copy-status" role="status" aria-live="polite"></div>'
+            "</div>"
             "</section>"
         )
 
@@ -280,6 +333,23 @@ def render_page(
     <footer>Runs only on this computer. No request is sent to Instacart or another
       service.</footer>
   </main>
+  <script nonce="{CSRF_TOKEN}">
+    for (const button of document.querySelectorAll("[data-copy-target]")) {{
+      button.addEventListener("click", async () => {{
+        const target = document.getElementById(button.dataset.copyTarget);
+        const status = button.parentElement.querySelector(".copy-status");
+        try {{
+          await navigator.clipboard.writeText(target.innerText);
+          status.textContent = "Plan copied to clipboard.";
+        }} catch {{
+          status.textContent = "Copy was not available. Select the plan text manually.";
+        }}
+      }});
+    }}
+    for (const button of document.querySelectorAll("[data-print-plan]")) {{
+      button.addEventListener("click", () => window.print());
+    }}
+  </script>
 </body>
 </html>
 """
@@ -422,7 +492,26 @@ class CarrinhoHandler(BaseHTTPRequestHandler):
         self.send_header(
             "Content-Security-Policy",
             "default-src 'none'; style-src 'unsafe-inline'; "
-            "form-action 'self'; base-uri 'none'",
+            f"script-src 'nonce-{CSRF_TOKEN}'; form-action 'self'; base-uri 'none'",
+        )
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _send_download(
+        self,
+        content: str,
+        filename: str,
+        content_type: str = "text/plain; charset=utf-8",
+    ) -> None:
+        body = content.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header(
+            "Content-Disposition",
+            f'attachment; filename="{filename}"',
         )
         self.end_headers()
         self.wfile.write(body)
@@ -463,7 +552,14 @@ class CarrinhoHandler(BaseHTTPRequestHandler):
         self._send_html(render_page(error="Page not found."), 404)
 
     def do_POST(self) -> None:
-        if self.path not in {"/plan", "/customize", "/customize/restore"}:
+        if self.path not in {
+            "/plan",
+            "/customize",
+            "/customize/restore",
+            "/download/plan",
+            "/download/instacart-paste-list",
+            "/download/instacart-json",
+        }:
             self._send_html(render_page(error="Page not found."), 404)
             return
         try:
@@ -486,6 +582,28 @@ class CarrinhoHandler(BaseHTTPRequestHandler):
                 self._send_html(render_page(values, error=str(error)), 400)
                 return
             self._send_html(render_page(values, plan=plan))
+            return
+
+        if self.path.startswith("/download/"):
+            try:
+                plan = create_plan(values)
+            except ValueError as error:
+                self._send_html(render_page(values, error=str(error)), 400)
+                return
+            if self.path == "/download/plan":
+                self._send_download(f"{format_plan(plan)}\n", "meal-plan.txt")
+                return
+            if self.path == "/download/instacart-paste-list":
+                self._send_download(
+                    f"{create_instacart_paste_list(plan)}\n",
+                    "instacart-paste-list.txt",
+                )
+                return
+            self._send_download(
+                f"{serialize_instacart_payload(plan)}\n",
+                "instacart-list.json",
+                "application/json; charset=utf-8",
+            )
             return
 
         if self.path == "/customize":
