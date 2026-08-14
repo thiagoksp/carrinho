@@ -136,6 +136,12 @@ Document the identity strategy before any database migration. JSON files, export
 prompts, and LLM contracts use stable text keys; a future database may add internal ids
 while preserving unique `stable_key` values.
 
+**Backlog:** [CAR-17](https://linear.app/thiagoksp/issue/CAR-17/expand-supported-dietary-restrictions-safely)
+
+Expand hard dietary restrictions beyond lactose intolerance only through explicit
+catalogue tags, validation rules, and tests. Household dislikes and preferred foods stay
+soft preferences; dietary safety remains deterministic and is never delegated to an LLM.
+
 ## Milestone 4 — Official API integration
 
 **Parallel external dependency:** [CAR-3 — Track Instacart Developer Platform
