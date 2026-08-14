@@ -32,23 +32,26 @@ At the start of a work session:
 3. work only on the issue labelled `Next` unless the user explicitly changes priority;
 4. update the issue with evidence and move its status when the work changes state.
 
-## Milestone 1 — Validate manual handoff
+## Milestone 1 — Reconcile planned quantities with packages
 
-**Next:** [CAR-1 — Validate the reference list in Instacart Paste
-items](https://linear.app/thiagoksp/issue/CAR-1/validate-the-reference-list-in-instacart-paste-items)
+**Next, in progress:** [CAR-2 — Reconcile recipe quantities with purchasable
+packages](https://linear.app/thiagoksp/issue/CAR-2)
 
-Run the approved reference case, inspect the three generated files, and test every
-paste-list line through Instacart's iPhone **Shopping List → Paste items** flow. Record
-only observed matching, quantity, and dietary-label problems. Do not record an address,
-receipt, checkout detail, or credential.
+Keep recipe requirements separate from purchasable quantities. Normalize compatible
+mass, volume, and discrete units; round fixed-size products up to whole packages; show
+expected overage; and mark variable-weight products as estimates. Keep the catalogue
+simulated and retailer-neutral.
 
-## Milestone 2 — Improve product matching
+## Milestone 2 — Validate an available official handoff
 
-**Blocked by CAR-1:** [CAR-2 — Improve Instacart matching from manual
-evidence](https://linear.app/thiagoksp/issue/CAR-2/improve-instacart-matching-from-manual-evidence)
+CAR-1 was cancelled after the project's Canadian account did not expose either the
+documented iPhone **Shopping List → Paste items** flow or **Cart Assistant**. A limited
+public product search was enough to identify package reconciliation as the useful
+generic problem; Carrinho will not test every product across multiple retailers.
 
-Change generic search terms or structured measurements only when the manual test
-provides evidence. Add regression tests and keep the output retailer-neutral.
+Resume product-matching validation only when an official handoff surface is available.
+Change generic search terms or structured measurements only from observed evidence,
+add regression tests, and keep the output retailer-neutral.
 
 ## Milestone 3 — Official API integration
 

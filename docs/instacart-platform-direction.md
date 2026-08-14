@@ -46,8 +46,9 @@ continues to use only the clearly labelled simulated Canadian catalog.
   product into a retailer or price comparator.
 - Carrinho submitted the Canadian Developer Platform interest form on August 13, 2026.
   No approval or API key has been received, so network integration remains disabled.
-- Until approved access exists, the official iPhone **Shopping List -> Paste items**
-  feature provides a manual, reviewable handoff.
+- Instacart documents an iPhone **Shopping List -> Paste items** feature, but it was
+  not available in the project's Canadian account on August 14, 2026. It is therefore
+  not an executable dependency of the current milestone.
 
 ## Implementation state
 
@@ -59,10 +60,11 @@ The current version:
 4. generates one retailer-neutral Instacart preview and one manual paste list; and
 5. leaves retailer selection to the user during the Instacart handoff.
 
-The next validation is one manual iPhone **Paste items** run with the reference case.
-An official development request remains gated on approved access and a project-owned
-key. Estimates may be replaced with retailer results only if a future approved contract
-exposes them to Carrinho; private marketplace data must not be scraped or inferred.
+The current milestone reconciles recipe quantities with whole purchasable packages and
+marks variable-weight results as approximate. An official development request remains
+gated on approved access and a project-owned key. Estimates may be replaced with
+retailer results only if a future approved contract exposes them to Carrinho; private
+marketplace data must not be scraped or inferred.
 
 ## Non-goals
 

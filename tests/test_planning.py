@@ -1,5 +1,7 @@
+from dataclasses import replace
 import unittest
 
+from catalog import load_simulated_catalog
 from planning import generate_plan
 from request_parser import ParsedRequest, parse_request
 
@@ -152,7 +154,7 @@ class TestPlanning(unittest.TestCase):
             "Rice",
             [item.name for item in plan.shopping_items],
         )
-        self.assertIn("0.5 kg", " ".join(plan.pantry_usage))
+        self.assertIn("500 g", " ".join(plan.pantry_usage))
 
     def test_understands_half_a_package_of_pasta(self) -> None:
         request = ParsedRequest(
@@ -171,7 +173,7 @@ class TestPlanning(unittest.TestCase):
             "Dry pasta",
             [item.name for item in plan.shopping_items],
         )
-        self.assertIn("0.25 kg", " ".join(plan.pantry_usage))
+        self.assertIn("250 g", " ".join(plan.pantry_usage))
 
     def test_adds_cans_and_half_a_dozen_eggs(self) -> None:
         request = ParsedRequest(
@@ -189,8 +191,94 @@ class TestPlanning(unittest.TestCase):
         shopping_items = {
             item.name: item.quantity_label for item in plan.shopping_items
         }
-        self.assertEqual(shopping_items["Canned beans"], "1 can")
-        self.assertEqual(shopping_items["Large eggs"], "1 dozen")
+        self.assertEqual(shopping_items["Canned beans"], "1 x 1 can")
+        self.assertEqual(shopping_items["Large eggs"], "1 x 1 dozen")
+
+    def test_separates_required_amount_from_fixed_package_quantity(self) -> None:
+        plan = generate_plan(parse_request(BASE_CASE))
+
+        assert plan is not None
+        pasta = next(
+            item for item in plan.shopping_items if item.name == "Dry pasta"
+        )
+        self.assertEqual(pasta.required_quantity, 500)
+        self.assertEqual(pasta.purchase_quantity, 900)
+        self.assertEqual(pasta.overage_quantity, 400)
+        self.assertEqual(pasta.planning_unit, "g")
+        self.assertEqual(pasta.package_count, 1)
+        self.assertFalse(pasta.variable_weight)
+
+    def test_marks_variable_weight_packages_as_estimates(self) -> None:
+        original = load_simulated_catalog()
+        products = tuple(
+            replace(
+                product,
+                package_description="approximately 790 g package",
+                package_size=790,
+                instacart_quantity=790,
+                instacart_unit="g",
+                variable_weight=True,
+            )
+            if product.key == "chicken"
+            else product
+            for product in original.products
+        )
+        catalog = replace(original, products=products)
+
+        plan = generate_plan(parse_request(BASE_CASE), catalog)
+
+        assert plan is not None
+        chicken = next(
+            item for item in plan.shopping_items if item.name == "Chicken thighs"
+        )
+        self.assertEqual(chicken.required_quantity, 1200)
+        self.assertEqual(chicken.package_count, 2)
+        self.assertEqual(chicken.purchase_quantity, 1580)
+        self.assertEqual(chicken.overage_quantity, 380)
+        self.assertTrue(chicken.variable_weight)
+        self.assertEqual(chicken.instacart_quantity, 1580)
+        self.assertEqual(chicken.instacart_unit, "g")
+
+    def test_converts_pounds_in_the_pantry_to_grams(self) -> None:
+        request = ParsedRequest(
+            budget=100,
+            currency="CAD",
+            people=2,
+            days=4,
+            cooking_energy="low",
+            pantry_items=["1 lb of rice", "7 eggs"],
+            dietary_restrictions=[],
+        )
+
+        plan = generate_plan(request)
+
+        assert plan is not None
+        rice = next(
+            item for item in plan.shopping_items if item.name == "Rice"
+        )
+        self.assertAlmostEqual(rice.required_quantity, 546.40763, places=5)
+        self.assertEqual(rice.purchase_quantity, 2000)
+        self.assertIn("453.6 g", " ".join(plan.pantry_usage))
+
+    def test_converts_litres_and_millilitres_to_one_volume_unit(self) -> None:
+        request = ParsedRequest(
+            budget=100,
+            currency="CAD",
+            people=2,
+            days=4,
+            cooking_energy="low",
+            pantry_items=["0.2 L of oil", "rice", "7 eggs"],
+            dietary_restrictions=[],
+        )
+
+        plan = generate_plan(request)
+
+        assert plan is not None
+        self.assertNotIn(
+            "Vegetable oil",
+            [item.name for item in plan.shopping_items],
+        )
+        self.assertIn("160 ml", " ".join(plan.pantry_usage))
 
 
 if __name__ == "__main__":

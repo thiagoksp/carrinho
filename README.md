@@ -29,8 +29,11 @@ as either a balance or a shortfall.
 
 The terminal app understands and completes an English request, allows one field at a
 time to be corrected, and supports 1–12 people for 1–14 days. Its rule-based planner
-adjusts package quantities and accounts for pantry amounts expressed in kilograms,
-grams, litres, cans, dozens, units, and package fractions. The current values come from
+separates recipe requirements from whole purchasable packages, reports expected
+overage, marks variable-weight products as approximate, and accounts for pantry amounts
+expressed in kilograms, grams, pounds, litres, millilitres, cans, dozens, units, and
+package fractions. Mass is normalized to grams and volume to millilitres before package
+rounding. The current values come from
 one retailer-neutral JSON catalog that is explicitly labelled as simulated. A planning
 request does not require a city or retailer.
 
@@ -65,11 +68,13 @@ Project decisions and formats are documented in:
 
 ## Next step
 
-Run the approved reference case, inspect the three generated files, and validate the
-plain-text list through Instacart's manual iPhone **Paste items** flow. Record product
-matching and quantity problems before changing search terms or adding another feature.
-Keep all network integration disabled until approved access and contract testing are
-available.
+Complete CAR-2 by reviewing the new package reconciliation output: recipe need, whole
+package count, expected purchased quantity, overage, and variable-weight warning. Do
+not test every product or retailer. The documented iPhone **Paste items** and **Cart
+Assistant** features were not available in the project's Canadian Instacart account,
+so further handoff testing remains gated on an available official surface or approved
+Developer Platform access. Keep all network integration disabled until approved access
+and contract testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).

@@ -43,8 +43,10 @@ for the cheapest basket, or silently replace the requested plan with a cheaper m
 
 The interface is a terminal app. A rule-based planner supports 1–12 people for 1–14
 days, package-aware pantry deductions, a budget balance or shortfall, and one
-retailer-neutral simulated Canadian price catalog. The request and planning models do
-not require a city or retailer.
+retailer-neutral simulated Canadian price catalog. Recipe need is separate from
+purchasable quantity: mass is normalized to grams, volume to millilitres, fixed-size
+products round up to whole packages, and variable-weight products remain approximate.
+The request and planning models do not require a city or retailer.
 
 The app saves a meal plan, an Instacart JSON preview, and a plain-text list for the
 manual iPhone **Paste items** flow. It performs no network request and uses no
@@ -53,8 +55,10 @@ have been removed from the active product; the superseded decision remains in th
 documentation as history.
 
 An Instacart Developer Platform interest form was submitted on August 13, 2026. As of
-August 14, 2026, no approval or API key has been received. Only no dietary restrictions
-or lactose intolerance are supported at this stage.
+August 14, 2026, no approval or API key has been received. The documented iPhone
+**Paste items** flow and **Cart Assistant** were not available in the project's Canadian
+Instacart account, so they are not current milestone dependencies. Only no dietary
+restrictions or lactose intolerance are supported at this stage.
 
 ## Roadmap
 

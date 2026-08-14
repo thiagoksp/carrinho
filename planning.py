@@ -21,6 +21,12 @@ class ShoppingItem:
     name: str
     quantity_label: str
     estimated_price: float
+    required_quantity: float
+    purchase_quantity: float
+    overage_quantity: float
+    planning_unit: str
+    package_count: int
+    variable_weight: bool
     instacart_search_term: str
     instacart_quantity: float
     instacart_unit: str
@@ -58,11 +64,11 @@ MEAL_TEMPLATES = (
     MealTemplate(
         "Roasted chicken, rice and vegetables",
         (
-            ("chicken", 0.30),
-            ("rice", 0.10),
-            ("vegetables", 0.15),
-            ("onions", 0.05),
-            ("oil", 0.01),
+            ("chicken", 300.0),
+            ("rice", 100.0),
+            ("vegetables", 150.0),
+            ("onions", 50.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
@@ -70,45 +76,45 @@ MEAL_TEMPLATES = (
         "Pan-fried rice with eggs and vegetables",
         (
             ("eggs", 2.00),
-            ("rice", 0.10),
-            ("vegetables", 0.15),
-            ("onions", 0.05),
-            ("oil", 0.01),
+            ("rice", 100.0),
+            ("vegetables", 150.0),
+            ("onions", 50.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
     MealTemplate(
         "Previously prepared chicken, rice and vegetables",
         (
-            ("chicken", 0.30),
-            ("rice", 0.10),
-            ("vegetables", 0.15),
-            ("onions", 0.05),
-            ("oil", 0.01),
+            ("chicken", 300.0),
+            ("rice", 100.0),
+            ("vegetables", 150.0),
+            ("onions", 50.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
     MealTemplate(
         "Pasta with ground beef and tomato sauce",
         (
-            ("ground_beef", 0.125),
-            ("pasta", 0.125),
+            ("ground_beef", 125.0),
+            ("pasta", 125.0),
             ("tomato_sauce", 0.25),
-            ("onions", 0.05),
-            ("garlic", 0.02),
-            ("oil", 0.01),
+            ("onions", 50.0),
+            ("garlic", 20.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
     MealTemplate(
         "Pasta with previously prepared meat sauce",
         (
-            ("ground_beef", 0.125),
-            ("pasta", 0.125),
+            ("ground_beef", 125.0),
+            ("pasta", 125.0),
             ("tomato_sauce", 0.25),
-            ("onions", 0.05),
-            ("garlic", 0.02),
-            ("oil", 0.01),
+            ("onions", 50.0),
+            ("garlic", 20.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
@@ -117,10 +123,10 @@ MEAL_TEMPLATES = (
         (
             ("beans", 0.625),
             ("tomato_sauce", 0.25),
-            ("rice", 0.10),
-            ("onions", 0.05),
-            ("garlic", 0.02),
-            ("oil", 0.01),
+            ("rice", 100.0),
+            ("onions", 50.0),
+            ("garlic", 20.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
@@ -129,10 +135,10 @@ MEAL_TEMPLATES = (
         (
             ("beans", 0.625),
             ("tomato_sauce", 0.25),
-            ("rice", 0.10),
-            ("onions", 0.05),
-            ("garlic", 0.02),
-            ("oil", 0.01),
+            ("rice", 100.0),
+            ("onions", 50.0),
+            ("garlic", 20.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
@@ -140,22 +146,16 @@ MEAL_TEMPLATES = (
         "Omelette with potatoes, onion and vegetables",
         (
             ("eggs", 1.50),
-            ("potatoes", 0.30),
-            ("vegetables", 0.10),
-            ("onions", 0.05),
-            ("oil", 0.01),
+            ("potatoes", 300.0),
+            ("vegetables", 100.0),
+            ("onions", 50.0),
+            ("oil", 10.0),
             ("seasoning", 0.01),
         ),
     ),
 )
 
-BASE_UNITS = {
-    "tomato_sauce": "cans",
-    "beans": "cans",
-    "eggs": "eggs",
-    "oil": "litres",
-    "seasoning": "packages",
-}
+GRAMS_PER_POUND = 453.59237
 
 NUMBER_WORD_VALUES = {
     "one": 1.0,
@@ -244,36 +244,38 @@ def _item_quantity(item: str, product: Product) -> float | None:
     if number is None:
         return None
 
-    if product.key == "eggs":
+    if product.planning_unit == "each":
         if re.search(r"\bdozens?\b", text):
             return number * 12
         return number
 
-    if product.key in {"tomato_sauce", "beans"}:
+    if product.planning_unit == "can":
         if re.search(r"\bcans?\b", text):
             return number
         if re.search(r"\b(?:packages?|packs?)\b", text):
             return number * product.package_size
         return None
 
-    if product.key == "oil":
+    if product.planning_unit == "ml":
         if re.search(r"\b(?:ml|millilitres?|milliliters?)\b", text):
-            return number / 1000
-        if re.search(r"\b(?:l|litres?|liters?)\b", text):
             return number
+        if re.search(r"\b(?:l|litres?|liters?)\b", text):
+            return number * 1000
         if re.search(r"\bbottles?\b", text):
             return number * product.package_size
         return None
 
-    if product.key == "seasoning":
+    if product.planning_unit == "package":
         if re.search(r"\b(?:packages?|packs?|jars?)\b", text):
             return number * product.package_size
         return None
 
     if re.search(r"\b(?:kg|kilograms?|kilogrammes?)\b", text):
-        return number
+        return number * 1000
     if re.search(r"\b(?:g|grams?)\b", text):
-        return number / 1000
+        return number
+    if re.search(r"\b(?:lb|lbs|pounds?)\b", text):
+        return number * GRAMS_PER_POUND
     if re.search(r"\b(?:packages?|packs?|bags?|units?|items?)\b", text):
         return number * product.package_size
     return None
@@ -310,11 +312,7 @@ def _build_shopping_items(
             continue
 
         packages_needed = math.ceil(shortfall / product.package_size)
-        quantity_label = (
-            product.package_description
-            if packages_needed == 1
-            else f"{packages_needed} × {product.package_description}"
-        )
+        quantity_label = f"{packages_needed} x {product.package_description}"
         shopping_items.append(
             ShoppingItem(
                 name=product.name,
@@ -323,6 +321,21 @@ def _build_shopping_items(
                     packages_needed * product.package_price,
                     2,
                 ),
+                required_quantity=round(shortfall, 6),
+                purchase_quantity=round(
+                    packages_needed * product.package_size,
+                    6,
+                ),
+                overage_quantity=round(
+                    max(
+                        0,
+                        packages_needed * product.package_size - shortfall,
+                    ),
+                    6,
+                ),
+                planning_unit=product.planning_unit,
+                package_count=packages_needed,
+                variable_weight=product.variable_weight,
                 instacart_search_term=product.instacart_search_term,
                 instacart_quantity=round(
                     packages_needed * product.instacart_quantity,
@@ -365,17 +378,49 @@ def _describe_pantry_usage(
 
         if not math.isinf(available_amount):
             used_amount = min(required_amount, available_amount)
-            unit = BASE_UNITS.get(product.key, "kg")
-            quantity = f"{used_amount:g}"
+            quantity = format_planning_quantity(
+                used_amount,
+                product.planning_unit,
+                product.name,
+            )
             usage_notes.append(
                 f"{product.name}: the plan will use "
-                f"{quantity} {unit} from the pantry."
+                f"{quantity} from the pantry."
             )
         else:
             usage_notes.append(
                 f"{product.name}: the plan will use what is already at home."
             )
     return tuple(usage_notes)
+
+
+def format_planning_quantity(
+    quantity: float,
+    unit: str,
+    product_name: str | None = None,
+) -> str:
+    """Format a canonical planning quantity for a Canadian reader."""
+    def compact(value: float, decimal_places: int) -> str:
+        return f"{value:.{decimal_places}f}".rstrip("0").rstrip(".")
+
+    if unit == "g":
+        if quantity >= 1000:
+            return f"{compact(quantity / 1000, 3)} kg"
+        return f"{compact(quantity, 1)} g"
+    if unit == "ml":
+        if quantity >= 1000:
+            return f"{compact(quantity / 1000, 3)} L"
+        return f"{compact(quantity, 1)} ml"
+    labels = {
+        "can": ("can", "cans"),
+        "each": ("item", "items"),
+        "package": ("package", "packages"),
+    }
+    singular, plural = labels[unit]
+    if unit == "each" and product_name and "egg" in product_name.casefold():
+        singular, plural = "egg", "eggs"
+    label = singular if math.isclose(quantity, 1.0) else plural
+    return f"{compact(quantity, 3)} {label}"
 
 
 def _create_plan(

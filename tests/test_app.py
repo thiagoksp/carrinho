@@ -217,6 +217,12 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Price source:", content)
         self.assertIn("Retailer: to be selected by the user in Instacart", content)
         self.assertIn("simulated, retailer-neutral Canadian price catalogue", content)
+        self.assertIn("need 500 g; buy 900 g; 400 g extra", content)
+        self.assertIn(
+            "need 1.2 kg; plan about 1.2 kg; "
+            "actual package weight may be higher or lower",
+            content,
+        )
         self.assertNotIn("Shopping location", content)
         self.assertNotIn("Selected store", content)
         self.assertIn("PANTRY ITEMS USED", content)

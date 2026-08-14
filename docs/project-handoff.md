@@ -52,6 +52,10 @@ and user-visible output in Canadian English.
 - The planner supports 1–12 people for 1–14 days.
 - Package-aware pantry deductions and lactose intolerance are supported within the
   documented limits.
+- Recipe quantities and purchasable quantities are separate. Mass is normalized to
+  grams, volume to millilitres, and discrete products to compatible counts. Fixed-size
+  products round up to whole packages and expose expected overage; variable-weight
+  products are explicitly approximate.
 - The local price catalog is simulated and retailer-neutral.
 - The request, plan, summary, and saved files contain no city or selected retailer.
 - Saving a plan creates:
@@ -69,9 +73,11 @@ and user-visible output in Canadian English.
 Carrinho submitted the Canadian Instacart Developer Platform interest form on
 August 13, 2026. As of August 14, 2026, no approval or API key has been received.
 
-The current handoff is the manual iPhone **Shopping List → Paste items** flow. Do not
-add a network request until approved access exists and the development contract has
-been tested.
+The documented iPhone **Shopping List → Paste items** flow and **Cart Assistant** were
+not available in the project's Canadian Instacart account on August 14, 2026. A limited
+public Instacart search was used only to confirm the package-size problem; it is not a
+catalogue, retailer comparison, or network integration in Carrinho. Do not add a network
+request until approved access exists and the development contract has been tested.
 
 The [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde)
 tracks task status. Its essential roadmap is mirrored in [`roadmap.md`](roadmap.md) so
@@ -104,15 +110,11 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Run the approved reference case, inspect all three generated files, and manually test
-`instacart-paste-list.txt` with Instacart's iPhone **Paste items** flow.
-
-This work is tracked as Linear issue
-[CAR-1](https://linear.app/thiagoksp/issue/CAR-1/validate-the-reference-list-in-instacart-paste-items),
-the only issue currently labelled `Next`.
-
-Record only product-matching or quantity problems observed during that test. Improve
-the generic Instacart search terms from evidence before adding another feature.
+Finish and review package reconciliation in Linear issue
+[CAR-2](https://linear.app/thiagoksp/issue/CAR-2), the only issue currently labelled
+`Next`. The reference output must distinguish recipe need, whole package count,
+expected purchased quantity, overage, and variable-weight uncertainty. Do not expand
+this into product-by-product or retailer-by-retailer testing.
 
 ## Security boundary
 
