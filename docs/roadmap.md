@@ -141,6 +141,15 @@ while preserving unique `stable_key` values.
 Expand hard dietary restrictions beyond lactose intolerance only through explicit
 catalogue tags, validation rules, and tests. Household dislikes and preferred foods stay
 soft preferences; dietary safety remains deterministic and is never delegated to an LLM.
+Consider CAR-18 before broadening this list so dietary rules and household preferences do
+not become separate systems.
+
+**Backlog:** [CAR-18](https://linear.app/thiagoksp/issue/CAR-18/design-a-unified-household-rules-model)
+
+Design one household-rules model for hard restrictions, soft dislikes, soft preferences,
+brand-only choices, frequency preferences, and future review feedback. The model should
+preserve different enforcement levels while allowing an LLM to suggest pending rules only
+after local validation and user confirmation.
 
 ## Milestone 4 — Official API integration
 

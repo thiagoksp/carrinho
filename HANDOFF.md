@@ -56,6 +56,10 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   is a future backlog product-safety task for expanding hard dietary restrictions beyond
   lactose intolerance. Dislikes and preferred foods remain soft preferences; dietary
   safety stays deterministic and must not be delegated to an LLM.
+- [CAR-18](https://linear.app/thiagoksp/issue/CAR-18/design-a-unified-household-rules-model)
+  captures the future household-rules model for hard restrictions, soft preferences,
+  brand-only choices, frequency preferences, and review feedback. It should be considered
+  before broadening CAR-17 so the project does not grow separate rule systems.
 - [CAR-12 — Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
