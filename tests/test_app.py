@@ -134,7 +134,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("no data was sent", content)
         self.assertIn("instacart-list.json", content)
         self.assertIn("instacart-paste-list.txt", content)
-        self.assertIn("Shopping List → Paste items", content)
+        self.assertIn("Shopping List -> Paste items", content)
         self.assertIn("labels for your dietary needs", content)
         self.assertIn("retailer you select in Instacart", content)
 

@@ -335,7 +335,7 @@ def main() -> None:
         print(
             "Open the file in Windows, copy its contents, and send it to your "
             "iPhone through Notes, email, or a message. Then open Shopping List "
-            "→ Paste items."
+            "-> Paste items."
         )
         print(
             "Instacart may interpret a measurement as text. Review the retailer "
