@@ -25,8 +25,6 @@ def _base_plan(pantry_items: list[str] | None = None):
         cooking_energy="low",
         pantry_items=pantry_items if pantry_items is not None else [],
         dietary_restrictions=[],
-        shopping_location="Toronto",
-        selected_store="No Frills",
     )
     plan = generate_plan(request_data)
     assert plan is not None
@@ -72,10 +70,11 @@ class TestInstacart(unittest.TestCase):
             [{"quantity": 2, "unit": "kg"}],
         )
 
-    def test_omits_prices_store_location_and_secrets(self) -> None:
+    def test_payload_is_retailer_neutral_and_omits_secrets(self) -> None:
         payload = create_instacart_payload(_base_plan(["rice", "7 eggs"]))
         serialized = json.dumps(payload, ensure_ascii=False)
 
+        self.assertEqual(set(payload), {"title", "link_type", "line_items"})
         for item in payload["line_items"]:
             self.assertNotIn("quantity", item)
             self.assertNotIn("unit", item)
@@ -88,6 +87,8 @@ class TestInstacart(unittest.TestCase):
             "Authorization",
             "api_key",
             "country_code",
+            "shopping_location",
+            "selected_store",
         ):
             self.assertNotIn(forbidden_text, serialized)
 

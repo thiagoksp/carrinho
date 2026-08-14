@@ -8,12 +8,6 @@ from instacart import (
     save_instacart_paste_list,
     save_instacart_payload,
 )
-from pilot import (
-    PILOT_LOCATION,
-    PILOT_STORE,
-    matches_pilot_location,
-    matches_pilot_store,
-)
 from planning import Plan, generate_plan
 from request_parser import ParsedRequest, parse_request
 
@@ -54,8 +48,6 @@ def print_request_summary(request_data: ParsedRequest) -> None:
     print(f"- Cooking energy: {_display(request_data.cooking_energy)}")
     print(f"- Pantry items: {pantry_items}")
     print(f"- Dietary restrictions: {dietary_restrictions}")
-    print(f"- Shopping location: {_display(request_data.shopping_location)}")
-    print(f"- Selected store: {_display(request_data.selected_store)}")
 
 
 def _read_budget() -> tuple[float, str]:
@@ -130,28 +122,6 @@ def _read_dietary_restrictions() -> list[str]:
         print("Enter the restriction or type 'none'.")
 
 
-def _read_shopping_location() -> str:
-    while True:
-        response = input(
-            "\nThe current pilot supports Toronto. Enter Toronto or a Toronto "
-            "postal code (for example, M5V 2T6).\n> "
-        ).strip()
-        if matches_pilot_location(response):
-            return response
-        print(f"This version supports only {PILOT_LOCATION}.")
-
-
-def _read_store() -> str:
-    while True:
-        response = input(
-            f"\nThe current pilot store is {PILOT_STORE}. "
-            f"Enter '{PILOT_STORE}' to continue.\n> "
-        ).strip()
-        if matches_pilot_store(response):
-            return PILOT_STORE
-        print(f"This version supports only {PILOT_STORE}.")
-
-
 def complete_request(request_data: ParsedRequest) -> ParsedRequest:
     """Ask only for data that was not present in the initial request."""
     if request_data.budget is None:
@@ -170,10 +140,6 @@ def complete_request(request_data: ParsedRequest) -> ParsedRequest:
         request_data.pantry_items = _read_pantry_items()
     if request_data.dietary_restrictions is None:
         request_data.dietary_restrictions = _read_dietary_restrictions()
-    if not matches_pilot_location(request_data.shopping_location):
-        request_data.shopping_location = _read_shopping_location()
-    if not matches_pilot_store(request_data.selected_store):
-        request_data.selected_store = _read_store()
     return request_data
 
 
@@ -195,8 +161,6 @@ def _correct_one_field(request_data: ParsedRequest) -> None:
         "4": "cooking_energy",
         "5": "pantry_items",
         "6": "dietary_restrictions",
-        "7": "shopping_location",
-        "8": "selected_store",
     }
 
     while True:
@@ -207,14 +171,12 @@ def _correct_one_field(request_data: ParsedRequest) -> None:
             "3 - Days\n"
             "4 - Cooking energy\n"
             "5 - Pantry items\n"
-            "6 - Dietary restrictions\n"
-            "7 - Shopping location\n"
-            "8 - Selected store\n> "
+            "6 - Dietary restrictions\n> "
         ).strip()
         choice = options.get(response)
         if choice is not None:
             break
-        print("Choose a number from 1 to 8.")
+        print("Choose a number from 1 to 6.")
 
     if choice == "budget":
         request_data.budget, request_data.currency = _read_budget()
@@ -230,12 +192,8 @@ def _correct_one_field(request_data: ParsedRequest) -> None:
         request_data.cooking_energy = _read_cooking_energy()
     elif choice == "pantry_items":
         request_data.pantry_items = _read_pantry_items()
-    elif choice == "dietary_restrictions":
-        request_data.dietary_restrictions = _read_dietary_restrictions()
-    elif choice == "shopping_location":
-        request_data.shopping_location = _read_shopping_location()
     else:
-        request_data.selected_store = _read_store()
+        request_data.dietary_restrictions = _read_dietary_restrictions()
 
 
 def review_request(request_data: ParsedRequest) -> ParsedRequest:
@@ -258,9 +216,9 @@ def format_plan(plan: Plan) -> str:
     lines = [
         "MEAL PLAN",
         f"For {plan.people} person(s) over {plan.days} day(s).",
-        f"Shopping location: {_display(plan.shopping_location)}.",
-        f"Selected store: {_display(plan.selected_store)}.",
-        "The current estimate uses one simulated price catalogue for this trip.",
+        "Retailer: to be selected by the user in Instacart.",
+        "The current estimate uses one simulated, retailer-neutral Canadian "
+        "price catalogue for this trip.",
     ]
 
     for meal in plan.meals:
@@ -380,9 +338,9 @@ def main() -> None:
             "→ Paste items."
         )
         print(
-            "Instacart may interpret a measurement as text. Review the selected "
-            "store, products, quantities, ingredients, and labels for your "
-            "dietary needs before adding items to the cart."
+            "Instacart may interpret a measurement as text. Review the retailer "
+            "you select in Instacart, matched products, quantities, ingredients, "
+            "and labels for your dietary needs before adding items to the cart."
         )
 
 

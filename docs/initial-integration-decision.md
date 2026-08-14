@@ -4,22 +4,24 @@ Date: August 13, 2026.
 
 Status: superseded on August 14, 2026, by
 [`instacart-platform-direction.md`](instacart-platform-direction.md). This document is
-retained as the historical decision behind the current transitional implementation.
+retained only as a historical decision record and does not describe current behaviour.
+The No Frills and Toronto implementation and its manual-price research tool were removed
+from the active project on August 14, 2026.
 
 ## Decision
 
-The first Carrinho pilot uses **No Frills in Toronto, Ontario** as its selected store.
-Each run uses one catalog and one working price per item. Store ranking, lowest-price
-search, multi-store baskets, and cross-store comparison are not product goals.
+The first Carrinho pilot used **No Frills in Toronto, Ontario** as its selected store.
+Each run used one catalog and one working price per item. Store ranking, lowest-price
+search, multi-store baskets, and cross-store comparison were not product goals.
 
-Budget calculations continue to use one local catalog clearly labelled as simulated.
+Budget calculations used one local catalog clearly labelled as simulated.
 The **Instacart Developer Platform** may later provide a reviewable hosted shopping-list
 handoff after approved access. It is not a price source for the planner and cannot
 guarantee that No Frills is selected.
 
-Manual price declarations may be saved in separate local files. They are historical,
-self-declared, unverified, and isolated from planning. No external request has been
-added to the app.
+The pilot allowed manual price declarations to be saved in separate local files. They
+were historical, self-declared, unverified, and isolated from planning. No external
+request was added to the app.
 
 ## Rationale
 

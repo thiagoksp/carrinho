@@ -6,12 +6,6 @@ import re
 import unicodedata
 
 from catalog import PriceCatalog, Product, load_simulated_catalog
-from pilot import (
-    PILOT_LOCATION,
-    PILOT_STORE,
-    matches_pilot_location,
-    matches_pilot_store,
-)
 from request_parser import ParsedRequest
 
 
@@ -50,8 +44,6 @@ class Plan:
     currency: str
     price_type: str
     price_description: str
-    shopping_location: str | None = None
-    selected_store: str | None = None
 
     @property
     def estimated_total(self) -> float:
@@ -425,8 +417,6 @@ def _create_plan(
         currency=catalog.currency,
         price_type=catalog.price_type,
         price_description=catalog.description,
-        shopping_location=request.shopping_location or PILOT_LOCATION,
-        selected_store=request.selected_store or PILOT_STORE,
     )
 
 
@@ -444,14 +434,6 @@ def generate_plan(
         and request.days is not None
         and 1 <= request.days <= 14
         and _restrictions_supported(request.dietary_restrictions)
-        and (
-            request.shopping_location is None
-            or matches_pilot_location(request.shopping_location)
-        )
-        and (
-            request.selected_store is None
-            or matches_pilot_store(request.selected_store)
-        )
     ):
         return None
 

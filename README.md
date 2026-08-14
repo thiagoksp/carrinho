@@ -29,10 +29,9 @@ The terminal app understands and completes an English request, allows one field 
 time to be corrected, and supports 1–12 people for 1–14 days. Its rule-based planner
 adjusts package quantities and accounts for pantry amounts expressed in kilograms,
 grams, litres, cans, dozens, units, and package fractions. The current values come from
-one JSON catalog that is explicitly labelled as simulated.
+one retailer-neutral JSON catalog that is explicitly labelled as simulated. A planning
+request does not require a city or retailer.
 
-The current terminal pilot still accepts only No Frills in Toronto, Ontario. This is
-transitional behaviour scheduled for removal; it is not the approved product direction.
 The program creates three local files when a plan is saved:
 
 - a readable meal plan;
@@ -47,20 +46,6 @@ An Instacart Developer Platform interest form was submitted on August 13, 2026.
 Applications are subject to Instacart review and approval; submission did not provide
 access or an API key. Network integration therefore remains disabled.
 
-A separate manual-price importer creates an Excel-compatible CSV and stores local,
-self-declared observations with package, exact store location, date, channel, and source.
-The CSV hash preserves an import trail but does not prove that a value is authentic,
-licensed, live, or verified. These observations are isolated from the planner and cannot
-change its budget calculations. This importer remains a legacy research tool from the
-store-specific pilot and is not the planned Instacart price source.
-
-## Approved transition
-
-The next product increment removes shopping area and selected store from the Carrinho
-request. Canada and CAD remain fixed product constraints. Carrinho will generate one
-retailer-neutral list and hand it to Instacart; the user's Instacart context will
-determine available retailers, local products, availability, and actual checkout prices.
-
 Until approved API access exists, the handoff remains a local preview and a manual
 iPhone paste list. Carrinho must not claim that it selected a specific retailer or knows
 the final price before the user reviews the list in Instacart.
@@ -69,16 +54,18 @@ Project decisions and formats are documented in:
 
 - [`docs/reference-case.md`](docs/reference-case.md)
 - [`docs/instacart-platform-direction.md`](docs/instacart-platform-direction.md)
-- [`docs/initial-integration-decision.md`](docs/initial-integration-decision.md)
 - [`docs/instacart-list-preparation.md`](docs/instacart-list-preparation.md)
-- [`docs/manual-price-observations.md`](docs/manual-price-observations.md)
+- [`docs/project-handoff.md`](docs/project-handoff.md)
+- [`docs/initial-integration-decision.md`](docs/initial-integration-decision.md), retained
+  as a superseded historical decision
 
 ## Next step
 
-Remove the transitional No Frills and Toronto fields from the request and planning model
-while keeping the current simulated Canadian catalog for budget guidance. Preserve the
-manual iPhone paste flow and keep all network integration disabled until approved access
-and contract testing are available.
+Run the approved reference case, inspect the three generated files, and validate the
+plain-text list through Instacart's manual iPhone **Paste items** flow. Record product
+matching and quantity problems before changing search terms or adding another feature.
+Keep all network integration disabled until approved access and contract testing are
+available.
 
 ## Local environment
 
@@ -88,12 +75,6 @@ Run Carrinho on Windows:
 
 ```powershell
 .\.venv\Scripts\python.exe app.py
-```
-
-Create the manual-price CSV template:
-
-```powershell
-.\.venv\Scripts\python.exe manual_prices.py create-template
 ```
 
 Run the test suite:

@@ -2,21 +2,23 @@
 
 Date: August 14, 2026.
 
+Status: implemented in the retailer-neutral request, planning, and local handoff flow on
+August 14, 2026.
+
 ## Decision
 
-Carrinho will use **Instacart as its single planned shopping platform for Canada**.
+Carrinho uses **Instacart as its single planned shopping platform for Canada**.
 Instacart is a marketplace and handoff destination, not a retailer that Carrinho can
 select or guarantee.
 
-Carrinho will create one meal plan, one retailer-neutral shopping list, and one
+Carrinho creates one meal plan, one retailer-neutral shopping list, and one
 reviewable shopping-list handoff. The user's address and Instacart context determine
 which retailers are available. The user selects a retailer inside Instacart, which then
 determines product matches, availability, local prices, fees, and checkout details.
 
-Carrinho will not require No Frills, Toronto, a city, or a selected retailer as planning
-inputs. Canada and CAD remain product constraints. The current No Frills and Toronto
-requirement is transitional implementation behaviour and will be removed in a separate
-code increment.
+Carrinho does not require No Frills, Toronto, a city, or a selected retailer as planning
+inputs. Canada and CAD remain product constraints. The former No Frills and Toronto
+requirement has been removed from the active implementation.
 
 ## Price boundary
 
@@ -28,9 +30,8 @@ Actual retailer-specific prices and availability belong to the Instacart experie
 Carrinho must not claim to know the final cart total before the user reviews matched
 products, quantities, substitutions, fees, and prices there.
 
-Manual price declarations remain local, self-declared, unverified, and isolated from
-planning. They are legacy research artifacts from the store-specific pilot, not the
-planned Instacart price source.
+The manual-price experiment from the store-specific pilot has been removed. Planning
+continues to use only the clearly labelled simulated Canadian catalog.
 
 ## Rationale
 
@@ -48,16 +49,20 @@ planned Instacart price source.
 - Until approved access exists, the official iPhone **Shopping List -> Paste items**
   feature provides a manual, reviewable handoff.
 
-## Planned implementation sequence
+## Implementation state
 
-1. Remove shopping area and selected retailer from the parsed request and terminal flow.
-2. Remove the No Frills and Toronto eligibility rule from planning.
-3. Keep one simulated Canadian catalog for clearly labelled budget guidance.
-4. Keep generating one Instacart preview and one manual paste list.
-5. Let the user choose one available retailer during the Instacart handoff.
-6. Validate one official development request only after access and a key are approved.
-7. Replace estimates with retailer results only if an approved contract exposes them to
-   Carrinho; do not scrape or infer private marketplace data.
+The current version:
+
+1. omits shopping area and selected retailer from the request and terminal flow;
+2. has no No Frills or Toronto planning eligibility rule;
+3. keeps one simulated Canadian catalog for clearly labelled budget guidance;
+4. generates one retailer-neutral Instacart preview and one manual paste list; and
+5. leaves retailer selection to the user during the Instacart handoff.
+
+The next validation is one manual iPhone **Paste items** run with the reference case.
+An official development request remains gated on approved access and a project-owned
+key. Estimates may be replaced with retailer results only if a future approved contract
+exposes them to Carrinho; private marketplace data must not be scraped or inferred.
 
 ## Non-goals
 

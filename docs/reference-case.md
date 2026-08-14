@@ -2,20 +2,13 @@
 
 This is the first approved scenario used to guide development and tests.
 
-Status: this remains the current implementation baseline. The approved next increment
-will remove the shopping-area and selected-store sentence from the input and the related
-interpretation fields. Existing acceptance criteria remain valid until that code change
-is implemented and tested.
-
-The target version will also replace selected working prices with clearly labelled,
-simulated Canadian planning estimates; create a retailer-neutral Instacart shopping-list
-handoff; and leave retailer, location, availability, and actual prices to Instacart.
+Status: this is the current retailer-neutral implementation baseline.
 
 ## Input
 
 > I have CAD$80 to feed 2 people for 4 days. We have low energy for cooking,
 > already have enough rice and 7 eggs, and at least one person is lactose
-> intolerant. We need lunch and dinner. I am in Toronto and will shop at No Frills.
+> intolerant. We need lunch and dinner.
 
 ## Expected interpretation
 
@@ -27,8 +20,6 @@ handoff; and leave retailer, location, availability, and actual prices to Instac
 - Cooking energy: low.
 - Pantry: enough rice and exactly 7 eggs.
 - Dietary restriction: the entire plan must avoid intentional dairy ingredients.
-- Shopping area: Toronto.
-- Selected store: No Frills.
 
 ## Expected response
 
@@ -36,10 +27,11 @@ handoff; and leave retailer, location, availability, and actual prices to Instac
 2. One lunch-and-dinner plan for four days.
 3. Leftover and batch-cooking guidance to reduce effort.
 4. One shopping list with package-aware quantities.
-5. One selected working price per item and an estimated total.
+5. One clearly labelled simulated Canadian planning estimate per item and an estimated
+   total.
 6. Remaining budget balance or a clear shortfall.
 7. An explanation of how the rice and seven eggs are used.
-8. One reviewable cart handoff.
+8. One retailer-neutral, reviewable Instacart shopping-list handoff.
 
 ## Acceptance criteria
 
@@ -48,7 +40,8 @@ handoff; and leave retailer, location, availability, and actual prices to Instac
 - Meals prioritize simple preparation and leftovers.
 - The shopping list accounts for the rice and exactly 7 eggs already available.
 - The current simulated total for this case remains within CAD$80.
-- The shopping area and selected store appear in the summary and saved plan.
-- The app uses one price catalog and one selected store; it does not compare or rank
-  retailers.
+- No city or retailer is required, inferred, or included in the summary or saved plan.
+- The app uses one simulated Canadian catalog; it does not compare or rank retailers.
+- The handoff leaves address, retailer selection, availability, and actual prices to
+  Instacart.
 - Automatic checkout and live prices are not claimed at this stage.
