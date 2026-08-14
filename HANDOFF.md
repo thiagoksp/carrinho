@@ -85,6 +85,11 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   is a future human checkpoint for account migration. Use it before relying on a
   different GitHub, Linear, or Codex account so old Julia-linked setup does not confuse
   ownership, permissions, or the single-`Next` workflow.
+- [CAR-26](https://linear.app/thiagoksp/issue/CAR-26/design-household-member-dietary-profiles)
+  is a future design task for local household member dietary profiles. These profiles
+  represent eaters inside one household, not separate login accounts, so a plan can be
+  generated for Thiago, Julia, guests, or any selected subset without applying every
+  household member's restrictions to every meal plan.
 - [CAR-12 - Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
