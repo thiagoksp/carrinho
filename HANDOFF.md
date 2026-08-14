@@ -60,6 +60,19 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   captures the future household-rules model for hard restrictions, soft preferences,
   brand-only choices, frequency preferences, and review feedback. It should be considered
   before broadening CAR-17 so the project does not grow separate rule systems.
+- [CAR-19](https://linear.app/thiagoksp/issue/CAR-19/design-ingredient-substitution-rules)
+  is a future design task for ingredient substitutions using catalogue-backed stable
+  keys. LLMs may suggest candidates, but local rules approve safety and quantity impact.
+- [CAR-20](https://linear.app/thiagoksp/issue/CAR-20/map-generic-grocery-items-to-retailer-product-candidates)
+  is a future approved-integration task for mapping generic grocery items to retailer or
+  Instacart product candidates, including brand, package, variable weight, availability,
+  price, and evidence source when contractually available.
+- [CAR-21](https://linear.app/thiagoksp/issue/CAR-21/design-configurable-shopping-strategy-preferences)
+  is a future design task for configurable shopping strategy, such as cheapest acceptable
+  item versus brand-only rules, without turning Carrinho into a retailer-comparison tool.
+- [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
+  is a future UX task for keeping first use small while moving richer rules into
+  progressive profile prompts, review suggestions, or settings.
 - [CAR-12 — Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
