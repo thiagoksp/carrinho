@@ -42,18 +42,40 @@ mass, volume, and discrete units; round fixed-size products up to whole packages
 expected overage; and mark variable-weight products as estimates. Keep the catalogue
 simulated and retailer-neutral.
 
-## Milestone 2 — Validate an available official handoff
+## Milestone 2 — Data-driven households
+
+The next product milestone makes the planner adaptable without adding a database,
+account system, or network service.
+
+1. [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5)
+   moves meal templates and per-person ingredient quantities from Python into a
+   validated, versioned Canadian English data file. The current reference case remains
+   a regression test.
+2. [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6)
+   saves private household defaults and pantry quantities in local JSON outside Git.
+   Product-owned catalogues remain versioned under `data/`; private user data belongs
+   under ignored `local-data/`.
+3. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7)
+   makes cooking energy, lactose intolerance, and pantry inventory influence
+   deterministic meal selection.
+4. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
+   adds tested meal variety only after the catalogue and selection rules are stable.
+
+CAR-2 remains the sole `Next` issue until its pull request is reviewed and merged.
+The following work stays in backlog and is promoted one item at a time.
+
+## Milestone 3 — Validate an available official handoff
 
 CAR-1 was cancelled after the project's Canadian account did not expose either the
 documented iPhone **Shopping List → Paste items** flow or **Cart Assistant**. A limited
 public product search was enough to identify package reconciliation as the useful
 generic problem; Carrinho will not test every product across multiple retailers.
 
-Resume product-matching validation only when an official handoff surface is available.
-Change generic search terms or structured measurements only from observed evidence,
-add regression tests, and keep the output retailer-neutral.
+Resume handoff validation only when an official Instacart surface is available. Change
+generic search terms or structured measurements only from observed evidence, add
+regression tests, and keep the output retailer-neutral.
 
-## Milestone 3 — Official API integration
+## Milestone 4 — Official API integration
 
 **External dependency:** [CAR-3 — Track Instacart Developer Platform
 approval](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval)

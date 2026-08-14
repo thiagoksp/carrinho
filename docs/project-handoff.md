@@ -116,6 +116,25 @@ Finish and review package reconciliation in Linear issue
 expected purchased quantity, overage, and variable-weight uncertainty. Do not expand
 this into product-by-product or retailer-by-retailer testing.
 
+## Planned sequence after CAR-2
+
+Once CAR-2 is reviewed and merged, promote the next backlog item in this order:
+
+1. [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5).
+   Move meal templates and ingredient quantities from code into a validated versioned
+   data file.
+2. [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6).
+   Store private household defaults and pantry quantities in ignored local JSON, not in
+   Git. Do not add a database, account, or network service at this stage.
+3. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7).
+   Make cooking energy, lactose intolerance, and pantry inventory influence the chosen
+   meals.
+4. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
+   Add variety after the catalogue and selection rules have stable coverage.
+
+The official Instacart validation and API milestones remain externally gated. The
+complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.
+
 ## Security boundary
 
 - The repository contains no Instacart or OpenAI credential.

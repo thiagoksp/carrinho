@@ -55,6 +55,13 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   tracks the external Instacart approval.
 - [CAR-4](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
   is blocked by CAR-3.
+- After CAR-2, the planned product sequence is [CAR-5](https://linear.app/thiagoksp/issue/CAR-5),
+  [CAR-6](https://linear.app/thiagoksp/issue/CAR-6),
+  [CAR-7](https://linear.app/thiagoksp/issue/CAR-7), then
+  [CAR-8](https://linear.app/thiagoksp/issue/CAR-8): externalize the meal catalogue,
+  persist private household and pantry data locally, select meals from household
+  constraints, then expand the curated meal library. These changes do not require a
+  database, account, or network service.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.
