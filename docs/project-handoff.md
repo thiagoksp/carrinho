@@ -110,22 +110,20 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Work on [CAR-5](https://linear.app/thiagoksp/issue/CAR-5), the only issue currently
-labelled `Next`: externalize the existing meal templates and per-person ingredient
-quantities into a validated, versioned Canadian English data file. Preserve the
-reference-case output and do not add a database, account system, or network service.
+Work on [CAR-6](https://linear.app/thiagoksp/issue/CAR-6), the only issue currently
+labelled `Next`: persist household defaults and pantry quantities in private local JSON
+outside Git. Start with an explicit save and update flow, and prove that private data is
+not written to the repository. Do not add a database, account system, or network
+service.
 
-## Planned sequence after CAR-5
+## Planned sequence after CAR-6
 
-Once CAR-5 is reviewed and merged, promote the next backlog item in this order:
+Once CAR-6 is reviewed and merged, promote the next backlog item in this order:
 
-1. [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6).
-   Store private household defaults and pantry quantities in ignored local JSON, not in
-   Git. Do not add a database, account, or network service at this stage.
-2. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7).
+1. [CAR-7 — Select meals from household constraints](https://linear.app/thiagoksp/issue/CAR-7).
    Make cooking energy, lactose intolerance, and pantry inventory influence the chosen
    meals.
-3. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
+2. [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8).
    Add variety after the catalogue and selection rules have stable coverage.
 
 The official Instacart validation and API milestones remain externally gated. The

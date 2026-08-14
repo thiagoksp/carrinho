@@ -38,10 +38,15 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Active team: `🛒 Carrinho`.
 - Active issue prefix: `CAR`.
 - Exactly one issue is labelled `Next`:
-  [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5).
-  It is in progress and assigned to Thiago. Start by moving the existing meal templates
-  and per-person ingredient quantities into a validated, versioned Canadian English
-  data file without changing the reference-case output.
+  [CAR-6 — Persist household profile and pantry locally](https://linear.app/thiagoksp/issue/CAR-6).
+  It is in progress and assigned to Thiago. Start with an explicit, privacy-focused
+  local JSON save and update flow outside Git; do not add a database, account, or
+  network service.
+- [CAR-5 — Externalize the meal catalogue](https://linear.app/thiagoksp/issue/CAR-5)
+  is complete. Its implementation was merged as
+  [pull request #9](https://github.com/thiagoksp/carrinho/pull/9) on August 14, 2026.
+  The meal catalogue now uses stable generic product keys and structured units, ready
+  for a future approved provider without storing retailer data in recipes.
 - [CAR-2 — Reconcile recipe quantities with purchasable packages](https://linear.app/thiagoksp/issue/CAR-2)
   is complete. Its implementation was merged as
   [pull request #7](https://github.com/thiagoksp/carrinho/pull/7) on August 14, 2026,
@@ -55,11 +60,10 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   tracks the external Instacart approval.
 - [CAR-4](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
   is blocked by CAR-3.
-- The remaining product sequence is [CAR-6](https://linear.app/thiagoksp/issue/CAR-6),
-  [CAR-7](https://linear.app/thiagoksp/issue/CAR-7), then
-  [CAR-8](https://linear.app/thiagoksp/issue/CAR-8): persist private household and
-  pantry data locally, select meals from household constraints, then expand the curated
-  meal library. These changes do not require a database, account, or network service.
+- The remaining product sequence is [CAR-7](https://linear.app/thiagoksp/issue/CAR-7),
+  then [CAR-8](https://linear.app/thiagoksp/issue/CAR-8): select meals from household
+  constraints, then expand the curated meal library. These changes do not require a
+  database, account, or network service.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.
