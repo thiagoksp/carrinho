@@ -58,7 +58,9 @@ An Instacart Developer Platform interest form was submitted on August 13, 2026. 
 August 14, 2026, no approval or API key has been received. The documented iPhone
 **Paste items** flow and **Cart Assistant** were not available in the project's Canadian
 Instacart account, so they are not current milestone dependencies. Only no dietary
-restrictions or lactose intolerance are supported at this stage.
+restrictions or lactose intolerance are supported as hard dietary rules at this stage.
+Catalogue-backed foods to avoid or prefer are separate soft ranking inputs that can be
+saved in the private local household profile.
 
 ## Roadmap
 

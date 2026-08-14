@@ -110,10 +110,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Work on [CAR-10](https://linear.app/thiagoksp/issue/CAR-10), the only issue currently
-labelled `Next`: separate safety-critical dietary restrictions from soft household food
-preferences. Add validated avoid/prefer product keys and define the candidate boundary
-for a future LLM without adding an LLM, database, account system, or network service.
+Track [CAR-3](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval),
+the only issue currently labelled `Next`. It is an external dependency in Backlog. Do
+not implement network behaviour while the external state is unchanged; wait for an
+Instacart approval, rejection, or request for information.
 
 ## Current deterministic selection
 
@@ -128,6 +128,13 @@ August 14, 2026. The catalogue now contains 12 validated templates with stable k
 core/extended tiers, and semantic selection tags. A future LLM may suggest ordered known
 template keys only; Carrinho validates the candidates and deterministically calculates
 restrictions, quantities, packages, and estimates.
+
+CAR-10 was merged as [pull request #17](https://github.com/thiagoksp/carrinho/pull/17) on
+August 14, 2026. Supported dietary restrictions remain hard filters. Foods to avoid or
+prefer are separate soft ranking inputs resolved through the existing generic product
+keys and optionally saved in private household profile schema v2. The catalogue remains
+small, unknown foods are reported rather than guessed, and version 1 profiles remain
+readable.
 
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.

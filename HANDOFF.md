@@ -38,10 +38,15 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Active team: `🛒 Carrinho`.
 - Active issue prefix: `CAR`.
 - Exactly one issue is labelled `Next`:
-  [CAR-10 — Separate hard dietary restrictions from soft food preferences](https://linear.app/thiagoksp/issue/CAR-10).
-  It is in progress and assigned to Thiago. Keep safety-critical dietary restrictions
-  as hard filters, add validated soft avoid/prefer product keys, and define the local
-  candidate contract for a future LLM without adding an LLM or network call yet.
+  [CAR-3 — Track Instacart Developer Platform approval](https://linear.app/thiagoksp/issue/CAR-3/track-instacart-developer-platform-approval).
+  It remains in Backlog as an external dependency assigned to Thiago. No code change is
+  required until Instacart sends an approval, rejection, or request for information.
+- [CAR-10 — Separate hard dietary restrictions from soft food preferences](https://linear.app/thiagoksp/issue/CAR-10)
+  is complete. Its implementation was merged as
+  [pull request #17](https://github.com/thiagoksp/carrinho/pull/17) on August 14, 2026.
+  Dietary restrictions remain hard filters; catalogue-backed household tastes are soft
+  ranking inputs stored in the private local profile. The future LLM boundary accepts
+  ordered known template keys only and performs no network call.
 - [CAR-8 — Expand the curated meal library](https://linear.app/thiagoksp/issue/CAR-8)
   is complete. Its implementation was merged as
   [pull request #15](https://github.com/thiagoksp/carrinho/pull/15) on August 14, 2026.
@@ -75,9 +80,9 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   tracks the external Instacart approval.
 - [CAR-4](https://linear.app/thiagoksp/issue/CAR-4/implement-the-approved-instacart-development-handoff)
   is blocked by CAR-3.
-- A future LLM may suggest an ordered list of known meal-template keys only. Carrinho
-  must validate those keys and retain deterministic responsibility for restrictions,
-  quantities, package rounding, and estimates.
+- The household profile schema is now v2. Version 1 remains readable and loads with
+  empty food-preference lists. The current generic catalogue remains deliberately small;
+  Carrinho does not copy an exhaustive external food dataset.
 - Old `THI-*` work is retained only as completed history or marked as duplicate.
 - The Instacart Developer Platform interest form was submitted on August 13, 2026.
   No approval or API key had been received when this file was last updated.
