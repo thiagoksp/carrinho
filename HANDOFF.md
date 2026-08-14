@@ -43,8 +43,9 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Exactly one issue is labelled `Next`:
   [CAR-2 — Reconcile recipe quantities with purchasable packages](https://linear.app/thiagoksp/issue/CAR-2).
   It is currently in progress on branch `codex/car-2-package-reconciliation`.
-  GitHub authentication was restored on August 14, 2026. The tested local commit is
-  ready to publish as a draft pull request before changing implementation scope.
+  GitHub authentication was restored on August 14, 2026. Draft
+  [pull request #7](https://github.com/thiagoksp/carrinho/pull/7) contains the tested
+  implementation and is ready for review before changing implementation scope.
 - CAR-1 was cancelled because neither **Shopping List → Paste items** nor
   **Cart Assistant** was available in the project's Canadian Instacart account.
 - A limited public Instacart search confirmed that generic product matching can work,
