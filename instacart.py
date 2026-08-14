@@ -1,167 +1,170 @@
-"""Cria uma prévia local da futura lista de compras da Instacart."""
+"""Build local previews for a future Instacart shopping-list handoff."""
 
 import json
 import math
 from pathlib import Path
 import unicodedata
 
-from catalogo import UNIDADES_INSTACART
-from planejamento import ItemCompra, Plano
+from catalog import INSTACART_UNITS
+from planning import Plan, ShoppingItem
 
 
-LIMITE_ITENS_COLAR = 200
+PASTE_ITEM_LIMIT = 200
 
 
-def _texto_obrigatorio(valor: str, campo: str) -> str:
-    texto = valor.strip()
-    if not texto:
-        raise ValueError(f"O item precisa informar {campo}.")
-    return texto
+def _require_text(value: str, field_name: str) -> str:
+    text = value.strip()
+    if not text:
+        raise ValueError(f"The item must include {field_name}.")
+    return text
 
 
-def _numero_json(valor: float) -> int | float:
-    if not math.isfinite(valor) or valor <= 0:
-        raise ValueError("A quantidade Instacart deve ser finita e maior que zero.")
-    if valor.is_integer():
-        return int(valor)
-    return valor
+def _json_number(value: float) -> int | float:
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError("The Instacart quantity must be finite and greater than zero.")
+    if value.is_integer():
+        return int(value)
+    return value
 
 
-def _converter_item(item: ItemCompra) -> dict[str, object]:
-    unidade = _texto_obrigatorio(item.unidade_instacart, "uma unidade")
-    if unidade not in UNIDADES_INSTACART:
-        raise ValueError(f"Unidade Instacart não suportada: {unidade}.")
+def _convert_item(item: ShoppingItem) -> dict[str, object]:
+    unit = _require_text(item.instacart_unit, "a unit")
+    if unit not in INSTACART_UNITS:
+        raise ValueError(f"Unsupported Instacart unit: {unit}.")
 
-    nome = _texto_obrigatorio(item.termo_busca_instacart, "um termo de busca")
-    apresentacao = _texto_obrigatorio(
-        f"{item.nome}: {item.quantidade}", "um texto de apresentação"
+    name = _require_text(item.instacart_search_term, "a search term")
+    display_text = _require_text(
+        f"{item.name}: {item.quantity_label}",
+        "display text",
     )
-    quantidade = _numero_json(float(item.quantidade_instacart))
+    quantity = _json_number(float(item.instacart_quantity))
     return {
-        "name": nome,
-        "display_text": apresentacao,
+        "name": name,
+        "display_text": display_text,
         "line_item_measurements": [
             {
-                "quantity": quantidade,
-                "unit": unidade,
+                "quantity": quantity,
+                "unit": unit,
             }
         ],
     }
 
 
-def criar_payload_instacart(plano: Plano) -> dict[str, object]:
-    """Converte um plano sem fazer chamadas externas nem incluir preços."""
-    if not plano.compras:
-        raise ValueError("Não há itens de compra para criar a lista Instacart.")
+def create_instacart_payload(plan: Plan) -> dict[str, object]:
+    """Convert a plan without making network calls or including prices."""
+    if not plan.shopping_items:
+        raise ValueError("There are no shopping items for the Instacart list.")
 
-    pessoas = "pessoa" if plano.pessoas == 1 else "pessoas"
-    dias = "dia" if plano.dias == 1 else "dias"
+    people_label = "person" if plan.people == 1 else "people"
+    day_label = "day" if plan.days == 1 else "days"
     return {
         "title": (
-            f"Lista Carrinho — {plano.pessoas} {pessoas} "
-            f"por {plano.dias} {dias}"
+            f"Carrinho list — {plan.people} {people_label} "
+            f"for {plan.days} {day_label}"
         ),
         "link_type": "shopping_list",
-        "line_items": [_converter_item(item) for item in plano.compras],
+        "line_items": [_convert_item(item) for item in plan.shopping_items],
     }
 
 
-def serializar_payload_instacart(plano: Plano) -> str:
-    """Serializa a prévia com acentos preservados e números JSON válidos."""
+def serialize_instacart_payload(plan: Plan) -> str:
+    """Serialize a local preview as valid, readable JSON."""
     return json.dumps(
-        criar_payload_instacart(plano),
+        create_instacart_payload(plan),
         ensure_ascii=False,
         indent=2,
         allow_nan=False,
     )
 
 
-def _formatar_medida_para_colar(item: ItemCompra) -> str:
-    quantidade = _numero_json(float(item.quantidade_instacart))
-    unidade = _texto_obrigatorio(item.unidade_instacart, "uma unidade")
+def _format_paste_measurement(item: ShoppingItem) -> str:
+    quantity = _json_number(float(item.instacart_quantity))
+    unit = _require_text(item.instacart_unit, "a unit")
 
-    if unidade == "each":
-        return str(quantidade)
-    if unidade == "can":
-        rotulo = "can" if quantidade == 1 else "cans"
-        return f"{quantidade} {rotulo}"
-    if unidade == "package":
-        rotulo = "package" if quantidade == 1 else "packages"
-        return f"{quantidade} {rotulo}"
-    if unidade in UNIDADES_INSTACART:
-        return f"{quantidade} {unidade}"
-    raise ValueError(f"Unidade Instacart não suportada: {unidade}.")
+    if unit == "each":
+        return str(quantity)
+    if unit == "can":
+        label = "can" if quantity == 1 else "cans"
+        return f"{quantity} {label}"
+    if unit == "package":
+        label = "package" if quantity == 1 else "packages"
+        return f"{quantity} {label}"
+    if unit in INSTACART_UNITS:
+        return f"{quantity} {unit}"
+    raise ValueError(f"Unsupported Instacart unit: {unit}.")
 
 
-def _termo_seguro_para_colar(valor: str) -> str:
-    nome = _texto_obrigatorio(valor, "um termo de busca")
-    separadores = {",", "\r", "\n", "\u2028", "\u2029"}
+def _safe_paste_term(value: str) -> str:
+    name = _require_text(value, "a search term")
+    separators = {",", "\r", "\n", "\u2028", "\u2029"}
     if any(
-        caractere in separadores
-        or unicodedata.category(caractere).startswith("C")
-        for caractere in nome
+        character in separators
+        or unicodedata.category(character).startswith("C")
+        for character in name
     ):
-        raise ValueError(
-            "O termo de busca não pode conter separadores ou controles."
-        )
-    return nome
+        raise ValueError("The search term cannot contain separators or control characters.")
+    return name
 
 
-def criar_lista_colar_instacart(plano: Plano) -> str:
-    """Cria texto local, com um produto por linha, para colagem manual."""
-    if not plano.compras:
-        raise ValueError("Não há itens de compra para criar a lista Instacart.")
-    if len(plano.compras) > LIMITE_ITENS_COLAR:
+def create_instacart_paste_list(plan: Plan) -> str:
+    """Create local text with one product per line for manual pasting."""
+    if not plan.shopping_items:
+        raise ValueError("There are no shopping items for the Instacart list.")
+    if len(plan.shopping_items) > PASTE_ITEM_LIMIT:
         raise ValueError(
-            f"A lista para colar aceita no máximo {LIMITE_ITENS_COLAR} itens."
+            f"The paste list accepts no more than {PASTE_ITEM_LIMIT} items."
         )
 
-    linhas = []
-    for item in plano.compras:
-        nome = _termo_seguro_para_colar(item.termo_busca_instacart)
-        medida = _formatar_medida_para_colar(item)
-        linhas.append(f"{nome} ({medida})")
+    lines = []
+    for item in plan.shopping_items:
+        name = _safe_paste_term(item.instacart_search_term)
+        measurement = _format_paste_measurement(item)
+        lines.append(f"{name} ({measurement})")
 
-    lista = "\n".join(linhas)
-    if len(lista.splitlines()) != len(plano.compras):
-        raise ValueError("A lista para colar contém separadores inesperados.")
-    return lista
+    paste_list = "\n".join(lines)
+    if len(paste_list.splitlines()) != len(plan.shopping_items):
+        raise ValueError("The paste list contains unexpected separators.")
+    return paste_list
 
 
-def _proximo_caminho(
-    diretorio: Path, nome_base: str, extensao: str
+def _next_available_path(
+    directory: Path,
+    base_name: str,
+    extension: str,
 ) -> Path:
-    caminho = diretorio / f"{nome_base}.{extensao}"
-    numero = 2
-    while caminho.exists():
-        caminho = diretorio / f"{nome_base}-{numero}.{extensao}"
-        numero += 1
-    return caminho
+    path = directory / f"{base_name}.{extension}"
+    number = 2
+    while path.exists():
+        path = directory / f"{base_name}-{number}.{extension}"
+        number += 1
+    return path
 
 
-def salvar_payload_instacart(
-    plano: Plano, diretorio: Path | None = None
+def save_instacart_payload(
+    plan: Plan,
+    output_directory: Path | None = None,
 ) -> Path:
-    """Salva uma nova prévia JSON sem substituir arquivos anteriores."""
-    pasta = diretorio or Path(__file__).resolve().parent / "resultados"
-    pasta.mkdir(parents=True, exist_ok=True)
-    caminho = _proximo_caminho(pasta, "lista-instacart", "json")
-    caminho.write_text(
-        f"{serializar_payload_instacart(plano)}\n",
+    """Save a new JSON preview without replacing an earlier file."""
+    directory = output_directory or Path(__file__).resolve().parent / "outputs"
+    directory.mkdir(parents=True, exist_ok=True)
+    path = _next_available_path(directory, "instacart-list", "json")
+    path.write_text(
+        f"{serialize_instacart_payload(plan)}\n",
         encoding="utf-8",
     )
-    return caminho
+    return path
 
 
-def salvar_lista_colar_instacart(
-    plano: Plano, diretorio: Path | None = None
+def save_instacart_paste_list(
+    plan: Plan,
+    output_directory: Path | None = None,
 ) -> Path:
-    """Salva texto para o usuário colar manualmente na Shopping List."""
-    pasta = diretorio or Path(__file__).resolve().parent / "resultados"
-    pasta.mkdir(parents=True, exist_ok=True)
-    caminho = _proximo_caminho(pasta, "lista-instacart-colar", "txt")
-    caminho.write_text(
-        f"{criar_lista_colar_instacart(plano)}\n",
+    """Save text that the user can paste manually into a Shopping List."""
+    directory = output_directory or Path(__file__).resolve().parent / "outputs"
+    directory.mkdir(parents=True, exist_ok=True)
+    path = _next_available_path(directory, "instacart-paste-list", "txt")
+    path.write_text(
+        f"{create_instacart_paste_list(plan)}\n",
         encoding="utf-8",
     )
-    return caminho
+    return path

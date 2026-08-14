@@ -5,11 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "carrinho"
 version = "0.0.0"
-description = "Agente de mercado para planejamento de refeições e compras."
+description = "Canadian grocery agent for meal planning and shopping."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = []
 
 [tool.setuptools]
 packages = []
-
