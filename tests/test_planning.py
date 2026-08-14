@@ -32,7 +32,7 @@ class TestPlanning(unittest.TestCase):
         self.assertEqual(plan.estimated_total, 58.25)
         self.assertEqual(plan.budget_balance, 21.75)
         self.assertIn(
-            "The plan needs every eligible template, so catalogue order is preserved.",
+            "The plan uses the complete core library, so core catalogue order is preserved.",
             plan.meal_selection_guidance,
         )
         self.assertEqual(
@@ -137,6 +137,14 @@ class TestPlanning(unittest.TestCase):
             [item.name for item in plan.shopping_items],
         )
         self.assertGreater(plan.estimated_total, 58.25)
+        self.assertIn(
+            "Sheet-pan chicken with potatoes and vegetables",
+            [meal.dish for meal in plan.meals],
+        )
+        self.assertIn(
+            "Pasta with beans and tomato sauce",
+            [meal.dish for meal in plan.meals],
+        )
 
     def test_keeps_one_plan_when_the_budget_is_too_low(self) -> None:
         request = parse_request(BASE_CASE.replace("CAD$80", "CAD$20"))

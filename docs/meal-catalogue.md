@@ -9,12 +9,15 @@ It is separate from `data/simulated-prices.json` on purpose:
 
 ## Schema
 
-The current schema is `carrinho.meal-catalogue.v1`. Each template has:
+The current schema is `carrinho.meal-catalogue.v2`. Each template has:
 
 - a stable `key` using lowercase letters, numbers, and underscores;
 - a user-visible `dish` name;
+- a `catalogue_tier` of `core` or `extended`;
 - one `cooking_energy` value: `low`, `normal`, or `high`;
 - one or more supported `dietary_tags`;
+- one or more validated `selection_tags` such as `quick`, `one-pot`, or
+  `batch-friendly`;
 - one or more ingredients, each with a generic `product_key`, a positive
   `quantity_per_person`, and a canonical `planning_unit`.
 
@@ -28,12 +31,24 @@ Carrinho treats the current lactose constraint as a hard filter through the
 `lactose-free` tag. It then prefers meals whose `cooking_energy` is closest to the
 household request and uses matching pantry ingredients as a deterministic tie-breaker.
 Catalogue order is preserved whenever a plan needs every eligible template, so the
-reference case remains stable.
+core reference case remains stable. Extended templates add variety without changing the
+established eight-meal reference sequence.
 
 Future dietary restrictions must remain hard constraints. Future likes and disliked
 foods must be separate soft preferences, rather than being represented as medical or
 dietary tags. An LLM may eventually suggest candidates, but this validated catalogue
 and deterministic selector remain the source of truth for what can be planned.
+
+## Future LLM boundary
+
+A future LLM may receive stable template keys, dish names, catalogue tiers, cooking
+energy, dietary tags, selection tags, and generic product keys. It may return an ordered
+list of known template keys as a suggestion. It must not generate authoritative product
+quantities, prices, dietary compatibility, or retailer identifiers.
+
+Carrinho will validate every returned key and restriction before the deterministic
+planner calculates ingredient totals, pantry deductions, packages, and estimates. This
+keeps an LLM useful for preference matching without making it the source of truth.
 
 ## Integration boundary
 
