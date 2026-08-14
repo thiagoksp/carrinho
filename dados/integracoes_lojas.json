@@ -13,7 +13,7 @@
       "status_entrega": "planejada",
       "permite_fixar_loja": false,
       "precos_reais_disponiveis": false,
-      "aviso": "O endpoint escolhido poderá receber a lista, mas não retorna preços ao Carrinho nem garante a loja selecionada."
+      "aviso": "A lista pode ser copiada manualmente para o recurso Paste items no iPhone. A API continua planejada, não retorna preços ao Carrinho e não garante a loja selecionada."
     }
   ]
 }

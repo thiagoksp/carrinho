@@ -70,7 +70,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Loja preferida: qualquer loja", saida.getvalue())
         self.assertIn("PLANO DE REFEIÇÕES", saida.getvalue())
 
-    def test_ao_salvar_gera_plano_e_previa_instacart(self) -> None:
+    def test_ao_salvar_gera_plano_e_listas_instacart(self) -> None:
         pedido = (
             "Tenho CAD$80 para 2 pessoas por 4 dias, pouca energia, "
             "já tenho arroz e 7 ovos, sem restrições. "
@@ -83,14 +83,24 @@ class TestTerminal(unittest.TestCase):
                 "app.salvar_payload_instacart",
                 return_value=Path("lista-instacart.json"),
             ) as json_instacart,
+            patch(
+                "app.salvar_lista_colar_instacart",
+                return_value=Path("lista-instacart-colar.txt"),
+            ) as lista_colar,
             patch("sys.stdout", new_callable=io.StringIO) as saida,
         ):
             main()
 
         texto.assert_called_once()
         json_instacart.assert_called_once()
+        lista_colar.assert_called_once()
+        self.assertIs(texto.call_args.args[0], json_instacart.call_args.args[0])
+        self.assertIs(texto.call_args.args[0], lista_colar.call_args.args[0])
         self.assertIn("nenhum dado foi enviado", saida.getvalue())
         self.assertIn("lista-instacart.json", saida.getvalue())
+        self.assertIn("lista-instacart-colar.txt", saida.getvalue())
+        self.assertIn("Shopping List → Paste items", saida.getvalue())
+        self.assertIn("rótulos conforme suas restrições", saida.getvalue())
 
     def test_corrige_orcamento_e_dias_sem_reiniciar(self) -> None:
         dados = PedidoEntendido(

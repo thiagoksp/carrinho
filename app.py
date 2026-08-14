@@ -3,7 +3,11 @@
 from pathlib import Path
 import re
 
-from instacart import salvar_payload_instacart
+from instacart import (
+    criar_lista_colar_instacart,
+    salvar_lista_colar_instacart,
+    salvar_payload_instacart,
+)
 from pedido import PedidoEntendido, entender_pedido
 from planejamento import Plano, gerar_plano
 
@@ -367,12 +371,28 @@ def main() -> None:
     else:
         mostrar_plano(plano)
         if _quer_salvar_plano():
+            criar_lista_colar_instacart(plano)
             caminho_plano = salvar_plano(plano)
             caminho_instacart = salvar_payload_instacart(plano)
+            caminho_colar = salvar_lista_colar_instacart(plano)
             print(f"\nPlano salvo em:\n{caminho_plano}")
             print(
                 "\nPrévia Instacart salva localmente — nenhum dado foi enviado:\n"
                 f"{caminho_instacart}"
+            )
+            print(
+                "\nLista formatada para teste manual na Instacart:\n"
+                f"{caminho_colar}"
+            )
+            print(
+                "Abra esse arquivo no Windows, copie o conteúdo e envie ao iPhone "
+                "por Notes, e-mail ou mensagem. Depois: Shopping List → Paste items."
+            )
+            print(
+                "A Instacart pode interpretar a medida como texto. "
+                "Revise produtos, quantidades, ingredientes e rótulos conforme "
+                "suas restrições "
+                "antes de adicionar ao carrinho."
             )
 
 

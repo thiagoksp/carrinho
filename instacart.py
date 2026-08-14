@@ -3,9 +3,13 @@
 import json
 import math
 from pathlib import Path
+import unicodedata
 
 from catalogo import UNIDADES_INSTACART
 from planejamento import ItemCompra, Plano
+
+
+LIMITE_ITENS_COLAR = 200
 
 
 def _texto_obrigatorio(valor: str, campo: str) -> str:
@@ -72,11 +76,65 @@ def serializar_payload_instacart(plano: Plano) -> str:
     )
 
 
-def _proximo_caminho(diretorio: Path) -> Path:
-    caminho = diretorio / "lista-instacart.json"
+def _formatar_medida_para_colar(item: ItemCompra) -> str:
+    quantidade = _numero_json(float(item.quantidade_instacart))
+    unidade = _texto_obrigatorio(item.unidade_instacart, "uma unidade")
+
+    if unidade == "each":
+        return str(quantidade)
+    if unidade == "can":
+        rotulo = "can" if quantidade == 1 else "cans"
+        return f"{quantidade} {rotulo}"
+    if unidade == "package":
+        rotulo = "package" if quantidade == 1 else "packages"
+        return f"{quantidade} {rotulo}"
+    if unidade in UNIDADES_INSTACART:
+        return f"{quantidade} {unidade}"
+    raise ValueError(f"Unidade Instacart não suportada: {unidade}.")
+
+
+def _termo_seguro_para_colar(valor: str) -> str:
+    nome = _texto_obrigatorio(valor, "um termo de busca")
+    separadores = {",", "\r", "\n", "\u2028", "\u2029"}
+    if any(
+        caractere in separadores
+        or unicodedata.category(caractere).startswith("C")
+        for caractere in nome
+    ):
+        raise ValueError(
+            "O termo de busca não pode conter separadores ou controles."
+        )
+    return nome
+
+
+def criar_lista_colar_instacart(plano: Plano) -> str:
+    """Cria texto local, com um produto por linha, para colagem manual."""
+    if not plano.compras:
+        raise ValueError("Não há itens de compra para criar a lista Instacart.")
+    if len(plano.compras) > LIMITE_ITENS_COLAR:
+        raise ValueError(
+            f"A lista para colar aceita no máximo {LIMITE_ITENS_COLAR} itens."
+        )
+
+    linhas = []
+    for item in plano.compras:
+        nome = _termo_seguro_para_colar(item.termo_busca_instacart)
+        medida = _formatar_medida_para_colar(item)
+        linhas.append(f"{nome} ({medida})")
+
+    lista = "\n".join(linhas)
+    if len(lista.splitlines()) != len(plano.compras):
+        raise ValueError("A lista para colar contém separadores inesperados.")
+    return lista
+
+
+def _proximo_caminho(
+    diretorio: Path, nome_base: str, extensao: str
+) -> Path:
+    caminho = diretorio / f"{nome_base}.{extensao}"
     numero = 2
     while caminho.exists():
-        caminho = diretorio / f"lista-instacart-{numero}.json"
+        caminho = diretorio / f"{nome_base}-{numero}.{extensao}"
         numero += 1
     return caminho
 
@@ -87,9 +145,23 @@ def salvar_payload_instacart(
     """Salva uma nova prévia JSON sem substituir arquivos anteriores."""
     pasta = diretorio or Path(__file__).resolve().parent / "resultados"
     pasta.mkdir(parents=True, exist_ok=True)
-    caminho = _proximo_caminho(pasta)
+    caminho = _proximo_caminho(pasta, "lista-instacart", "json")
     caminho.write_text(
         f"{serializar_payload_instacart(plano)}\n",
+        encoding="utf-8",
+    )
+    return caminho
+
+
+def salvar_lista_colar_instacart(
+    plano: Plano, diretorio: Path | None = None
+) -> Path:
+    """Salva texto para o usuário colar manualmente na Shopping List."""
+    pasta = diretorio or Path(__file__).resolve().parent / "resultados"
+    pasta.mkdir(parents=True, exist_ok=True)
+    caminho = _proximo_caminho(pasta, "lista-instacart-colar", "txt")
+    caminho.write_text(
+        f"{criar_lista_colar_instacart(plano)}\n",
         encoding="utf-8",
     )
     return caminho

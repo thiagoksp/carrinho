@@ -6,7 +6,9 @@ import tempfile
 import unittest
 
 from instacart import (
+    criar_lista_colar_instacart,
     criar_payload_instacart,
+    salvar_lista_colar_instacart,
     salvar_payload_instacart,
     serializar_payload_instacart,
 )
@@ -126,6 +128,86 @@ class TestInstacart(unittest.TestCase):
                 json.loads(primeiro.read_text(encoding="utf-8")),
                 json.loads(segundo.read_text(encoding="utf-8")),
             )
+
+    def test_cria_lista_de_texto_para_colagem_manual(self) -> None:
+        plano = _plano_base(["arroz", "7 ovos"])
+
+        lista = criar_lista_colar_instacart(plano)
+
+        linhas = lista.splitlines()
+        self.assertEqual(len(linhas), len(plano.compras))
+        self.assertIn("chicken thighs (1.2 kg)", linhas)
+        self.assertIn("tomato sauce (2 cans)", linhas)
+        self.assertIn("vegetable oil (946 ml)", linhas)
+        self.assertNotIn("Toronto", lista)
+        self.assertNotIn("No Frills", lista)
+        self.assertNotIn("CAD$", lista)
+
+    def test_lista_para_colar_respeita_limite_e_nao_sobrescreve(self) -> None:
+        plano = _plano_base(["arroz", "7 ovos"])
+        compras_no_limite = tuple(plano.compras[0] for _ in range(200))
+        compras_demais = tuple(plano.compras[0] for _ in range(201))
+
+        self.assertEqual(
+            len(criar_lista_colar_instacart(
+                replace(plano, compras=compras_no_limite)
+            ).splitlines()),
+            200,
+        )
+        with self.assertRaisesRegex(ValueError, "no máximo 200 itens"):
+            criar_lista_colar_instacart(replace(plano, compras=compras_demais))
+
+        with tempfile.TemporaryDirectory() as pasta:
+            primeiro = salvar_lista_colar_instacart(plano, Path(pasta))
+            segundo = salvar_lista_colar_instacart(plano, Path(pasta))
+
+            self.assertEqual(primeiro.name, "lista-instacart-colar.txt")
+            self.assertEqual(segundo.name, "lista-instacart-colar-2.txt")
+            self.assertEqual(
+                primeiro.read_text(encoding="utf-8"),
+                segundo.read_text(encoding="utf-8"),
+            )
+
+    def test_lista_para_colar_rejeita_separadores_e_controles(self) -> None:
+        plano = _plano_base(["arroz", "7 ovos"])
+        item = plano.compras[0]
+
+        for termo in (
+            "chicken thighs, ice cream",
+            "chicken thighs\nice cream",
+            "chicken thighs\rice cream",
+            "chicken thighs\u2028ice cream",
+            "chicken thighs\u0000ice cream",
+        ):
+            with self.subTest(termo=repr(termo)):
+                item_invalido = replace(item, termo_busca_instacart=termo)
+                with self.assertRaisesRegex(ValueError, "separadores ou controles"):
+                    criar_lista_colar_instacart(
+                        replace(plano, compras=(item_invalido,))
+                    )
+
+    def test_lista_para_colar_valida_itens_e_formata_unidades(self) -> None:
+        plano = _plano_base([])
+        itens = {item.termo_busca_instacart: item for item in plano.compras}
+        lista = criar_lista_colar_instacart(plano).splitlines()
+
+        self.assertIn("large eggs (12)", lista)
+        self.assertIn("potatoes (5 lb bag)", lista)
+        self.assertIn("all-purpose seasoning (1 package)", lista)
+        with self.assertRaisesRegex(ValueError, "Não há itens"):
+            criar_lista_colar_instacart(replace(plano, compras=()))
+
+        casos = (
+            replace(itens["large eggs"], quantidade_instacart=0),
+            replace(itens["large eggs"], unidade_instacart="dozen"),
+            replace(itens["large eggs"], termo_busca_instacart=""),
+        )
+        for item_invalido in casos:
+            with self.subTest(item=item_invalido):
+                with self.assertRaises(ValueError):
+                    criar_lista_colar_instacart(
+                        replace(plano, compras=(item_invalido,))
+                    )
 
 
 if __name__ == "__main__":
