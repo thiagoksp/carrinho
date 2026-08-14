@@ -97,6 +97,11 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   is complete. The repository stays public for Instacart review, but it now has an
   all-rights-reserved `LICENSE`, a no-outside-contributions policy, an English GitHub
   description, and a legal/IP checklist for future commercialization review.
+- [CAR-28](https://linear.app/thiagoksp/issue/CAR-28/evaluate-recipe-sources-and-simplified-recipe-entry)
+  is a future recipe-sourcing task. It covers user-entered simplified recipes, a small
+  Canadian starter set, possible licensed/API recipe sources, and future LLM-assisted
+  parsing into Carrinho's validated generic meal-template schema. Do not scrape recipe
+  sites or copy unlicensed recipe content.
 - [CAR-12 - Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.

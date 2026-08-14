@@ -184,6 +184,13 @@ are included in a plan. Profiles should represent dietary/planning needs, not se
 login accounts. Selected profiles combine hard restrictions conservatively while keeping
 soft preferences, brands, portions, and household-level pantry/budget data distinct.
 
+**Backlog:** [CAR-28](https://linear.app/thiagoksp/issue/CAR-28/evaluate-recipe-sources-and-simplified-recipe-entry)
+
+Design how Carrinho can expand recipes without copying unlicensed recipe content. Start
+from a small Canadian starter set and simplified user-entered recipes; later evaluate
+approved recipe APIs or licensed sources. Any future LLM help should parse user text
+into Carrinho's validated meal-template schema, not bypass local validation.
+
 **Backlog:** [CAR-25](https://linear.app/thiagoksp/issue/CAR-25/verify-codex-and-linear-ownership-before-account-migration)
 
 Before a future account switch, verify GitHub, Linear, Codex, local repository access,
