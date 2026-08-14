@@ -52,6 +52,10 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   is a future backlog architecture task. JSON, exports, prompts, and LLM contracts keep
   stable text keys; a future database may add internal ids while preserving unique
   `stable_key` values.
+- [CAR-17](https://linear.app/thiagoksp/issue/CAR-17/expand-supported-dietary-restrictions-safely)
+  is a future backlog product-safety task for expanding hard dietary restrictions beyond
+  lactose intolerance. Dislikes and preferred foods remain soft preferences; dietary
+  safety stays deterministic and must not be delegated to an LLM.
 - [CAR-12 — Let households edit local meals and generic foods](https://linear.app/thiagoksp/issue/CAR-12)
   is complete. Its implementation was merged as
   [pull request #20](https://github.com/thiagoksp/carrinho/pull/20) on August 14, 2026.
