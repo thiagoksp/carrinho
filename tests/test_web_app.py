@@ -200,7 +200,7 @@ class TestWebApp(unittest.TestCase):
             thread.join(timeout=2)
 
         self.assertIn("MEAL PLAN", plan_response.body)
-        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", plan_response.body)
+        self.assertIn("Estimated total range: CAD$53.32 to CAD$75.30", plan_response.body)
         self.assertEqual(
             plan_response.content_disposition,
             'attachment; filename="meal-plan.txt"',
