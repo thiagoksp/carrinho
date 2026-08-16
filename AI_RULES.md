@@ -3,6 +3,9 @@
 Use this file when the user asks for maximum credit economy mode.
 These rules reduce context usage, tool calls, and rework.
 
+For a new account or machine, read [`START_HERE.md`](START_HERE.md) first. This file is
+not the project handoff by itself; it is the economy-mode overlay.
+
 ## Operation
 
 - Before changing code, explain a short plain-text plan and wait for approval.
@@ -31,6 +34,16 @@ These rules reduce context usage, tool calls, and rework.
   changes, work is being consolidated for Git publication, or a major structural
   product decision changes.
 - During local issue work, use Linear as the lightweight running log.
+
+## User collaboration style
+
+- Converse with the user in Portuguese and begin every assistant message with `@@`.
+- Keep explanations short, practical, and confidence-building.
+- Prefer one next action over a large menu.
+- If the user is brainstorming, capture future ideas in Linear instead of expanding the
+  current issue.
+- If the user says they are low on credits, stop broad exploration and propose the
+  smallest useful slice.
 
 ## Loop kill-switch
 

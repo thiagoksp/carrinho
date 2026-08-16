@@ -109,10 +109,10 @@ Outside contributions are not accepted yet. See [`CONTRIBUTING.md`](CONTRIBUTING
 
 ## Next step
 
-[CAR-22](https://linear.app/thiagoksp/issue/CAR-22) will simplify first-run household
-setup so Carrinho stays easy to try before asking for richer rules. Instacart approval
-is tracked separately in CAR-3; all official shopping network integration stays disabled
-until approved access and contract testing are available.
+[CAR-32](https://linear.app/thiagoksp/issue/CAR-32) will use Carrinho for one real
+weekly planning run and make only the smallest fixes needed for practical use.
+Instacart approval is tracked separately in CAR-3; all official shopping network
+integration stays disabled until approved access and contract testing are available.
 
 Task status is tracked in the
 [Carrinho Linear project](https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde).

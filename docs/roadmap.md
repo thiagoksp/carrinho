@@ -1,6 +1,6 @@
 # Carrinho roadmap
 
-Updated: August 14, 2026.
+Updated: August 16, 2026.
 
 ## Tracking decision
 
@@ -16,8 +16,8 @@ Carrinho uses a deliberately small tool set:
 The roadmap is mirrored here so another ChatGPT or Codex account can recover the
 project direction before its Linear connection is configured.
 
-Start a new account or conversation with [`HANDOFF.md`](../HANDOFF.md). Linear remains
-authoritative for live task status.
+Start a new account, conversation, or machine with [`START_HERE.md`](../START_HERE.md).
+Linear remains authoritative for live task status.
 
 ## Operating rule
 
@@ -27,7 +27,7 @@ issue and be published through a tested GitHub pull request.
 
 At the start of a work session:
 
-1. read `HANDOFF.md`, `AGENTS.md`, and `docs/project-handoff.md`;
+1. read `START_HERE.md`, `AGENTS.md`, and `docs/project-handoff.md`;
 2. open the Linear project;
 3. work only on the issue labelled `Next` unless the user explicitly changes priority;
 4. update the issue with evidence and move its status when the work changes state.
@@ -126,13 +126,21 @@ It adds browser copy, print-friendly output, and local downloads for the meal pl
 Instacart paste list, and Instacart JSON preview while preserving the existing terminal
 text and JSON exports.
 
-**Next:** [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
+**Complete:** [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup),
+merged through [pull request #32](https://github.com/thiagoksp/carrinho/pull/32).
 
 Keep first use light: define the minimum inputs for a useful plan and move richer rules
 into progressive prompts, profile editing, or review suggestions. Preserve a
 deterministic form path for households that do not enable LLM. The browser surface
 should support simple, guided, and future conversational use in one responsive,
 app-friendly interface so a later PWA or mobile path remains open.
+
+**Next:** [CAR-32](https://linear.app/thiagoksp/issue/CAR-32/use-carrinho-for-a-real-weekly-planning-run)
+
+Use Carrinho for one realistic weekly planning run and make the smallest practical
+fixes that help the user start using the product. This is intentionally narrower than a
+new architecture milestone: identify confusing output, rough UI, or missing planning
+details that block real use, then fix only what is necessary.
 
 **Backlog:** [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
 

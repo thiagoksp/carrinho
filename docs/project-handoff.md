@@ -1,23 +1,21 @@
 # Carrinho project handoff
 
-Updated: August 14, 2026.
+Updated: August 16, 2026.
 
 This file preserves the project state when work moves to another ChatGPT or Codex
 account. The repository, not a previous conversation, is the source of truth.
 
-The single cross-account starting point is [`HANDOFF.md`](../HANDOFF.md). This document
-provides the more detailed implementation context referenced from that file.
+The single cross-account starting point is [`START_HERE.md`](../START_HERE.md). This
+document provides deeper implementation context referenced from that file and
+[`HANDOFF.md`](../HANDOFF.md).
 
 ## Read first
 
-1. [`HANDOFF.md`](../HANDOFF.md)
+1. [`START_HERE.md`](../START_HERE.md)
 2. [`AGENTS.md`](../AGENTS.md)
-3. [`README.md`](../README.md)
-4. [`instacart-platform-direction.md`](instacart-platform-direction.md)
-5. [`reference-case.md`](reference-case.md)
-6. [`instacart-list-preparation.md`](instacart-list-preparation.md)
-7. [`llm-meal-selector.md`](llm-meal-selector.md)
-8. [`roadmap.md`](roadmap.md)
+3. [`HANDOFF.md`](../HANDOFF.md)
+4. [`README.md`](../README.md)
+5. [`roadmap.md`](roadmap.md)
 
 ## Source of truth
 
@@ -140,10 +138,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Continue [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup),
-the only issue labelled `Next`. Simplify first-run household setup so Carrinho stays
-easy to try before asking for richer rules. CAR-3 continues to track Instacart approval
-in parallel.
+Continue [CAR-32](https://linear.app/thiagoksp/issue/CAR-32/use-carrinho-for-a-real-weekly-planning-run),
+the only issue labelled `Next`. Use Carrinho for one realistic weekly planning run and
+make only the smallest changes required to unblock practical use. CAR-3 continues to
+track Instacart approval in parallel.
 
 ## Current deterministic selection
 
@@ -182,10 +180,11 @@ CAR-14 added portable browser exports. The standalone page now provides copy, pr
 meal-plan download, Instacart paste-list download, and Instacart JSON preview download
 without sending any request to Instacart or another service.
 
-CAR-22 is in progress locally. The browser quick start now requires only people and days;
-budget is optional; neutral defaults avoid assuming lactose intolerance or pantry items;
-and `Foods to use more/less often` has been removed from the main browser form pending
-the CAR-18 household-rules redesign.
+CAR-22 was merged as [pull request #32](https://github.com/thiagoksp/carrinho/pull/32).
+The browser quick start now requires only people and days; budget is optional; neutral
+defaults avoid assuming lactose intolerance or pantry items; and `Foods to use
+more/less often` has been removed from the main browser form pending the CAR-18
+household-rules redesign.
 
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.

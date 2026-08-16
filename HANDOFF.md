@@ -1,6 +1,6 @@
 # Carrinho handoff
 
-Updated: August 14, 2026.
+Updated: August 16, 2026.
 
 This is the complete project handoff for a new ChatGPT or Codex account. On the same
 computer, start with the shorter [`START_HERE.md`](START_HERE.md) file and read this
@@ -49,8 +49,15 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 
 - Active Linear team: Carrinho team with the `CAR` issue prefix.
 - Exactly one issue is labelled `Next`:
-  [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22).
-  It should keep Carrinho easy to try before asking for richer household rules.
+  [CAR-32 - Use Carrinho for a real weekly planning run](https://linear.app/thiagoksp/issue/CAR-32).
+  It should make Carrinho useful in one practical planning session and identify only
+  the blockers that prevent real use.
+- [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22)
+  is complete and was merged through
+  [pull request #32](https://github.com/thiagoksp/carrinho/pull/32) on August 15, 2026.
+  It made the browser quick start require only people and days, made budget optional,
+  removed advanced preference fields from the first-run surface, and added
+  [`AI_RULES.md`](AI_RULES.md).
 - [CAR-14 - Add portable plan and shopping-list exports](https://linear.app/thiagoksp/issue/CAR-14)
   is complete. It added browser copy, print-friendly output, and local downloads for the
   meal plan, Instacart paste list, and Instacart JSON preview while preserving existing
@@ -89,8 +96,10 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
   is a future design task for configurable shopping strategy, such as cheapest acceptable
   item versus brand-only rules, without turning Carrinho into a retailer-comparison tool.
 - [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
-  is the next UX task for keeping first use small while moving richer rules into
-  progressive profile prompts, review suggestions, or settings.
+  is complete. See PR #32.
+- [CAR-32](https://linear.app/thiagoksp/issue/CAR-32/use-carrinho-for-a-real-weekly-planning-run)
+  is the current `Next` issue. Use the product for one realistic weekly plan and make
+  only the smallest changes required to unblock practical use.
 - [CAR-23](https://linear.app/thiagoksp/issue/CAR-23/use-approved-popularity-and-review-signals-for-product-selection)
   is a future approved-integration task for using product popularity, ratings, review
   feedback, and "most bought" style signals only when that data is contractually
@@ -212,6 +221,10 @@ retailer-neutral Instacart handoff.
 
 The local browser result supports copying the generated plan, printing a clean plan
 page, and downloading the meal plan, Instacart paste list, and Instacart JSON preview.
+
+The browser quick start requires only people and days. Budget, cooking energy, pantry,
+and dietary restrictions are optional details. If no budget is provided, Carrinho still
+generates a plan and reports the estimated total without a balance or shortfall.
 
 Carrinho does not compare retailers, search for the cheapest basket, claim live prices,
 select a retailer, scrape stores, automate checkout, or make network requests without
