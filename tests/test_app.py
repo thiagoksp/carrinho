@@ -72,6 +72,15 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Estimated total: CAD$58.25", content)
         self.assertIn("Budget balance: CAD$21.75", content)
 
+    def test_format_plan_includes_recipe_steps(self) -> None:
+        plan = generate_plan(_base_request())
+
+        self.assertIsNotNone(plan)
+        content = format_plan(plan)
+        self.assertIn("Difficulty:", content)
+        self.assertIn("Recipe:", content)
+        self.assertIn("Cook the rice", content)
+
     def test_asks_only_for_missing_information(self) -> None:
         responses = [
             "I need help planning meals.",

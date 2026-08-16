@@ -7,15 +7,50 @@
       "dish": "Roasted chicken, rice and vegetables",
       "catalogue_tier": "core",
       "cooking_energy": "normal",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["batch-friendly", "one-pan"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly",
+        "one-pan"
+      ],
       "ingredients": [
-        {"product_key": "chicken", "quantity_per_person": 300, "planning_unit": "g"},
-        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "chicken",
+          "quantity_per_person": 300,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "rice",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 150,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Season the chicken and roast it until browned and fully cooked.",
+        "Cook the rice until fluffy, then sauté the onion and vegetables in oil.",
+        "Serve the chicken and vegetables over the rice and finish with seasoning."
       ]
     },
     {
@@ -23,15 +58,50 @@
       "dish": "Pan-fried rice with eggs and vegetables",
       "catalogue_tier": "core",
       "cooking_energy": "low",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["quick", "one-pan"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "quick",
+        "one-pan"
+      ],
       "ingredients": [
-        {"product_key": "eggs", "quantity_per_person": 2, "planning_unit": "each"},
-        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "eggs",
+          "quantity_per_person": 2,
+          "planning_unit": "each"
+        },
+        {
+          "product_key": "rice",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 150,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Warm oil in a skillet, then add onion and vegetables and cook briefly.",
+        "Stir in the cooked rice and push it to one side before scrambling in the eggs.",
+        "Mix everything together, season, and serve warm."
       ]
     },
     {
@@ -39,15 +109,50 @@
       "dish": "Previously prepared chicken, rice and vegetables",
       "catalogue_tier": "core",
       "cooking_energy": "low",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["quick", "leftover"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "quick",
+        "leftover"
+      ],
       "ingredients": [
-        {"product_key": "chicken", "quantity_per_person": 300, "planning_unit": "g"},
-        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "chicken",
+          "quantity_per_person": 300,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "rice",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 150,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Warm the leftover chicken and rice in a pan with a little oil.",
+        "Add chopped onion and vegetables and cook until hot.",
+        "Serve the reheated mix with seasoning and a squeeze of extra sauce if needed."
       ]
     },
     {
@@ -55,16 +160,54 @@
       "dish": "Pasta with ground beef and tomato sauce",
       "catalogue_tier": "core",
       "cooking_energy": "normal",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["batch-friendly"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly"
+      ],
       "ingredients": [
-        {"product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g"},
-        {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
-        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "ground_beef",
+          "quantity_per_person": 125,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "pasta",
+          "quantity_per_person": 125,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "tomato_sauce",
+          "quantity_per_person": 0.25,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "garlic",
+          "quantity_per_person": 20,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Boil the pasta until just tender, then drain it.",
+        "Brown the beef with onion and garlic, then stir in tomato sauce and seasoning.",
+        "Combine the pasta and sauce, simmer briefly, and serve."
       ]
     },
     {
@@ -72,16 +215,55 @@
       "dish": "Pasta with previously prepared meat sauce",
       "catalogue_tier": "core",
       "cooking_energy": "low",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["quick", "leftover"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "quick",
+        "leftover"
+      ],
       "ingredients": [
-        {"product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g"},
-        {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
-        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "ground_beef",
+          "quantity_per_person": 125,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "pasta",
+          "quantity_per_person": 125,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "tomato_sauce",
+          "quantity_per_person": 0.25,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "garlic",
+          "quantity_per_person": 20,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Reheat the prepared meat sauce in a pan over medium heat.",
+        "Boil the pasta until tender, then drain and add it to the sauce.",
+        "Mix, season, and serve hot."
       ]
     },
     {
@@ -89,16 +271,55 @@
       "dish": "Quick bean and tomato stew with rice",
       "catalogue_tier": "core",
       "cooking_energy": "normal",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["batch-friendly", "one-pot"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly",
+        "one-pot"
+      ],
       "ingredients": [
-        {"product_key": "beans", "quantity_per_person": 0.625, "planning_unit": "can"},
-        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
-        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "beans",
+          "quantity_per_person": 0.625,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "tomato_sauce",
+          "quantity_per_person": 0.25,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "rice",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "garlic",
+          "quantity_per_person": 20,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Sauté onion and garlic in oil until fragrant.",
+        "Add beans, tomato sauce, and a little water, then simmer until thick.",
+        "Serve the stew over rice and finish with seasoning."
       ]
     },
     {
@@ -106,16 +327,55 @@
       "dish": "Previously prepared bean stew with rice",
       "catalogue_tier": "core",
       "cooking_energy": "low",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["quick", "leftover"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "quick",
+        "leftover"
+      ],
       "ingredients": [
-        {"product_key": "beans", "quantity_per_person": 0.625, "planning_unit": "can"},
-        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
-        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "beans",
+          "quantity_per_person": 0.625,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "tomato_sauce",
+          "quantity_per_person": 0.25,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "rice",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "garlic",
+          "quantity_per_person": 20,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Warm the leftover bean stew in a pot over medium heat.",
+        "Cook or reheat the rice until hot and fluffy.",
+        "Serve the stew over the rice and finish with extra seasoning if needed."
       ]
     },
     {
@@ -123,15 +383,50 @@
       "dish": "Omelette with potatoes, onion and vegetables",
       "catalogue_tier": "core",
       "cooking_energy": "low",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["quick", "one-pan"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "quick",
+        "one-pan"
+      ],
       "ingredients": [
-        {"product_key": "eggs", "quantity_per_person": 1.5, "planning_unit": "each"},
-        {"product_key": "potatoes", "quantity_per_person": 300, "planning_unit": "g"},
-        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "eggs",
+          "quantity_per_person": 1.5,
+          "planning_unit": "each"
+        },
+        {
+          "product_key": "potatoes",
+          "quantity_per_person": 300,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Cook diced potatoes and onion in oil until they soften and begin to brown.",
+        "Add vegetables and pour in beaten eggs, letting them settle in the pan.",
+        "Fold the omelette gently and serve once the eggs are just set."
       ]
     },
     {
@@ -139,15 +434,50 @@
       "dish": "Sheet-pan chicken with potatoes and vegetables",
       "catalogue_tier": "extended",
       "cooking_energy": "normal",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["batch-friendly", "one-pan"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly",
+        "one-pan"
+      ],
       "ingredients": [
-        {"product_key": "chicken", "quantity_per_person": 250, "planning_unit": "g"},
-        {"product_key": "potatoes", "quantity_per_person": 250, "planning_unit": "g"},
-        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "chicken",
+          "quantity_per_person": 250,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "potatoes",
+          "quantity_per_person": 250,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 150,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Toss the chicken, potatoes, onion, and vegetables with oil and seasoning.",
+        "Roast on a sheet pan until the chicken is cooked and the vegetables are tender.",
+        "Serve straight from the tray or with a simple rice side if you want more volume."
       ]
     },
     {
@@ -155,16 +485,55 @@
       "dish": "Ground beef, bean and potato hash",
       "catalogue_tier": "extended",
       "cooking_energy": "normal",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["batch-friendly", "one-pan"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly",
+        "one-pan"
+      ],
       "ingredients": [
-        {"product_key": "ground_beef", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "beans", "quantity_per_person": 0.25, "planning_unit": "can"},
-        {"product_key": "potatoes", "quantity_per_person": 250, "planning_unit": "g"},
-        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "ground_beef",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "beans",
+          "quantity_per_person": 0.25,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "potatoes",
+          "quantity_per_person": 250,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Brown the beef with onion and a little oil in a wide pan.",
+        "Add diced potatoes and cook until tender, then stir in beans and vegetables.",
+        "Season well and serve hot as a hearty skillet hash."
       ]
     },
     {
@@ -172,16 +541,55 @@
       "dish": "Tomato, egg and vegetable rice bowl",
       "catalogue_tier": "extended",
       "cooking_energy": "low",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["quick", "one-pan"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "quick",
+        "one-pan"
+      ],
       "ingredients": [
-        {"product_key": "eggs", "quantity_per_person": 1.5, "planning_unit": "each"},
-        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
-        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "eggs",
+          "quantity_per_person": 1.5,
+          "planning_unit": "each"
+        },
+        {
+          "product_key": "rice",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "tomato_sauce",
+          "quantity_per_person": 0.25,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Warm the rice and a little oil in a pan or pot.",
+        "Add the tomato sauce and vegetables, then cook until warm and lightly thickened.",
+        "Pour in eggs, stir gently until set, and serve in a bowl."
       ]
     },
     {
@@ -189,16 +597,55 @@
       "dish": "Pasta with beans and tomato sauce",
       "catalogue_tier": "extended",
       "cooking_energy": "low",
-      "dietary_tags": ["lactose-free"],
-      "selection_tags": ["quick", "one-pot"],
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "quick",
+        "one-pot"
+      ],
       "ingredients": [
-        {"product_key": "pasta", "quantity_per_person": 125, "planning_unit": "g"},
-        {"product_key": "beans", "quantity_per_person": 0.5, "planning_unit": "can"},
-        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
-        {"product_key": "vegetables", "quantity_per_person": 100, "planning_unit": "g"},
-        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
-        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
-        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+        {
+          "product_key": "pasta",
+          "quantity_per_person": 125,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "beans",
+          "quantity_per_person": 0.5,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "tomato_sauce",
+          "quantity_per_person": 0.25,
+          "planning_unit": "can"
+        },
+        {
+          "product_key": "vegetables",
+          "quantity_per_person": 100,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "onions",
+          "quantity_per_person": 50,
+          "planning_unit": "g"
+        },
+        {
+          "product_key": "oil",
+          "quantity_per_person": 10,
+          "planning_unit": "ml"
+        },
+        {
+          "product_key": "seasoning",
+          "quantity_per_person": 0.01,
+          "planning_unit": "package"
+        }
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Boil the pasta until cooked through, then drain it.",
+        "Warm the beans, tomato sauce, onion, and vegetables together in a pan.",
+        "Combine with the pasta, season, and serve warm."
       ]
     }
   ]

@@ -314,6 +314,9 @@ def format_plan(plan: Plan) -> str:
 
     for meal in plan.meals:
         lines.append(f"- Day {meal.day} - {meal.meal_slot}: {meal.dish}")
+        lines.append(f"  Difficulty: {meal.difficulty.title()}")
+        for step in meal.instructions:
+            lines.append(f"  Recipe: {step}")
 
     lines.extend(("", "MEAL SELECTION"))
     for guidance in plan.meal_selection_guidance:
@@ -371,6 +374,9 @@ def format_plan(plan: Plan) -> str:
         budget_shortfall = _format_money(plan.currency, abs(plan.budget_balance))
         lines.append(f"Budget shortfall: {budget_shortfall}")
 
+    lines.append(
+        "Budget note: these are planning estimates to help review the basket, not live retailer prices."
+    )
     lines.append(f"Price source: {plan.price_description}")
 
     lines.extend(("", "PANTRY ITEMS USED"))
