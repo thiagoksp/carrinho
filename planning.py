@@ -117,8 +117,9 @@ def _remove_accents(text: str) -> str:
 
 
 def _restrictions_supported(restrictions: list[str] | None) -> bool:
+    # No explicit restrictions provided is supported (treat as no filter).
     if restrictions is None:
-        return False
+        return True
     return all(
         "lactose" in _remove_accents(restriction)
         for restriction in restrictions
