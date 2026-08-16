@@ -302,6 +302,16 @@ def _select_templates(
     preferred_keys = frozenset(request.preferred_product_keys or ())
 
     def rank(candidates: tuple[MealTemplate, ...]) -> tuple[MealTemplate, ...]:
+        # Rank templates with a small penalty for "leftover" (previously prepared)
+        # templates when the pantry does not already contain matching prepared items.
+        def _leftover_penalty(template: MealTemplate) -> int:
+            # If a template is marked as leftover/quick and pantry coverage is zero,
+            # apply a penalty so it's ranked later for early-day slots.
+            pantry_cov = _template_pantry_coverage(template, request.pantry_items, products_by_key)
+            if "leftover" in template.selection_tags and pantry_cov == 0:
+                return 1
+            return 0
+
         return tuple(
             template
             for _, template in sorted(
@@ -328,6 +338,7 @@ def _select_templates(
                         request.pantry_items,
                         products_by_key,
                     ),
+                    _leftover_penalty(indexed_template[1]),
                     indexed_template[0],
                 ),
             )
