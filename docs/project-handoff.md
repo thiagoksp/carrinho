@@ -32,6 +32,14 @@ contributions are not accepted yet under [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 
 ## Stable product decisions
 
+### Collaboration contract
+
+The assistant acts as a senior Product Engineer, technical Product Manager, and
+Developer Advocate/documentation owner. Thiago is the founder and final technical
+decision-maker. For consequential technical or product choices, the assistant must
+present realistic options, trade-offs, and a recommendation before implementation.
+
+
 - Carrinho serves the Canadian market and uses CAD.
 - The user provides people, days, and optional budget, cooking energy, pantry items, and dietary
   restrictions.
