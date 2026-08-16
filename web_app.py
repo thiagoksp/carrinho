@@ -238,30 +238,102 @@ def render_page(
     )
     result_html = ""
     if plan is not None:
-        plan_text = format_plan(plan)
+        # Render the plan as structured HTML so recipe guidance is visible and interactive
         hidden_fields = _hidden_form_fields(form)
+        # Build per-meal HTML
+        products_by_key = {p.key: p.name for p in load_effective_price_catalog().products}
+        meals_parts = []
+        for index, meal in enumerate(plan.meals):
+            template = plan.meal_templates[index]
+            meal_id = f"meal-{index}"
+            # Ingredients list
+            ing_items = []
+            for ingredient in template.ingredients:
+                product_name = products_by_key.get(ingredient.product_key, ingredient.product_key)
+                required_quantity = ingredient.quantity_per_person * plan.people
+                qty_label = format_planning_quantity(required_quantity, ingredient.planning_unit, product_name)
+                ing_items.append(f"<li>{escape(product_name)} — need {escape(qty_label)}</li>")
+            ing_html = "\n".join(ing_items) or "<li>None</li>"
+            # Steps
+            step_items = []
+            for i, step in enumerate(meal.instructions, start=1):
+                step_items.append(f"<li>{escape(step)}</li>")
+            steps_html = "\n".join(step_items) or "<li>No steps provided.</li>"
+            prev_html = ""
+            if "leftover" in template.selection_tags and plan.pantry_usage:
+                prev_html = (
+                    '<div class="previously-prepared">'
+                    '<strong>Previously prepared items:</strong>'
+                    '<p>If using leftovers: make extra on the cooking day and store labelled portions refrigerated or frozen. Reheat thoroughly before serving.</p>'
+                    '</div>'
+                )
+            meals_parts.append(
+                f'<article class="meal" id="{meal_id}">'
+                f'<h3>{escape(meal.dish)} <small> — Day {meal.day} • {escape(meal.meal_slot)}</small></h3>'
+                f'<p><strong>Difficulty:</strong> {escape(meal.difficulty.title())}</p>'
+                f'<button type="button" class="toggle-details" data-target="{meal_id}-details">Show details</button>'
+                f'<div id="{meal_id}-details" class="meal-details" style="display:none;">'
+                f'<h4>Ingredients (for {plan.people} people)</h4>'
+                f'<ul>{ing_html}</ul>'
+                f'<h4>Steps</h4>'
+                f'<ol>{steps_html}</ol>'
+                f'{prev_html}'
+                f'</div>'
+                f'</article>'
+            )
+        meals_html = "\n".join(meals_parts)
+
+        # Shopping list HTML
+        shop_parts = []
+        for item in plan.shopping_items:
+            required_quantity = format_planning_quantity(item.required_quantity, item.planning_unit, item.name)
+            purchase_quantity = format_planning_quantity(item.purchase_quantity, item.planning_unit, item.name)
+            if item.variable_weight:
+                quantity_details = f"need {required_quantity}; plan about {purchase_quantity}; actual package weight may be higher or lower"
+            elif item.overage_quantity > 0.000001:
+                overage_quantity = format_planning_quantity(item.overage_quantity, item.planning_unit, item.name)
+                quantity_details = f"need {required_quantity}; buy {purchase_quantity}; {overage_quantity} extra"
+            else:
+                quantity_details = f"need {required_quantity}; buy {purchase_quantity}"
+            item_price_min = _format_money(plan.currency, item.estimated_price_min)
+            item_price_max = _format_money(plan.currency, item.estimated_price_max)
+            shop_parts.append(f'<li><strong>{escape(item.name)}</strong>: {escape(item.quantity_label)} — {escape(quantity_details)} — estimated range {escape(item_price_min)} to {escape(item_price_max)}</li>')
+        shopping_html = "\n".join(shop_parts) or "<li>None</li>"
+
+        estimated_total_min = _format_money(plan.currency, plan.estimated_total_min)
+        estimated_total_max = _format_money(plan.currency, plan.estimated_total_max)
+
         result_html = (
             '<section class="result" aria-live="polite">'
-            "<h2>Your Carrinho plan</h2>"
-            f'<pre id="plan-output">{escape(plan_text)}</pre>'
-            '<div class="export-actions">'
+            '<h2>Your Carrinho plan</h2>'
+            '<div class="plan-controls">'
             '<button type="button" data-copy-target="plan-output">Copy plan</button>'
             '<button type="button" data-print-plan>Print plan</button>'
-            '<form method="post" action="/download/plan">'
-            f"{hidden_fields}"
-            '<button type="submit">Download plan text</button>'
-            "</form>"
-            '<form method="post" action="/download/instacart-paste-list">'
-            f"{hidden_fields}"
-            '<button type="submit">Download Instacart paste list</button>'
-            "</form>"
-            '<form method="post" action="/download/instacart-json">'
-            f"{hidden_fields}"
-            '<button type="submit">Download Instacart JSON preview</button>'
-            "</form>"
+            f'<form method="post" action="/download/plan">{hidden_fields}<button type="submit">Download plan text</button></form>'
+            f'<form method="post" action="/download/instacart-paste-list">{hidden_fields}<button type="submit">Download Instacart paste list</button></form>'
+            f'<form method="post" action="/download/instacart-json">{hidden_fields}<button type="submit">Download Instacart JSON preview</button></form>'
+            '</div>'
+            f'<div id="plan-output" class="plan-output">'
+            f'<section class="meals">{meals_html}</section>'
+            '<section class="prep-guidance">'
+            '<h3>Meal selection guidance</h3>'
+            f'<pre>{escape("\n".join(plan.meal_selection_guidance))}</pre>'
+            '<h3>Meal prep guidance</h3>'
+            f'<pre>{escape("\n".join(plan.meal_prep_guidance))}</pre>'
+            '</section>'
+            f'<section class="shopping-list">'<h3>Shopping list — {escape(plan.price_type.upper())} prices</h3>'
+            f'<ul>{shopping_html}</ul>'
+            f'<p><strong>Estimated total range:</strong> {escape(estimated_total_min)} to {escape(estimated_total_max)}</p>'
+            '</section>'
+            f'<section class="pantry-used">'<h3>Pantry items used</h3>'
+            + ('<ul>' + '\n'.join(f"<li>{escape(u)}</li>" for u in plan.pantry_usage) + '</ul>' if plan.pantry_usage else '<p>No main ingredient from the plan was identified at home.</p>')
+            + '</section>'
+            '</div>'
             '<div class="copy-status" role="status" aria-live="polite"></div>'
-            "</div>"
-            "</section>"
+            '</section>'
+            f'<script nonce="{CSRF_TOKEN}">'
+            'for (const btn of document.querySelectorAll(".toggle-details")) { btn.addEventListener("click", (e) => { const target = document.getElementById(e.currentTarget.dataset.target); if (target.style.display === "none") { target.style.display = "block"; e.currentTarget.textContent = "Hide details"; } else { target.style.display = "none"; e.currentTarget.textContent = "Show details"; } }); }'
+            '</script>'
         )
 
     return f"""<!doctype html>
