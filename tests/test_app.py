@@ -69,8 +69,8 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Information confirmed", content)
         self.assertIn("MEAL PLAN", content)
         self.assertIn("Retailer: to be selected by the user in Instacart", content)
-        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", content)
-        self.assertIn("Budget balance range: CAD$10.10 to CAD$30.50", content)
+        self.assertIn("Estimated total range: CAD$53.32 to CAD$75.30", content)
+        self.assertIn("Budget balance range: CAD$4.70 to CAD$26.68", content)
         self.assertIn("local planning estimate range only", content)
 
     def test_format_plan_includes_recipe_steps(self) -> None:
@@ -79,8 +79,8 @@ class TestTerminal(unittest.TestCase):
         self.assertIsNotNone(plan)
         content = format_plan(plan)
         self.assertIn("Difficulty:", content)
-        self.assertIn("Recipe:", content)
-        self.assertIn("Cook the rice", content)
+        self.assertIn("Steps:", content)
+        self.assertIn("Warm the rice", content)
 
     def test_asks_only_for_missing_information(self) -> None:
         responses = [
@@ -311,7 +311,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Selection is deterministic", content)
         self.assertIn("MEAL PREP GUIDANCE", content)
         self.assertIn("SHOPPING LIST", content)
-        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", content)
+        self.assertIn("Estimated total range: CAD$53.32 to CAD$75.30", content)
         self.assertIn("Price source:", content)
         self.assertIn("Retailer: to be selected by the user in Instacart", content)
         self.assertIn("simulated, retailer-neutral Canadian price catalogue", content)
@@ -332,9 +332,9 @@ class TestTerminal(unittest.TestCase):
 
         assert plan is not None
         content = format_plan(plan)
-        self.assertEqual(plan.estimated_total, 58.25)
-        self.assertEqual(plan.budget_balance, -38.25)
-        self.assertIn("Budget shortfall range: CAD$29.50 to CAD$49.90", content)
+        self.assertEqual(plan.estimated_total, 62.75)
+        self.assertEqual(plan.budget_balance, -42.75)
+        self.assertIn("Budget shortfall range: CAD$33.32 to CAD$55.30", content)
         self.assertNotIn("economic", content.casefold())
         self.assertNotIn("savings", content.casefold())
 
