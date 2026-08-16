@@ -647,6 +647,86 @@
         "Warm the beans, tomato sauce, onion, and vegetables together in a pan.",
         "Combine with the pasta, season, and serve warm."
       ]
+    },
+    {
+      "key": "tomato_meat_sauce",
+      "dish": "Tomato meat sauce",
+      "catalogue_tier": "core",
+      "cooking_energy": "normal",
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly"
+      ],
+      "ingredients": [
+        { "product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g" },
+        { "product_key": "canned_tomato", "quantity_per_person": 150, "planning_unit": "ml" },
+        { "product_key": "onions", "quantity_per_person": 30, "planning_unit": "g" },
+        { "product_key": "garlic", "quantity_per_person": 2, "planning_unit": "each" },
+        { "product_key": "olive_oil", "quantity_per_person": 5, "planning_unit": "ml" },
+        { "product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package" }
+      ],
+      "difficulty": "easy",
+      "prep_time_minutes": 35,
+      "instructions": [
+        "Heat olive oil in a large pan over medium heat; add finely chopped onion and sauté until translucent (about 5 minutes).",
+        "Add minced garlic and ground beef; break up the meat with a spoon and cook until browned.",
+        "Stir in canned tomatoes, salt, and black pepper; bring to a simmer and lower heat.",
+        "Cover and simmer gently for 20 minutes, stirring occasionally. Adjust seasoning to taste and serve."
+      ]
+    },
+    {
+      "key": "rice_beans",
+      "dish": "Rice and beans",
+      "catalogue_tier": "core",
+      "cooking_energy": "normal",
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly",
+        "one-pot"
+      ],
+      "ingredients": [
+        { "product_key": "rice", "quantity_per_person": 100, "planning_unit": "g" },
+        { "product_key": "beans", "quantity_per_person": 0.5, "planning_unit": "can" },
+        { "product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can" },
+        { "product_key": "onions", "quantity_per_person": 50, "planning_unit": "g" },
+        { "product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml" }
+      ],
+      "difficulty": "easy",
+      "prep_time_minutes": 25,
+      "instructions": [
+        "Sauté onion in oil until soft.",
+        "Add beans and tomato sauce and simmer briefly.",
+        "Cook or warm the rice and serve the stew over rice."]
+    },
+    {
+      "key": "oven_roast_chicken",
+      "dish": "Oven roast chicken with potatoes",
+      "catalogue_tier": "extended",
+      "cooking_energy": "normal",
+      "dietary_tags": [
+        "lactose-free"
+      ],
+      "selection_tags": [
+        "batch-friendly",
+        "one-pan"
+      ],
+      "ingredients": [
+        { "product_key": "chicken", "quantity_per_person": 300, "planning_unit": "g" },
+        { "product_key": "potatoes", "quantity_per_person": 250, "planning_unit": "g" },
+        { "product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g" },
+        { "product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml" }
+      ],
+      "difficulty": "medium",
+      "prep_time_minutes": 60,
+      "instructions": [
+        "Toss chicken, potatoes and vegetables with oil and seasoning.",
+        "Roast in a hot oven until the chicken is cooked through and the potatoes are tender.",
+        "Rest the chicken for a few minutes, carve if whole, and serve with the roasted vegetables."
+      ]
     }
   ]
 }

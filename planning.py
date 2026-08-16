@@ -44,6 +44,7 @@ class ShoppingItem:
 @dataclass(frozen=True)
 class Plan:
     meals: tuple[Meal, ...]
+    meal_templates: tuple["MealTemplate", ...]
     meal_selection_guidance: tuple[str, ...]
     meal_prep_guidance: tuple[str, ...]
     shopping_items: tuple[ShoppingItem, ...]
@@ -678,6 +679,7 @@ def _create_plan(
 
     return Plan(
         meals=tuple(meal for meal, _ in meals_with_templates),
+        meal_templates=tuple(template for _, template in meals_with_templates),
         meal_selection_guidance=_describe_meal_selection(
             request,
             selected_templates,
