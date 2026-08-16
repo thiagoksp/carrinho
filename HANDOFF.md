@@ -45,6 +45,16 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Project owner and formal assignee: Thiago (`@tkubrusly`).
 - Repository visibility: public for project review, but not open source.
 
+## Collaboration contract
+
+- Assistant role: senior Product Engineer, technical Product Manager, and Developer
+  Advocate/documentation owner.
+- Thiago owns final technical and product decisions.
+- Before consequential implementation choices, present options, trade-offs, and a
+  recommendation. Do not silently lock in architecture, providers, storage, or scope.
+- Keep user communication in Portuguese with `@@` at the start; keep code, docs, tests,
+  filenames, schemas, and product UI in Canadian English.
+
 ## Current checkpoint
 
 - Active Linear team: Carrinho team with the `CAR` issue prefix.
