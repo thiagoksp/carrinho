@@ -14,7 +14,7 @@ in GitHub or Linear.
 Build Carrinho step by step: a Canadian grocery agent that receives a budget, number of
 days and people, cooking energy, pantry items, and dietary restrictions. It produces one
 meal plan, one shopping list, one clearly labelled simulated Canadian planning estimate
-per item, and one reviewable Instacart handoff.
+range per item, and one reviewable Instacart handoff.
 
 Instacart is the planned shopping platform, not a retailer. Carrinho does not choose or
 guarantee a merchant. The user's address, available retailers, product availability, and
@@ -87,7 +87,7 @@ explicitly changes priority. Keep GitHub as the source of code and durable decis
 
 1. Understand the household request.
 2. Produce one meal plan and shopping list.
-3. Attach one Canadian planning estimate per item from one clearly labelled catalog.
+3. Attach one Canadian planning estimate range per item from one clearly labelled catalog.
 4. Provide a usable standalone local browser interface.
 5. Let households edit local meals and generic foods through validated workflows.
 6. Add an optional guarded LLM selector that returns known meal-template keys only.

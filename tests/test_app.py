@@ -69,8 +69,9 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Information confirmed", content)
         self.assertIn("MEAL PLAN", content)
         self.assertIn("Retailer: to be selected by the user in Instacart", content)
-        self.assertIn("Estimated total: CAD$58.25", content)
-        self.assertIn("Budget balance: CAD$21.75", content)
+        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", content)
+        self.assertIn("Budget balance range: CAD$10.10 to CAD$30.50", content)
+        self.assertIn("local planning estimate range only", content)
 
     def test_format_plan_includes_recipe_steps(self) -> None:
         plan = generate_plan(_base_request())
@@ -310,7 +311,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Selection is deterministic", content)
         self.assertIn("MEAL PREP GUIDANCE", content)
         self.assertIn("SHOPPING LIST", content)
-        self.assertIn("Estimated total: CAD$58.25", content)
+        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", content)
         self.assertIn("Price source:", content)
         self.assertIn("Retailer: to be selected by the user in Instacart", content)
         self.assertIn("simulated, retailer-neutral Canadian price catalogue", content)
@@ -333,7 +334,7 @@ class TestTerminal(unittest.TestCase):
         content = format_plan(plan)
         self.assertEqual(plan.estimated_total, 58.25)
         self.assertEqual(plan.budget_balance, -38.25)
-        self.assertIn("Budget shortfall: CAD$38.25", content)
+        self.assertIn("Budget shortfall range: CAD$29.50 to CAD$49.90", content)
         self.assertNotIn("economic", content.casefold())
         self.assertNotIn("savings", content.casefold())
 

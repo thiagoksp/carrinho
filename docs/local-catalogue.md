@@ -52,7 +52,7 @@ must not duplicate a built-in key.
 ## Generic foods
 
 A product entry describes one generic purchasable package and one clearly labelled
-simulated CAD planning estimate. It is not a retailer listing or live-price record.
+simulated CAD planning estimate range. It is not a retailer listing or live-price record.
 
 Required fields:
 

@@ -36,7 +36,7 @@ contributions are not accepted yet under [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 - The user provides people, days, and optional budget, cooking energy, pantry items, and dietary
   restrictions.
 - Carrinho creates one meal plan, one shopping list, and one clearly labelled simulated
-  Canadian planning estimate.
+  Canadian planning estimate range.
 - Carrinho does not request or select a city or retailer.
 - Instacart is the planned shopping platform, not a retailer.
 - The user selects an available retailer inside Instacart.

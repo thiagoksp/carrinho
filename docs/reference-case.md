@@ -29,8 +29,8 @@ Status: this is the current retailer-neutral implementation baseline.
 2. One lunch-and-dinner plan for four days.
 3. Leftover and batch-cooking guidance to reduce effort.
 4. One shopping list that separates recipe need from purchasable package quantity.
-5. One clearly labelled simulated Canadian planning estimate per item and an estimated
-   total.
+   5. One clearly labelled simulated Canadian planning estimate range per item and an
+   estimated total range.
 6. Remaining budget balance or a clear shortfall.
 7. An explanation of how the rice and seven eggs are used.
 8. One retailer-neutral, reviewable Instacart shopping-list handoff.

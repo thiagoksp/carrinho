@@ -28,6 +28,8 @@ class ShoppingItem:
     name: str
     quantity_label: str
     estimated_price: float
+    estimated_price_min: float
+    estimated_price_max: float
     required_quantity: float
     purchase_quantity: float
     overage_quantity: float
@@ -58,13 +60,35 @@ class Plan:
         return round(sum(item.estimated_price for item in self.shopping_items), 2)
 
     @property
+    def estimated_total_min(self) -> float:
+        return round(sum(item.estimated_price_min for item in self.shopping_items), 2)
+
+    @property
+    def estimated_total_max(self) -> float:
+        return round(sum(item.estimated_price_max for item in self.shopping_items), 2)
+
+    @property
     def budget_balance(self) -> float | None:
         if self.budget is None:
             return None
         return round(self.budget - self.estimated_total, 2)
 
+    @property
+    def budget_balance_min(self) -> float | None:
+        if self.budget is None:
+            return None
+        return round(self.budget - self.estimated_total_max, 2)
+
+    @property
+    def budget_balance_max(self) -> float | None:
+        if self.budget is None:
+            return None
+        return round(self.budget - self.estimated_total_min, 2)
+
 
 GRAMS_PER_POUND = 453.59237
+ESTIMATE_VARIATION_LOW = 0.85
+ESTIMATE_VARIATION_HIGH = 1.20
 COOKING_ENERGY_RANKS = {"low": 1, "normal": 2, "high": 3}
 
 NUMBER_WORD_VALUES = {
@@ -480,14 +504,16 @@ def _build_shopping_items(
 
         packages_needed = math.ceil(shortfall / product.package_size)
         quantity_label = f"{packages_needed} x {product.package_description}"
+        base_price = packages_needed * product.package_price
+        price_min = round(base_price * ESTIMATE_VARIATION_LOW, 2)
+        price_max = round(base_price * ESTIMATE_VARIATION_HIGH, 2)
         shopping_items.append(
             ShoppingItem(
                 name=product.name,
                 quantity_label=quantity_label,
-                estimated_price=round(
-                    packages_needed * product.package_price,
-                    2,
-                ),
+                estimated_price=round(base_price, 2),
+                estimated_price_min=price_min,
+                estimated_price_max=price_max,
                 required_quantity=round(shortfall, 6),
                 purchase_quantity=round(
                     packages_needed * product.package_size,

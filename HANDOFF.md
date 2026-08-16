@@ -56,6 +56,7 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Follow-up issues created from that diagnosis:
   - [CAR-42 - Add actionable recipe guidance to generated meal plans](https://linear.app/thiagoksp/issue/CAR-42)
   - [CAR-43 - Clarify simulated budget output as planning-only estimates](https://linear.app/thiagoksp/issue/CAR-43)
+  - [CAR-48 - Align project wording with the estimate range model](https://linear.app/thiagoksp/issue/CAR-48/align-project-wording-with-the-estimate-range-model)
 - [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22)
   is complete and was merged through
   [pull request #32](https://github.com/thiagoksp/carrinho/pull/32) on August 15, 2026.
@@ -220,7 +221,7 @@ git log -1 --oneline
 
 Carrinho is a Canadian grocery-planning agent. It receives budget, people, days,
 cooking energy, pantry items, and dietary restrictions. It produces one meal plan, one
-shopping list, one clearly labelled simulated Canadian planning estimate, and one
+shopping list, one clearly labelled simulated Canadian planning estimate range, and one
 retailer-neutral Instacart handoff.
 
 The local browser result supports copying the generated plan, printing a clean plan
