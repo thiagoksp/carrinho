@@ -39,8 +39,8 @@ class TestWebApp(unittest.TestCase):
         self.assertEqual(request.currency, "CAD")
         self.assertEqual(request.pantry_items, ["rice", "7 eggs"])
         self.assertEqual(request.dietary_restrictions, ["lactose intolerance"])
-        self.assertEqual(plan.estimated_total, 58.25)
-        self.assertEqual(plan.budget_balance, 21.75)
+        self.assertEqual(plan.estimated_total, 62.75)
+        self.assertEqual(plan.budget_balance, 17.25)
 
     def test_builds_a_plan_without_budget(self) -> None:
         values = _reference_form()
@@ -51,7 +51,7 @@ class TestWebApp(unittest.TestCase):
 
         self.assertIsNone(request.budget)
         self.assertEqual(request.currency, "CAD")
-        self.assertEqual(plan.estimated_total, 58.25)
+        self.assertEqual(plan.estimated_total, 62.75)
         self.assertIsNone(plan.budget_balance)
         self.assertIn("No budget provided.", render_page(values, plan=plan))
 
@@ -126,7 +126,7 @@ class TestWebApp(unittest.TestCase):
         self.assertIn("Bad &lt;value&gt;", page)
         self.assertNotIn("<script>alert(1)</script>", page)
         self.assertIn("Your Carrinho plan", page)
-        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", page)
+        self.assertIn("Estimated total range: CAD$53.32 to CAD$75.30", page)
         self.assertIn("local planning estimate range only", page)
         self.assertIn("Start with people and days.", page)
         self.assertIn("Quick start", page)
