@@ -270,6 +270,21 @@ class TestPlanning(unittest.TestCase):
         self.assertEqual(plan.budget_balance, -38.25)
         names = [item.name for item in plan.shopping_items]
         self.assertIn("Ground beef", names)
+
+    def test_generates_a_plan_without_budget(self) -> None:
+        request = parse_request(
+            "Feed 2 people for 4 days. We have low energy for cooking, "
+            "already have enough rice and 7 eggs, and at least one person is "
+            "lactose intolerant. We need lunch and dinner."
+        )
+
+        plan = generate_plan(request)
+
+        assert plan is not None
+        self.assertIsNone(plan.budget)
+        self.assertEqual(plan.estimated_total, 58.25)
+        self.assertIsNone(plan.budget_balance)
+        names = [item.name for item in plan.shopping_items]
         self.assertIn("Chicken thighs", names)
 
     def test_buys_rice_and_eggs_when_they_are_not_in_the_pantry(self) -> None:

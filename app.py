@@ -362,7 +362,9 @@ def format_plan(plan: Plan) -> str:
 
     estimated_total = _format_money(plan.currency, plan.estimated_total)
     lines.extend(("", f"Estimated total: {estimated_total}"))
-    if plan.budget_balance >= 0:
+    if plan.budget_balance is None:
+        lines.append("No budget provided.")
+    elif plan.budget_balance >= 0:
         budget_balance = _format_money(plan.currency, plan.budget_balance)
         lines.append(f"Budget balance: {budget_balance}")
     else:

@@ -35,7 +35,7 @@ contributions are not accepted yet under [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 ## Stable product decisions
 
 - Carrinho serves the Canadian market and uses CAD.
-- The user provides budget, people, days, cooking energy, pantry items, and dietary
+- The user provides people, days, and optional budget, cooking energy, pantry items, and dietary
   restrictions.
 - Carrinho creates one meal plan, one shopping list, and one clearly labelled simulated
   Canadian planning estimate.
@@ -55,8 +55,9 @@ and user-visible output in Canadian English.
 
 - Python 3.12 terminal and local browser interfaces with no third-party runtime
   dependencies.
-- The browser server binds only to `127.0.0.1`, provides a structured form, and renders
-  the complete plan on one page without an external request.
+- The browser server binds only to `127.0.0.1`, provides a quick-start form for people
+  and days, keeps budget and other details optional, and renders the complete plan on
+  one page without an external request.
 - The planner supports 1-12 people for 1-14 days.
 - Package-aware pantry deductions and lactose intolerance are supported within the
   documented limits.
@@ -66,6 +67,8 @@ and user-visible output in Canadian English.
   products are explicitly approximate.
 - The local price catalog is simulated and retailer-neutral.
 - The request, plan, summary, and saved files contain no city or selected retailer.
+- If no budget is provided, Carrinho still generates a plan and shows the estimated total
+  without a balance or shortfall.
 - Saving a plan creates:
   - `meal-plan.txt`;
   - `instacart-list.json`;
@@ -178,6 +181,11 @@ CAR-15 provider comparison.
 CAR-14 added portable browser exports. The standalone page now provides copy, print,
 meal-plan download, Instacart paste-list download, and Instacart JSON preview download
 without sending any request to Instacart or another service.
+
+CAR-22 is in progress locally. The browser quick start now requires only people and days;
+budget is optional; neutral defaults avoid assuming lactose intolerance or pantry items;
+and `Foods to use more/less often` has been removed from the main browser form pending
+the CAR-18 household-rules redesign.
 
 The official Instacart validation and API milestones remain externally gated. The
 complete ordering is mirrored in [`roadmap.md`](roadmap.md) and Linear.

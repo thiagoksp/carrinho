@@ -42,6 +42,43 @@ class TestWebApp(unittest.TestCase):
         self.assertEqual(plan.estimated_total, 58.25)
         self.assertEqual(plan.budget_balance, 21.75)
 
+    def test_builds_a_plan_without_budget(self) -> None:
+        values = _reference_form()
+        values["budget"] = ""
+
+        request = build_request(values)
+        plan = create_plan(values)
+
+        self.assertIsNone(request.budget)
+        self.assertEqual(request.currency, "CAD")
+        self.assertEqual(plan.estimated_total, 58.25)
+        self.assertIsNone(plan.budget_balance)
+        self.assertIn("No budget provided.", render_page(values, plan=plan))
+
+    def test_builds_a_minimal_quick_start_plan(self) -> None:
+        values = {
+            "budget": "",
+            "people": "2",
+            "days": "4",
+            "cooking_energy": "normal",
+            "pantry_items": "",
+            "dietary_restrictions": "none",
+            "foods_to_avoid": "",
+            "foods_to_prefer": "",
+        }
+
+        request = build_request(values)
+        plan = create_plan(values)
+
+        self.assertIsNone(request.budget)
+        self.assertEqual(request.people, 2)
+        self.assertEqual(request.days, 4)
+        self.assertEqual(request.cooking_energy, "normal")
+        self.assertEqual(request.pantry_items, [])
+        self.assertEqual(request.dietary_restrictions, [])
+        self.assertGreater(plan.estimated_total, 0)
+        self.assertIn("No budget provided.", render_page(values, plan=plan))
+
     def test_resolves_food_preferences_and_new_lines(self) -> None:
         values = _reference_form()
         values["pantry_items"] = "rice\n7 eggs"
@@ -90,11 +127,26 @@ class TestWebApp(unittest.TestCase):
         self.assertNotIn("<script>alert(1)</script>", page)
         self.assertIn("Your Carrinho plan", page)
         self.assertIn("Estimated total: CAD$58.25", page)
+        self.assertIn("Start with people and days.", page)
+        self.assertIn("Quick start", page)
+        self.assertIn("Required: choose how many people and days", page)
+        self.assertIn("Add details", page)
+        self.assertIn("Optional: add budget, pantry, energy", page)
+        self.assertIn("Optional. Add it when you want a balance or shortfall.", page)
         self.assertIn("No request is sent to Instacart", page)
-        self.assertIn("Foods to use less often", page)
-        self.assertIn("Longer plans may still include", page)
+        self.assertNotIn("Foods to use less often", page)
+        self.assertNotIn("Foods to use more often", page)
         self.assertIn("Manage local meals and foods", page)
         self.assertIn(CSRF_TOKEN, page)
+
+    def test_initial_page_uses_neutral_quick_start_defaults(self) -> None:
+        page = render_page()
+
+        self.assertIn('value="2"', page)
+        self.assertIn('value="4"', page)
+        self.assertIn('<option value="normal" selected>Normal</option>', page)
+        self.assertIn('<option value="none" selected>None</option>', page)
+        self.assertNotIn(">rice, 7 eggs</textarea>", page)
 
     def test_renders_portable_export_actions(self) -> None:
         page = render_page(_reference_form(), plan=create_plan(_reference_form()))

@@ -130,7 +130,9 @@ text and JSON exports.
 
 Keep first use light: define the minimum inputs for a useful plan and move richer rules
 into progressive prompts, profile editing, or review suggestions. Preserve a
-deterministic form path for households that do not enable LLM.
+deterministic form path for households that do not enable LLM. The browser surface
+should support simple, guided, and future conversational use in one responsive,
+app-friendly interface so a later PWA or mobile path remains open.
 
 **Backlog:** [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
 
@@ -198,6 +200,12 @@ into Carrinho's validated meal-template schema, not bypass local validation.
 
 Before a future account switch, verify GitHub, Linear, Codex, local repository access,
 and the single-`Next` workflow. This is a human operating checkpoint, not product code.
+
+**Backlog:** [CAR-30](https://linear.app/thiagoksp/issue/CAR-30/evaluate-freezing-or-removing-the-legacy-terminal-interface)
+
+Evaluate whether the terminal interface should be kept, frozen, hidden from docs, or
+removed now that the local browser interface is the primary product surface. Preserve
+parser and planner coverage if terminal tests are later removed.
 
 **Complete:** [CAR-27](https://linear.app/thiagoksp/issue/CAR-27/review-ip-licensing-and-public-repository-protection)
 

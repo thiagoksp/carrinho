@@ -44,7 +44,7 @@ class Plan:
     meal_prep_guidance: tuple[str, ...]
     shopping_items: tuple[ShoppingItem, ...]
     pantry_usage: tuple[str, ...]
-    budget: float
+    budget: float | None
     people: int
     days: int
     currency: str
@@ -56,7 +56,9 @@ class Plan:
         return round(sum(item.estimated_price for item in self.shopping_items), 2)
 
     @property
-    def budget_balance(self) -> float:
+    def budget_balance(self) -> float | None:
+        if self.budget is None:
+            return None
         return round(self.budget - self.estimated_total, 2)
 
 
@@ -552,7 +554,6 @@ def _create_plan(
     catalog: PriceCatalog,
     meal_candidate_keys: list[str] | tuple[str, ...] | None = None,
 ) -> Plan:
-    assert request.budget is not None
     assert request.people is not None
     assert request.days is not None
 
@@ -619,8 +620,7 @@ def generate_plan(
     """Generate one meal plan and shopping list from a single price catalog."""
     selected_catalog = catalog or load_effective_price_catalog()
     if not (
-        request.budget is not None
-        and request.currency == selected_catalog.currency
+        (request.currency in {None, selected_catalog.currency})
         and request.people is not None
         and 1 <= request.people <= 12
         and request.days is not None
