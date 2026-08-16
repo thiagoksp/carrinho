@@ -67,7 +67,7 @@ Expected current state:
 ## Current product boundary
 
 Carrinho is a local Canadian grocery-planning prototype. It creates one meal plan, one
-shopping list, one simulated Canadian planning estimate, and one retailer-neutral
+shopping list, one simulated Canadian planning estimate range, and one retailer-neutral
 Instacart handoff preview.
 
 Do not add retailer comparison, scraping, checkout automation, live-price claims,

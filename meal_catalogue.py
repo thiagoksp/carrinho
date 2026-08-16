@@ -14,6 +14,7 @@ _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 COOKING_ENERGY_VALUES = frozenset({"low", "normal", "high"})
 DIETARY_TAG_VALUES = frozenset({"lactose-free"})
 CATALOGUE_TIER_VALUES = frozenset({"core", "extended"})
+DIFFICULTY_VALUES = frozenset({"easy", "medium", "hard"})
 SELECTION_TAG_VALUES = frozenset(
     {"batch-friendly", "leftover", "one-pan", "one-pot", "quick"}
 )
@@ -35,6 +36,8 @@ class MealTemplate:
     dietary_tags: tuple[str, ...]
     selection_tags: tuple[str, ...]
     ingredients: tuple[MealIngredient, ...]
+    difficulty: str = "easy"
+    instructions: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -140,6 +143,30 @@ def _validate_template(data: object, position: int) -> MealTemplate:
     if len(product_keys) != len(set(product_keys)):
         raise ValueError(f"{context} contains duplicate product keys.")
 
+    raw_difficulty = data.get("difficulty", "easy")
+    if not isinstance(raw_difficulty, str):
+        raise ValueError(f"{context} has an unsupported difficulty value.")
+    difficulty = raw_difficulty.strip().casefold()
+    if difficulty not in DIFFICULTY_VALUES:
+        raise ValueError(f"{context} has an unsupported difficulty value.")
+
+    if "instructions" not in data:
+        instructions: tuple[str, ...] = ()
+    else:
+        raw_instructions = data.get("instructions")
+        if raw_instructions is None:
+            instructions = ()
+        elif not isinstance(raw_instructions, list) or not raw_instructions:
+            raise ValueError(f"{context} requires a non-empty instructions list.")
+        else:
+            instructions = tuple(
+                step.strip()
+                for step in raw_instructions
+                if isinstance(step, str) and step.strip()
+            )
+            if len(instructions) != len(raw_instructions):
+                raise ValueError(f"{context} requires valid instruction strings.")
+
     return MealTemplate(
         key=key,
         dish=dish,
@@ -148,6 +175,8 @@ def _validate_template(data: object, position: int) -> MealTemplate:
         dietary_tags=dietary_tags,
         selection_tags=selection_tags,
         ingredients=ingredients,
+        difficulty=difficulty,
+        instructions=instructions,
     )
 
 

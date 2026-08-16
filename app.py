@@ -314,6 +314,9 @@ def format_plan(plan: Plan) -> str:
 
     for meal in plan.meals:
         lines.append(f"- Day {meal.day} - {meal.meal_slot}: {meal.dish}")
+        lines.append(f"  Difficulty: {meal.difficulty.title()}")
+        for step in meal.instructions:
+            lines.append(f"  Recipe: {step}")
 
     lines.extend(("", "MEAL SELECTION"))
     for guidance in plan.meal_selection_guidance:
@@ -354,24 +357,46 @@ def format_plan(plan: Plan) -> str:
             quantity_details = (
                 f"need {required_quantity}; buy {purchase_quantity}"
             )
+        item_price_min = _format_money(plan.currency, item.estimated_price_min)
+        item_price_max = _format_money(plan.currency, item.estimated_price_max)
         lines.append(
             f"- {item.name}: {item.quantity_label} "
             f"- {quantity_details} "
-            f"- {_format_money(plan.currency, item.estimated_price)}"
+            f"- estimated range {item_price_min} to {item_price_max}"
         )
 
-    estimated_total = _format_money(plan.currency, plan.estimated_total)
-    lines.extend(("", f"Estimated total: {estimated_total}"))
+    estimated_total_min = _format_money(plan.currency, plan.estimated_total_min)
+    estimated_total_max = _format_money(plan.currency, plan.estimated_total_max)
+    lines.extend(
+        ("", f"Estimated total range: {estimated_total_min} to {estimated_total_max}")
+    )
     if plan.budget_balance is None:
         lines.append("No budget provided.")
     elif plan.budget_balance >= 0:
-        budget_balance = _format_money(plan.currency, plan.budget_balance)
-        lines.append(f"Budget balance: {budget_balance}")
+        budget_balance_min = _format_money(plan.currency, plan.budget_balance_min)
+        budget_balance_max = _format_money(plan.currency, plan.budget_balance_max)
+        lines.append(
+            f"Budget balance range: {budget_balance_min} to {budget_balance_max}"
+        )
     else:
-        budget_shortfall = _format_money(plan.currency, abs(plan.budget_balance))
-        lines.append(f"Budget shortfall: {budget_shortfall}")
+        budget_shortfall_min = _format_money(
+            plan.currency,
+            abs(plan.budget_balance_max),
+        )
+        budget_shortfall_max = _format_money(
+            plan.currency,
+            abs(plan.budget_balance_min),
+        )
+        lines.append(
+            f"Budget shortfall range: {budget_shortfall_min} to {budget_shortfall_max}"
+        )
 
-    lines.append(f"Price source: {plan.price_description}")
+    lines.append(
+        "Budget note: this is a local planning estimate range only; it is not a live retailer quote or current store price."
+    )
+    lines.append(
+        f"Price source: {plan.price_description} (simulated, retailer-neutral Canadian estimate range for planning only)"
+    )
 
     lines.extend(("", "PANTRY ITEMS USED"))
     if plan.pantry_usage:

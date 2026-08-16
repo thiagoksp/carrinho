@@ -18,7 +18,7 @@ The user describes a household situation in natural language:
 - dietary restrictions.
 
 Carrinho produces one practical meal plan, one shopping list, and one simulated Canadian
-planning estimate per item. It is useful as a standalone local application. Instacart is
+planning estimate range per item. It is useful as a standalone local application. Instacart is
 an optional future shopping handoff, not a retailer selected by Carrinho. The user would
 choose an available retailer inside Instacart, where address-specific availability and
 actual prices are determined.
@@ -40,8 +40,8 @@ overage, marks variable-weight products as approximate, and accounts for pantry 
 expressed in kilograms, grams, pounds, litres, millilitres, cans, dozens, units, and
 package fractions. Mass is normalized to grams and volume to millilitres before package
 rounding. The current values come from
-one retailer-neutral JSON catalog that is explicitly labelled as simulated. A planning
-request does not require a city or retailer.
+one retailer-neutral JSON catalog that is explicitly labelled as a simulated planning
+estimate range. A planning request does not require a city or retailer.
 
 Dietary restrictions are hard safety filters. Foods the household avoids or prefers are
 separate soft ranking inputs backed by the existing generic product keys, but they are no

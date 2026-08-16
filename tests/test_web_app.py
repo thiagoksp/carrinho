@@ -126,7 +126,8 @@ class TestWebApp(unittest.TestCase):
         self.assertIn("Bad &lt;value&gt;", page)
         self.assertNotIn("<script>alert(1)</script>", page)
         self.assertIn("Your Carrinho plan", page)
-        self.assertIn("Estimated total: CAD$58.25", page)
+        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", page)
+        self.assertIn("local planning estimate range only", page)
         self.assertIn("Start with people and days.", page)
         self.assertIn("Quick start", page)
         self.assertIn("Required: choose how many people and days", page)
@@ -199,7 +200,7 @@ class TestWebApp(unittest.TestCase):
             thread.join(timeout=2)
 
         self.assertIn("MEAL PLAN", plan_response.body)
-        self.assertIn("Estimated total: CAD$58.25", plan_response.body)
+        self.assertIn("Estimated total range: CAD$49.50 to CAD$69.90", plan_response.body)
         self.assertEqual(
             plan_response.content_disposition,
             'attachment; filename="meal-plan.txt"',

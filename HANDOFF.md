@@ -48,10 +48,15 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 ## Current checkpoint
 
 - Active Linear team: Carrinho team with the `CAR` issue prefix.
-- Exactly one issue is labelled `Next`:
-  [CAR-32 - Use Carrinho for a real weekly planning run](https://linear.app/thiagoksp/issue/CAR-32).
-  It should make Carrinho useful in one practical planning session and identify only
-  the blockers that prevent real use.
+- [CAR-32 - Use Carrinho for a real weekly planning run](https://linear.app/thiagoksp/issue/CAR-32)
+  is complete. The real browser validation exposed two concrete blockers that kept the
+  plan from feeling practical enough for a real weekly run: meal names without usable
+  cooking steps, and budget wording that did not clearly label the total as a simulated
+  planning estimate rather than live retailer pricing.
+- Follow-up issues created from that diagnosis:
+  - [CAR-42 - Add actionable recipe guidance to generated meal plans](https://linear.app/thiagoksp/issue/CAR-42)
+  - [CAR-43 - Clarify simulated budget output as planning-only estimates](https://linear.app/thiagoksp/issue/CAR-43)
+  - [CAR-48 - Align project wording with the estimate range model](https://linear.app/thiagoksp/issue/CAR-48/align-project-wording-with-the-estimate-range-model)
 - [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22)
   is complete and was merged through
   [pull request #32](https://github.com/thiagoksp/carrinho/pull/32) on August 15, 2026.
@@ -216,7 +221,7 @@ git log -1 --oneline
 
 Carrinho is a Canadian grocery-planning agent. It receives budget, people, days,
 cooking energy, pantry items, and dietary restrictions. It produces one meal plan, one
-shopping list, one clearly labelled simulated Canadian planning estimate, and one
+shopping list, one clearly labelled simulated Canadian planning estimate range, and one
 retailer-neutral Instacart handoff.
 
 The local browser result supports copying the generated plan, printing a clean plan

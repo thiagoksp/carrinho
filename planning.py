@@ -19,6 +19,8 @@ class Meal:
     day: int
     meal_slot: str
     dish: str
+    instructions: tuple[str, ...] = ()
+    difficulty: str = "easy"
 
 
 @dataclass(frozen=True)
@@ -26,6 +28,8 @@ class ShoppingItem:
     name: str
     quantity_label: str
     estimated_price: float
+    estimated_price_min: float
+    estimated_price_max: float
     required_quantity: float
     purchase_quantity: float
     overage_quantity: float
@@ -56,13 +60,35 @@ class Plan:
         return round(sum(item.estimated_price for item in self.shopping_items), 2)
 
     @property
+    def estimated_total_min(self) -> float:
+        return round(sum(item.estimated_price_min for item in self.shopping_items), 2)
+
+    @property
+    def estimated_total_max(self) -> float:
+        return round(sum(item.estimated_price_max for item in self.shopping_items), 2)
+
+    @property
     def budget_balance(self) -> float | None:
         if self.budget is None:
             return None
         return round(self.budget - self.estimated_total, 2)
 
+    @property
+    def budget_balance_min(self) -> float | None:
+        if self.budget is None:
+            return None
+        return round(self.budget - self.estimated_total_max, 2)
+
+    @property
+    def budget_balance_max(self) -> float | None:
+        if self.budget is None:
+            return None
+        return round(self.budget - self.estimated_total_min, 2)
+
 
 GRAMS_PER_POUND = 453.59237
+ESTIMATE_VARIATION_LOW = 0.85
+ESTIMATE_VARIATION_HIGH = 1.20
 COOKING_ENERGY_RANKS = {"low": 1, "normal": 2, "high": 3}
 
 NUMBER_WORD_VALUES = {
@@ -98,6 +124,57 @@ def _restrictions_supported(restrictions: list[str] | None) -> bool:
     )
 
 
+def _default_meal_instructions(template: MealTemplate) -> tuple[str, ...]:
+    dish = template.dish.casefold()
+    if "omelette" in dish:
+        return (
+            "Warm oil in a skillet, then cook the potatoes and onions until tender.",
+            "Beat the eggs, pour them in, and fold until just set.",
+            "Add vegetables and serve with a little seasoning.",
+        )
+    if "pasta" in dish and "beef" in dish:
+        return (
+            "Boil the pasta until just tender.",
+            "Brown the beef with onions and garlic, then stir in tomato sauce.",
+            "Combine the pasta and sauce, finish with seasoning, and serve.",
+        )
+    if "bean" in dish and "stew" in dish:
+        return (
+            "Sauté onions and garlic in oil until fragrant.",
+            "Add beans, tomato sauce, and a splash of water for a quick stew.",
+            "Simmer until thick, then serve over rice.",
+        )
+    if "rice" in dish and "egg" in dish:
+        return (
+            "Warm the rice and oil in a skillet.",
+            "Scramble the eggs with onion and vegetables until cooked.",
+            "Fold everything together and finish with seasoning.",
+        )
+    if "chicken" in dish and "rice" in dish:
+        return (
+            "Cook the rice and roast or pan-sear the chicken until browned.",
+            "Sauté the vegetables and onion with oil and seasoning.",
+            "Serve the chicken and vegetables over the rice.",
+        )
+    if "bean" in dish or "beef" in dish or "potato" in dish:
+        return (
+            "Cook the main protein with onions and garlic until browned.",
+            "Add the vegetables or potato, then season well.",
+            "Serve hot with rice or as a skillet meal.",
+        )
+    if "rice" in dish:
+        return (
+            "Cook the rice until tender.",
+            "Sauté the vegetables and aromatics with oil and seasoning.",
+            "Combine and serve warm.",
+        )
+    return (
+        "Cook the main ingredients in a single pan or pot.",
+        "Add seasoning and vegetables to finish the dish.",
+        "Serve warm and keep leftovers for the next meal.",
+    )
+
+
 def _build_meals(
     days: int,
     templates: tuple[MealTemplate, ...],
@@ -109,7 +186,19 @@ def _build_meals(
         for meal_slot_index, meal_slot in enumerate(meal_slots):
             index = ((day - 1) * 2 + meal_slot_index) % len(templates)
             template = templates[index]
-            meals.append((Meal(day, meal_slot, template.dish), template))
+            instructions = template.instructions or _default_meal_instructions(template)
+            meals.append(
+                (
+                    Meal(
+                        day,
+                        meal_slot,
+                        template.dish,
+                        instructions,
+                        template.difficulty,
+                    ),
+                    template,
+                )
+            )
 
     return tuple(meals)
 
@@ -415,14 +504,16 @@ def _build_shopping_items(
 
         packages_needed = math.ceil(shortfall / product.package_size)
         quantity_label = f"{packages_needed} x {product.package_description}"
+        base_price = packages_needed * product.package_price
+        price_min = round(base_price * ESTIMATE_VARIATION_LOW, 2)
+        price_max = round(base_price * ESTIMATE_VARIATION_HIGH, 2)
         shopping_items.append(
             ShoppingItem(
                 name=product.name,
                 quantity_label=quantity_label,
-                estimated_price=round(
-                    packages_needed * product.package_price,
-                    2,
-                ),
+                estimated_price=round(base_price, 2),
+                estimated_price_min=price_min,
+                estimated_price_max=price_max,
                 required_quantity=round(shortfall, 6),
                 purchase_quantity=round(
                     packages_needed * product.package_size,
