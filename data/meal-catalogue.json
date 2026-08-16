@@ -661,10 +661,10 @@
       ],
       "ingredients": [
         { "product_key": "ground_beef", "quantity_per_person": 125, "planning_unit": "g" },
-        { "product_key": "canned_tomato", "quantity_per_person": 150, "planning_unit": "ml" },
+        { "product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can" },
         { "product_key": "onions", "quantity_per_person": 30, "planning_unit": "g" },
-        { "product_key": "garlic", "quantity_per_person": 2, "planning_unit": "each" },
-        { "product_key": "olive_oil", "quantity_per_person": 5, "planning_unit": "ml" },
+        { "product_key": "garlic", "quantity_per_person": 20, "planning_unit": "g" },
+        { "product_key": "oil", "quantity_per_person": 5, "planning_unit": "ml" },
         { "product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package" }
       ],
       "difficulty": "easy",
