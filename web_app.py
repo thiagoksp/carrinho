@@ -69,12 +69,15 @@ PAGE_STYLES = """
     .export-actions form { display: inline; }
     .copy-status { flex-basis: 100%; min-height: 1.2em; color: #5e6d67;
       font-size: 0.9rem; }
+    .form-section-title { grid-column: 1 / -1; margin: 0; font-size: 1.05rem; }
+    .details-group { grid-column: 1 / -1; display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
     .json-editor { min-height: 520px; font-family: Consolas, monospace;
       font-size: 0.9rem; line-height: 1.45; }
     details { margin-top: 20px; }
     code { background: #edf1ed; border-radius: 5px; padding: 2px 5px; }
     @media (max-width: 640px) {
-      form { grid-template-columns: 1fr; }
+      form, .details-group { grid-template-columns: 1fr; }
       .wide, button { grid-column: 1; }
     }
     @media print {
@@ -117,11 +120,14 @@ def _resolve_preferences(value: str) -> list[str]:
 def build_request(form: Mapping[str, str]) -> ParsedRequest:
     """Build and validate one planning request from browser form values."""
     budget_text = form.get("budget", "").strip()
-    if not re.fullmatch(r"\d+(?:[.,]\d{1,2})?", budget_text):
-        raise ValueError("Enter a valid budget in CAD.")
-    parsed_budget = parse_request(f"CAD${budget_text}")
-    if parsed_budget.budget is None or parsed_budget.budget <= 0:
-        raise ValueError("Enter a budget greater than zero.")
+    budget: float | None = None
+    if budget_text:
+        if not re.fullmatch(r"\d+(?:[.,]\d{1,2})?", budget_text):
+            raise ValueError("Enter a valid budget in CAD.")
+        parsed_budget = parse_request(f"CAD${budget_text}")
+        if parsed_budget.budget is None or parsed_budget.budget <= 0:
+            raise ValueError("Enter a budget greater than zero.")
+        budget = parsed_budget.budget
 
     people = _parse_quantity(form.get("people", ""), "people", "people")
     days = _parse_quantity(form.get("days", ""), "days", "days")
@@ -150,7 +156,7 @@ def build_request(form: Mapping[str, str]) -> ParsedRequest:
         )
 
     return ParsedRequest(
-        budget=parsed_budget.budget,
+        budget=budget,
         currency="CAD",
         people=people,
         days=days,
@@ -220,10 +226,10 @@ def render_page(
     def value(name: str, default: str = "") -> str:
         return escape(form.get(name, default), quote=True)
 
-    cooking_energy = form.get("cooking_energy", "low")
+    cooking_energy = form.get("cooking_energy", "normal")
     dietary_restrictions = form.get(
         "dietary_restrictions",
-        "lactose intolerance",
+        "none",
     )
     error_html = (
         f'<div class="message error" role="alert">{escape(error)}</div>'
@@ -273,15 +279,14 @@ def render_page(
     <header>
       <div class="eyebrow">Canadian grocery planning</div>
       <h1>Carrinho</h1>
-      <p>One household request. One meal plan. One reviewable shopping list.</p>
+      <p>Start with people and days. Add details only when they matter.</p>
     </header>
     {error_html}
     <section class="card">
       <form method="post" action="/plan">
         <input type="hidden" name="csrf_token" value="{CSRF_TOKEN}">
-        <label>Budget in CAD
-          <input name="budget" inputmode="decimal" required value="{value('budget', '80')}">
-        </label>
+        <h2 class="form-section-title">Quick start</h2>
+        <p class="hint wide">Required: choose how many people and days to plan for.</p>
         <label>People
           <input name="people" type="number" min="1" max="12" required
             value="{value('people', '2')}">
@@ -290,39 +295,37 @@ def render_page(
           <input name="days" type="number" min="1" max="14" required
             value="{value('days', '4')}">
         </label>
-        <label>Cooking energy
-          <select name="cooking_energy">
-            <option value="low"{_selected(cooking_energy, 'low')}>Low</option>
-            <option value="normal"{_selected(cooking_energy, 'normal')}>Normal</option>
-            <option value="high"{_selected(cooking_energy, 'high')}>High</option>
-          </select>
-        </label>
-        <label class="wide">Pantry items
-          <textarea name="pantry_items"
-            placeholder="rice, 7 eggs">{value('pantry_items', 'rice, 7 eggs')}</textarea>
-          <span class="hint">Separate items with commas or new lines.
-            Include quantities when known.</span>
-        </label>
-        <label>Dietary restrictions
-          <select name="dietary_restrictions">
-            <option value="none"{_selected(dietary_restrictions, 'none')}>None</option>
-            <option value="lactose intolerance"
-              {_selected(dietary_restrictions, 'lactose intolerance')}>
-              Lactose intolerance
-            </option>
-          </select>
-        </label>
-        <label>Foods to use less often
-          <input name="foods_to_avoid" value="{value('foods_to_avoid')}"
-            placeholder="beans, onions">
-          <span class="hint">Soft preference only. Longer plans may still include
-            these foods.</span>
-        </label>
-        <label class="wide">Foods to use more often
-          <input name="foods_to_prefer" value="{value('foods_to_prefer')}"
-            placeholder="chicken, eggs">
-          <span class="hint">Use common generic foods already known by Carrinho.</span>
-        </label>
+        <h2 class="form-section-title">Add details</h2>
+        <p class="hint wide">Optional: add budget, pantry, energy, or dietary details
+          for a more accurate plan.</p>
+        <div class="details-group">
+          <label>Budget in CAD
+            <input name="budget" inputmode="decimal" value="{value('budget')}">
+            <span class="hint">Optional. Add it when you want a balance or shortfall.</span>
+          </label>
+          <label>Cooking energy
+            <select name="cooking_energy">
+              <option value="low"{_selected(cooking_energy, 'low')}>Low</option>
+              <option value="normal"{_selected(cooking_energy, 'normal')}>Normal</option>
+              <option value="high"{_selected(cooking_energy, 'high')}>High</option>
+            </select>
+          </label>
+          <label class="wide">Pantry items
+            <textarea name="pantry_items"
+              placeholder="rice, 7 eggs">{value('pantry_items')}</textarea>
+            <span class="hint">Separate items with commas or new lines.
+              Include quantities when known.</span>
+          </label>
+          <label>Dietary restrictions
+            <select name="dietary_restrictions">
+              <option value="none"{_selected(dietary_restrictions, 'none')}>None</option>
+              <option value="lactose intolerance"
+                {_selected(dietary_restrictions, 'lactose intolerance')}>
+                Lactose intolerance
+              </option>
+            </select>
+          </label>
+        </div>
         <button type="submit">Build my plan</button>
       </form>
     </section>

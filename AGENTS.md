@@ -31,6 +31,8 @@ for the cheapest basket, or silently replace the requested plan with a cheaper m
 - Do not implement features beyond the requested stage.
 - Do not add libraries, services, plugins, or infrastructure without a concrete need.
 - Prefer simplicity and ease of learning over premature architecture.
+- When the user asks for maximum credit economy, follow `AI_RULES.md` as an additional
+  operating constraint while keeping Linear updated.
 
 ## Language and naming
 

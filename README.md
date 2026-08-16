@@ -11,7 +11,7 @@ Carrinho is a Canadian grocery-planning agent designed to reduce the decisions b
 
 The user describes a household situation in natural language:
 
-- available budget in Canadian dollars;
+- optional budget in Canadian dollars;
 - number of people and days;
 - cooking energy;
 - food already available at home;
@@ -24,15 +24,17 @@ choose an available retailer inside Instacart, where address-specific availabili
 actual prices are determined.
 
 Carrinho is not a store or price comparison product: it does not rank retailers, combine
-carts, or silently replace the meal plan with a cheaper one. The budget remains visible
-as either a balance or a shortfall.
+carts, or silently replace the meal plan with a cheaper one. When a budget is provided,
+it remains visible as either a balance or a shortfall.
 
 ## Current state
 
 The terminal app and local browser interface support 1-12 people for 1-14 days. The
-browser provides a structured form, friendly validation, and the complete plan on one
-page at `http://127.0.0.1:8765`. The terminal interface remains available for natural
-language requests and one-field-at-a-time corrections. The rule-based planner
+browser starts with a quick-start form for people and days, then optional details for
+budget, pantry, cooking energy, and dietary restrictions. It provides friendly
+validation and the complete plan on one page at `http://127.0.0.1:8765`. The terminal
+interface remains available for natural language requests and one-field-at-a-time
+corrections. The rule-based planner
 separates recipe requirements from whole purchasable packages, reports expected
 overage, marks variable-weight products as approximate, and accounts for pantry amounts
 expressed in kilograms, grams, pounds, litres, millilitres, cans, dozens, units, and
@@ -42,9 +44,11 @@ one retailer-neutral JSON catalog that is explicitly labelled as simulated. A pl
 request does not require a city or retailer.
 
 Dietary restrictions are hard safety filters. Foods the household avoids or prefers are
-separate soft ranking inputs backed by the existing generic product keys. The built-in
-vocabulary remains deliberately small, and a household can save its own selections in
-the private local profile without Carrinho copying a large external food database.
+separate soft ranking inputs backed by the existing generic product keys, but they are no
+longer part of the main first-run browser form while the household-rules model is being
+redesigned in CAR-18. The built-in vocabulary remains deliberately small, and a
+household can save its own selections in the private local profile without Carrinho
+copying a large external food database.
 
 The local browser also includes a validated JSON editor for private generic foods and
 meal templates. Local extensions use stable text keys, stay under ignored `local-data/`,
