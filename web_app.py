@@ -316,7 +316,7 @@ def render_page(
             <span class="hint">Separate items with commas or new lines.
               Include quantities when known.</span>
           </label>
-          <label>Dietary restrictions
+          <label class="wide">Dietary restrictions
             <select name="dietary_restrictions">
               <option value="none"{_selected(dietary_restrictions, 'none')}>None</option>
               <option value="lactose intolerance"
