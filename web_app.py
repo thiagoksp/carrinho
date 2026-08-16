@@ -44,10 +44,10 @@ PAGE_STYLES = """
       padding: 24px; }
     form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px; }
-    label { display: grid; gap: 7px; font-weight: 750; }
+    label { display: grid; gap: 7px; font-weight: 750; width: 100%; }
     .wide { grid-column: 1 / -1; }
-    input, select, textarea { border: 1px solid #a7aea6; border-radius: 10px;
-      padding: 12px; background: #fff; color: #17352c; font: inherit; }
+    input, select, textarea { box-sizing: border-box; width: 100%; border: 1px solid #a7aea6;
+      border-radius: 10px; padding: 12px; background: #fff; color: #17352c; font: inherit; }
     textarea { min-height: 76px; resize: vertical; }
     button, .button { grid-column: 1 / -1; border: 0; border-radius: 999px;
       padding: 14px 22px; background: #146b4d; color: #fff; font: inherit;
