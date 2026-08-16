@@ -358,6 +358,24 @@ class TestTerminal(unittest.TestCase):
             self.assertNotIn("Shopping location", content)
             self.assertNotIn("Selected store", content)
 
+    def test_recipe_guidance_includes_ingredients_and_reuse(self) -> None:
+        plan = generate_plan(_base_request())
+
+        assert plan is not None
+        content = format_plan(plan)
+        # Expect an ingredients section and at least one product keyword
+        self.assertTrue(
+            "Ingredients:" in content or "SHOPPING LIST" in content,
+            "Plan should include an Ingredients or Shopping List section",
+        )
+        self.assertRegex(content.lower(), r"\b(rice|ground beef|eggs|tomato)\b")
+        if "Previously prepared" in content:
+            self.assertRegex(
+                content,
+                r"Previously prepared[\s\S]{0,150}(?:Make|Prepare|Save|Set aside|store|refrigerate)",
+                "Previously prepared items should include when/how to prepare or save them",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
