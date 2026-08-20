@@ -20,7 +20,12 @@ from local_catalogue import (
     save_local_catalogue_json,
 )
 from llm_selector import LLMSelectorError, suggest_meal_candidate_keys
-from planning import Plan, generate_plan, select_meal_candidate_templates
+from planning import (
+    Plan,
+    format_planning_quantity,
+    generate_plan,
+    select_meal_candidate_templates,
+)
 from request_parser import ParsedRequest, parse_request
 
 
@@ -37,56 +42,109 @@ PAGE_STYLES = """
     h1 { font-size: clamp(2.2rem, 8vw, 4.5rem); margin: 0;
       letter-spacing: -0.06em; }
     h2 { margin-top: 0; }
-    a { color: #146b4d; font-weight: 750; }
-    .eyebrow { color: #b3422e; font-weight: 800; text-transform: uppercase; }
-    .card, .result { background: #fff; border: 1px solid #d8d2c4;
-      border-radius: 18px; box-shadow: 0 14px 40px rgba(23, 53, 44, 0.08);
-      padding: 24px; }
-    form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px; }
-    label { display: grid; gap: 7px; font-weight: 750; }
-    .wide { grid-column: 1 / -1; }
-    input, select, textarea { border: 1px solid #a7aea6; border-radius: 10px;
-      padding: 12px; background: #fff; color: #17352c; font: inherit; }
-    textarea { min-height: 76px; resize: vertical; }
-    button, .button { grid-column: 1 / -1; border: 0; border-radius: 999px;
-      padding: 14px 22px; background: #146b4d; color: #fff; font: inherit;
-      font-weight: 800; cursor: pointer; text-align: center; text-decoration: none; }
-    button:hover, .button:hover { background: #0f533c; }
-    .button.secondary { background: #e7eee9; color: #17352c; }
-    .hint { color: #5e6d67; font-size: 0.9rem; font-weight: 500; }
-    .message { border-radius: 12px; margin-bottom: 18px; padding: 14px 16px; }
-    .error { background: #fff0ed; border: 1px solid #d35b45; color: #812817; }
-    .success { background: #e8f5ed; border: 1px solid #4a956f; color: #174f37; }
-    .result { margin-top: 24px; }
-    pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;
-      font-family: inherit; line-height: 1.55; }
-    footer { color: #5e6d67; margin-top: 20px; font-size: 0.9rem; }
-    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
-    .actions form { display: block; }
-    .actions button, .actions .button { display: inline-block; }
-    .export-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-    .export-actions form { display: inline; }
-    .copy-status { flex-basis: 100%; min-height: 1.2em; color: #5e6d67;
-      font-size: 0.9rem; }
-    .form-section-title { grid-column: 1 / -1; margin: 0; font-size: 1.05rem; }
-    .details-group { grid-column: 1 / -1; display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    .json-editor { min-height: 520px; font-family: Consolas, monospace;
-      font-size: 0.9rem; line-height: 1.45; }
-    details { margin-top: 20px; }
-    code { background: #edf1ed; border-radius: 5px; padding: 2px 5px; }
-    @media (max-width: 640px) {
-      form, .details-group { grid-template-columns: 1fr; }
-      .wide, button { grid-column: 1; }
-    }
-    @media print {
-      body { background: #fff; color: #000; }
-      main { width: auto; margin: 0; }
-      header, .card, .actions, .export-actions, footer { display: none; }
-      .result { border: 0; box-shadow: none; padding: 0; margin: 0; }
-      pre { color: #000; font-size: 11pt; line-height: 1.35; }
-    }
+   h3, h4 { margin-top: 0; }
+   a { color: #146b4d; font-weight: 750; }
+   .eyebrow { color: #b3422e; font-weight: 800; text-transform: uppercase; }
+   .card, .result { background: #fff; border: 1px solid #d8d2c4;
+     border-radius: 18px; box-shadow: 0 14px 40px rgba(23, 53, 44, 0.08);
+     padding: 24px; }
+   form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+     gap: 18px; }
+   label { display: grid; gap: 7px; font-weight: 750; width: 100%; }
+   .wide { grid-column: 1 / -1; }
+   input, select, textarea { box-sizing: border-box; width: 100%; border: 1px solid #a7aea6;
+     border-radius: 10px; padding: 12px; background: #fff; color: #17352c; font: inherit; }
+   textarea { min-height: 76px; resize: vertical; }
+   button, .button { grid-column: 1 / -1; border: 0; border-radius: 999px;
+     padding: 14px 22px; background: #146b4d; color: #fff; font: inherit;
+     font-weight: 800; cursor: pointer; text-align: center; text-decoration: none; }
+   button:hover, .button:hover { background: #0f533c; }
+   .button.secondary { background: #e7eee9; color: #17352c; }
+   .hint { color: #5e6d67; font-size: 0.9rem; font-weight: 500; }
+   .message { border-radius: 12px; margin-bottom: 18px; padding: 14px 16px; }
+   .error { background: #fff0ed; border: 1px solid #d35b45; color: #812817; }
+   .success { background: #e8f5ed; border: 1px solid #4a956f; color: #174f37; }
+   .result { margin-top: 24px; }
+   .plan-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+   .plan-controls form { display: flex; flex: 1 1 210px; margin: 0; }
+   .plan-controls > button, .plan-controls form button {
+       flex: 1 1 180px; grid-column: auto; min-width: 0;
+   }
+   .plan-controls form button { width: 100%; }
+   .plan-overview { margin-bottom: 20px; }
+   .overview-grid { list-style: none; margin: 12px 0 0; padding: 0;
+     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+   .meal-summary-card { background: #f7f6f1; border: 1px solid #d8d2c4;
+     border-radius: 12px; padding: 14px; }
+   .meal-summary-card h3 { font-size: 1.02rem; margin-bottom: 4px; }
+   .meal-kicker { margin: 0 0 8px; font-size: 0.76rem; font-weight: 800;
+     letter-spacing: 0.04em; text-transform: uppercase; color: #5e6d67; }
+   .meal-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+     font-size: 0.9rem; }
+   .meal-meta strong { font-weight: 800; }
+   .meal-list { display: grid; gap: 16px; }
+   .meal-card { background: #f9faf7; border: 1px solid #d8d2c4; border-radius: 14px;
+     padding: 16px; }
+   .meal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+   .meal-header h3 { margin: 0; font-size: 1.2rem; }
+   .meal-pill { background: #e7eee9; border: 1px solid #bdd0c2; border-radius: 999px;
+     display: inline-flex; align-items: center; padding: 6px 10px; font-size: 0.8rem;
+     font-weight: 800; color: #17352c; }
+   .meal-toggle { grid-column: auto; margin-top: 14px; padding: 10px 14px; border-radius: 10px; }
+   .meal-details { margin-top: 14px; padding-top: 14px; border-top: 1px solid #d8d2c4; }
+   .meal-details[hidden] { display: none; }
+   .meal-details .subhead { margin: 16px 0 8px; font-size: 0.96rem; }
+   .meal-details ul, .meal-details ol { margin: 0; padding-left: 1.25rem; }
+   .meal-details li + li { margin-top: 6px; }
+   .meal-note { margin-top: 14px; padding: 12px 14px; border-radius: 10px;
+     background: #eef7f3; border: 1px solid #bfd8c8; color: #17352c; }
+   .estimate-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+   .estimate-table th, .estimate-table td {
+       border-bottom: 1px solid #d8d2c4; padding: 10px 8px; text-align: left;
+       vertical-align: top;
+   }
+   .estimate-table th { color: #5e6d67; font-size: 0.85rem; text-transform: uppercase; }
+   .estimate-table td:last-child, .estimate-table th:last-child { text-align: right; }
+   .budget-status { border-radius: 10px; margin: 0 0 20px; padding: 12px 14px; }
+   .budget-status.good { background: #e8f5ed; color: #174f37; }
+   .budget-status.warning { background: #fff0ed; border: 1px solid #d35b45; color: #812817; }
+   .budget-status.neutral { background: #f5f2e9; color: #5e6d67; }
+   .plan-details { border-top: 1px solid #d8d2c4; padding: 14px 0; }
+   .plan-details summary { cursor: pointer; font-weight: 800; }
+   pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;
+     font-family: inherit; line-height: 1.55; }
+   footer { color: #5e6d67; margin-top: 20px; font-size: 0.9rem; }
+   .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+   .actions form { display: block; }
+   .actions button, .actions .button { display: inline-block; }
+   .export-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+   .export-actions form { display: inline; }
+   .copy-status { flex-basis: 100%; min-height: 1.2em; color: #5e6d67;
+     font-size: 0.9rem; }
+   .form-section-title { grid-column: 1 / -1; margin: 0; font-size: 1.05rem; }
+   .details-group { grid-column: 1 / -1; display: grid;
+     grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+   .json-editor { min-height: 520px; font-family: Consolas, monospace;
+     font-size: 0.9rem; line-height: 1.45; }
+   details { margin-top: 20px; }
+   code { background: #edf1ed; border-radius: 5px; padding: 2px 5px; }
+   @media (max-width: 640px) {
+     form, .details-group { grid-template-columns: 1fr; }
+     .wide, button { grid-column: 1; }
+     .plan-controls { display: grid; }
+     .plan-controls form { display: grid; }
+     .plan-controls > button, .plan-controls form button { grid-column: 1; }
+     .meal-header { display: grid; }
+   }
+   @media print {
+     body { background: #fff; color: #000; }
+     main { width: auto; margin: 0; }
+     header, .card, .actions, .export-actions, footer { display: none; }
+     .result { border: 0; box-shadow: none; padding: 0; margin: 0; }
+     .meal-toggle, [data-expand-all] { display: none; }
+     .meal-details { display: block !important; }
+     pre { color: #000; font-size: 11pt; line-height: 1.35; }
+   }
 """
 
 
@@ -215,6 +273,12 @@ def _selected(value: str, expected: str) -> str:
     return " selected" if value == expected else ""
 
 
+def _format_money(currency: str, value: float) -> str:
+    prefixes = {"CAD": "CAD$", "USD": "US$", "BRL": "R$"}
+    prefix = prefixes.get(currency, f"{currency} ")
+    return f"{prefix}{value:.2f}"
+
+
 def render_page(
     values: Mapping[str, str] | None = None,
     plan: Plan | None = None,
@@ -238,30 +302,253 @@ def render_page(
     )
     result_html = ""
     if plan is not None:
-        plan_text = format_plan(plan)
+        # Render the plan as structured HTML so recipe guidance is visible and interactive
         hidden_fields = _hidden_form_fields(form)
+        # Build per-meal HTML
+        products_by_key = {p.key: p.name for p in load_effective_price_catalog().products}
+        overview_parts = []
+        meals_parts = []
+        for index, meal in enumerate(plan.meals):
+            template = plan.meal_templates[index]
+            meal_id = f"meal-{index}"
+            overview_parts.append(
+                f'<li class="meal-summary-card">'
+                f'<p class="meal-kicker">Day {meal.day}</p>'
+                f'<h3>{escape(meal.dish)}</h3>'
+                f'<div class="meal-meta"><span>{escape(meal.meal_slot)}</span>'
+                f'<strong>{escape(meal.difficulty.title())}</strong></div>'
+                f'</li>'
+            )
+
+            ing_items = []
+            for ingredient in template.ingredients:
+                product_name = products_by_key.get(ingredient.product_key, ingredient.product_key)
+                required_quantity = ingredient.quantity_per_person * plan.people
+                qty_label = format_planning_quantity(
+                    required_quantity,
+                    ingredient.planning_unit,
+                    product_name,
+                )
+                ing_items.append(
+                    f"<li>{escape(product_name)} — need {escape(qty_label)}</li>"
+                )
+            ing_html = "\n".join(ing_items) or "<li>None</li>"
+
+            step_items = []
+            for step in meal.instructions:
+                step_items.append(f"<li>{escape(step)}</li>")
+            steps_html = "\n".join(step_items) or "<li>No steps provided.</li>"
+
+            prev_html = ""
+            if "leftover" in template.selection_tags and plan.pantry_usage:
+                prev_html = (
+                    '<div class="meal-note">'
+                    '<strong>Previously prepared:</strong> '
+                    'This meal is already positioned for a leftover-friendly reuse within the plan. '
+                    'Read the meal guidance section for the relevant notes and portions.'
+                    '</div>'
+                )
+
+            meals_parts.append(
+                f'<article class="meal-card" id="{meal_id}">'
+                f'<div class="meal-header">'
+                f'<div>'
+                f'<p class="meal-kicker">Day {meal.day} • {escape(meal.meal_slot)}</p>'
+                f'<h3>{escape(meal.dish)}</h3>'
+                f'</div>'
+                f'<span class="meal-pill">{escape(meal.difficulty.title())}</span>'
+                f'</div>'
+                f'<button type="button" class="meal-toggle" '
+                f'aria-expanded="false" aria-controls="{meal_id}-details" '
+                f'data-target="{meal_id}-details" '
+                f'data-label-expanded="Hide details" '
+                f'data-label-collapsed="Open details">Open details</button>'
+                f'<div id="{meal_id}-details" class="meal-details" hidden>'
+                f'<p><strong>Meal slot:</strong> {escape(meal.meal_slot)}</p>'
+                f'<p><strong>Difficulty:</strong> {escape(meal.difficulty.title())}</p>'
+                f'<h4 class="subhead">Ingredients for {plan.people} people</h4>'
+                f'<ul>{ing_html}</ul>'
+                f'<h4 class="subhead">Cooking steps</h4>'
+                f'<ol>{steps_html}</ol>'
+                f'{prev_html}'
+                f'</div>'
+                f'</article>'
+            )
+        overview_html = "\n".join(overview_parts)
+        meals_html = "\n".join(meals_parts)
+
+        # Shopping list HTML
+        shop_parts = []
+        estimate_parts = []
+        for item in plan.shopping_items:
+            required_quantity = format_planning_quantity(item.required_quantity, item.planning_unit, item.name)
+            purchase_quantity = format_planning_quantity(item.purchase_quantity, item.planning_unit, item.name)
+            if item.variable_weight:
+                quantity_details = f"need {required_quantity}; plan about {purchase_quantity}; actual package weight may be higher or lower"
+            elif item.overage_quantity > 0.000001:
+                overage_quantity = format_planning_quantity(item.overage_quantity, item.planning_unit, item.name)
+                quantity_details = f"need {required_quantity}; buy {purchase_quantity}; {overage_quantity} extra"
+            else:
+                quantity_details = f"need {required_quantity}; buy {purchase_quantity}"
+            shop_parts.append(
+                f'<li><strong>{escape(item.name)}</strong>: '
+                f'{escape(item.quantity_label)}</li>'
+            )
+            item_price_min = _format_money(plan.currency, item.estimated_price_min)
+            item_price_max = _format_money(plan.currency, item.estimated_price_max)
+            estimate_parts.append(
+                f'<tr><td>{escape(item.name)}</td>'
+                f'<td>{escape(item.quantity_label)}</td>'
+                f'<td>{escape(item_price_min)} to {escape(item_price_max)}</td></tr>'
+            )
+        shopping_html = "\n".join(shop_parts) or "<li>None</li>"
+        estimates_html = "\n".join(estimate_parts) or "<tr><td colspan=\"3\">None</td></tr>"
+
+        estimated_total_min = _format_money(plan.currency, plan.estimated_total_min)
+        estimated_total_max = _format_money(plan.currency, plan.estimated_total_max)
+        display_price_description = (
+            plan.price_description.replace("Simulated", "Canadian")
+            .replace("simulated", "Canadian")
+        )
+
+        if plan.budget_balance is None:
+            budget_summary = "<p><strong>Budget:</strong> No budget provided.</p>"
+            budget_note = (
+                "<p>Budget note: this is a local planning estimate range only; "
+                "it is not a live retailer quote or current store price.</p>"
+            )
+        elif plan.budget_balance >= 0:
+            budget_balance_min = _format_money(plan.currency, plan.budget_balance_min)
+            budget_balance_max = _format_money(plan.currency, plan.budget_balance_max)
+            budget_summary = (
+                f"<p><strong>Budget balance range:</strong> {escape(budget_balance_min)} to {escape(budget_balance_max)}</p>"
+            )
+            budget_note = (
+                "<p>Budget note: this is a local planning estimate range only; "
+                "it is not a live retailer quote or current store price.</p>"
+            )
+        else:
+            budget_shortfall_min = _format_money(plan.currency, abs(plan.budget_balance_max))
+            budget_shortfall_max = _format_money(plan.currency, abs(plan.budget_balance_min))
+            budget_summary = (
+                f"<p><strong>Budget shortfall range:</strong> {escape(budget_shortfall_min)} to {escape(budget_shortfall_max)}</p>"
+            )
+            budget_note = (
+                "<p>Budget note: this is a local planning estimate range only; "
+                "it is not a live retailer quote or current store price.</p>"
+            )
+
+        if plan.budget_balance is None:
+            budget_status = '<p class="budget-status neutral"><strong>Budget:</strong> No budget provided.</p>'
+        elif plan.budget_balance >= 0:
+            budget_status = (
+                f'<p class="budget-status good"><strong>Budget check:</strong> '
+                f'within budget, with {escape(budget_balance_min)} to '
+                f'{escape(budget_balance_max)} remaining.</p>'
+            )
+        else:
+            budget_status = (
+                f'<p class="budget-status warning"><strong>Budget check:</strong> '
+                f'this plan is over budget by {escape(budget_shortfall_min)} to '
+                f'{escape(budget_shortfall_max)}. Review the plan or increase the budget.</p>'
+            )
+
+        pantry_html = (
+            "<ul>"
+            + "\n".join(f"<li>{escape(item)}</li>" for item in plan.pantry_usage)
+            + "</ul>"
+            if plan.pantry_usage
+            else "<p>No main ingredient from the plan was identified at home.</p>"
+        )
+
         result_html = (
             '<section class="result" aria-live="polite">'
-            "<h2>Your Carrinho plan</h2>"
-            f'<pre id="plan-output">{escape(plan_text)}</pre>'
-            '<div class="export-actions">'
+            '<h2>Your Carrinho plan</h2>'
+            f'{budget_status}'
+            '<div class="plan-controls">'
             '<button type="button" data-copy-target="plan-output">Copy plan</button>'
             '<button type="button" data-print-plan>Print plan</button>'
-            '<form method="post" action="/download/plan">'
-            f"{hidden_fields}"
-            '<button type="submit">Download plan text</button>'
-            "</form>"
-            '<form method="post" action="/download/instacart-paste-list">'
-            f"{hidden_fields}"
-            '<button type="submit">Download Instacart paste list</button>'
-            "</form>"
-            '<form method="post" action="/download/instacart-json">'
-            f"{hidden_fields}"
-            '<button type="submit">Download Instacart JSON preview</button>'
-            "</form>"
+            f'<form method="post" action="/download/plan">{hidden_fields}<button type="submit">Download plan text</button></form>'
+            f'<form method="post" action="/download/instacart-paste-list">{hidden_fields}<button type="submit">Download Instacart paste list</button></form>'
+            f'<form method="post" action="/download/instacart-json">{hidden_fields}<button type="submit">Download Instacart JSON preview</button></form>'
+            '</div>'
+            '<div id="plan-output" class="plan-output">'
+            '<section class="plan-overview" aria-label="Weekly overview">'
+            '<h3>Weekly overview</h3>'
+            f'<ul class="overview-grid">{overview_html}</ul>'
+            '</section>'
+            '<section class="meal-list" aria-label="Meal details">'
+            f'{meals_html}'
+            '</section>'
+            '<button type="button" data-expand-all="meal-details" aria-expanded="false">Expand all</button>'
+            '<details class="plan-details">'
+            '<summary>Meal guidance</summary>'
+            '<h3>Meal selection guidance</h3>'
+            f'<pre>{escape("\n".join(plan.meal_selection_guidance))}</pre>'
+            '<h3>Meal prep guidance</h3>'
+            f'<pre>{escape("\n".join(plan.meal_prep_guidance))}</pre>'
+            '</details>'
+            '<section class="shopping-list"><h3>Shopping list</h3>'
+            f'<ul>{shopping_html}</ul>'
+            '</section>'
+            '<details class="plan-details">'
+            '<summary>Budget and estimated prices</summary>'
+            f'<p><strong>Total range:</strong> {escape(estimated_total_min)} to {escape(estimated_total_max)}</p>'
+            f'{budget_summary}'
+            f'{budget_note}'
+            f'<h3>Estimated price ranges</h3>'
+            '<table class="estimate-table">'
+            '<thead><tr><th>Ingredient</th><th>Quantity</th><th>Estimated range</th></tr></thead>'
+            f'<tbody>{estimates_html}</tbody>'
+            '</table>'
+            f'<p><strong>Price source:</strong> {escape(display_price_description)} '
+            '(retailer-neutral Canadian price catalogue for planning only)</p>'
+            '</details>'
+            '<details class="plan-details">'
+            '<summary>Pantry items used</summary>'
+            f'{pantry_html}'
+            '</details>'
+            '</div>'
             '<div class="copy-status" role="status" aria-live="polite"></div>'
-            "</div>"
-            "</section>"
+            '</section>'
+            f'<script nonce="{CSRF_TOKEN}">'
+            'const mealButtons = document.querySelectorAll(".meal-toggle"); '
+            'const expandAllButton = document.querySelector("[data-expand-all]"); '
+            'function syncMealToggle(button, target, isExpanded) { '
+            'if (!button || !target) return; '
+            'button.setAttribute("aria-expanded", String(isExpanded)); '
+            'button.textContent = isExpanded ? button.dataset.labelExpanded : button.dataset.labelCollapsed; '
+            'target.hidden = !isExpanded; '
+            '} '
+            'for (const button of mealButtons) { '
+            'const target = document.getElementById(button.dataset.target); '
+            'button.addEventListener("click", () => { '
+            'const isExpanded = target.hidden; '
+            'for (const otherButton of mealButtons) { '
+            'const otherTarget = document.getElementById(otherButton.dataset.target); '
+            'if (otherButton === button) continue; '
+            'syncMealToggle(otherButton, otherTarget, false); '
+            '} '
+            'syncMealToggle(button, target, isExpanded); '
+            'if (expandAllButton) { '
+            'const allOpen = [...document.querySelectorAll(".meal-details")].every((detail) => !detail.hidden); '
+            'expandAllButton.setAttribute("aria-expanded", String(allOpen)); '
+            'expandAllButton.textContent = allOpen ? "Collapse all" : "Expand all"; '
+            '} '
+            '}); '
+            '} '
+            'if (expandAllButton) { '
+            'expandAllButton.addEventListener("click", () => { '
+            'const anyHidden = [...document.querySelectorAll(".meal-details")].some((detail) => detail.hidden); '
+            'for (const button of mealButtons) { '
+            'const target = document.getElementById(button.dataset.target); '
+            'syncMealToggle(button, target, anyHidden); '
+            '} '
+            'expandAllButton.setAttribute("aria-expanded", String(anyHidden)); '
+            'expandAllButton.textContent = anyHidden ? "Collapse all" : "Expand all"; '
+            '}); '
+            '} '
+            '</script>'
         )
 
     return f"""<!doctype html>
@@ -316,7 +603,7 @@ def render_page(
             <span class="hint">Separate items with commas or new lines.
               Include quantities when known.</span>
           </label>
-          <label>Dietary restrictions
+          <label class="wide">Dietary restrictions
             <select name="dietary_restrictions">
               <option value="none"{_selected(dietary_restrictions, 'none')}>None</option>
               <option value="lactose intolerance"

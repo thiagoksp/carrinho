@@ -47,6 +47,7 @@ MEAL_TEMPLATE_FIELDS = {
     "dietary_tags",
     "selection_tags",
     "ingredients",
+    "cuisine",
 }
 INGREDIENT_FIELDS = {
     "product_key",

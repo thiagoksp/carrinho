@@ -37,7 +37,7 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(catalog.price_type, "simulated")
         self.assertIn("Simulated Canadian planning estimates", catalog.description)
         self.assertIn("retailer prices", catalog.description)
-        self.assertEqual(len(catalog.products), 13)
+        self.assertEqual(len(catalog.products), 20)
         self.assertTrue(
             all(product.package_price >= 0 for product in catalog.products)
         )
@@ -112,7 +112,7 @@ class TestCatalog(unittest.TestCase):
         plan = generate_plan(request, catalog)
 
         assert plan is not None
-        self.assertEqual(plan.estimated_total, 116.50)
+        self.assertEqual(plan.estimated_total, 125.50)
         self.assertEqual(plan.price_type, "test")
         self.assertEqual(plan.price_description, "Doubled prices for testing.")
 
@@ -159,7 +159,7 @@ class TestCatalog(unittest.TestCase):
 
         assert plan is not None
         self.assertEqual(plan.currency, "USD")
-        self.assertEqual(plan.estimated_total, 58.25)
+        self.assertEqual(plan.estimated_total, 62.75)
 
     def test_rejects_non_finite_numbers_and_empty_keywords(self) -> None:
         cases = (

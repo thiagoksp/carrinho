@@ -17,6 +17,7 @@ from instacart import (
 from llm_selector import LLMSelectorError, suggest_meal_candidate_keys
 from local_catalogue import load_effective_price_catalog, load_local_catalogue
 from planning import (
+    BudgetInfeasibleError,
     Plan,
     format_planning_quantity,
     generate_plan,
@@ -312,11 +313,35 @@ def format_plan(plan: Plan) -> str:
         "price catalogue for this trip.",
     ]
 
-    for meal in plan.meals:
+    # Map product_key to human-readable product name for ingredient lists
+    products_by_key = {
+        product.key: product.name
+        for product in load_effective_price_catalog().products
+    }
+
+    for index, meal in enumerate(plan.meals):
+        template = plan.meal_templates[index]
         lines.append(f"- Day {meal.day} - {meal.meal_slot}: {meal.dish}")
         lines.append(f"  Difficulty: {meal.difficulty.title()}")
-        for step in meal.instructions:
-            lines.append(f"  Recipe: {step}")
+        # Ingredients for this meal
+        lines.append(f"  Ingredients (for {plan.people} people):")
+        for ingredient in template.ingredients:
+            product_name = products_by_key.get(ingredient.product_key, ingredient.product_key)
+            required_quantity = ingredient.quantity_per_person * plan.people
+            qty_label = format_planning_quantity(required_quantity, ingredient.planning_unit, product_name)
+            lines.append(f"  - {product_name} — need {qty_label}")
+
+        # Steps (use the meal.instructions which may be templated or defaults)
+        lines.append("  Steps:")
+        for i, step in enumerate(meal.instructions, start=1):
+            lines.append(f"    {i}. {step}")
+
+        # Conditionally show previously prepared guidance only when pantry usage exists
+        if "leftover" in template.selection_tags and plan.pantry_usage:
+            lines.append("  Previously prepared items:")
+            lines.append(
+                "  - If using leftovers: make extra on the cooking day and store labelled portions refrigerated or frozen. Reheat thoroughly before serving."
+            )
 
     lines.extend(("", "MEAL SELECTION"))
     for guidance in plan.meal_selection_guidance:
@@ -525,7 +550,11 @@ def main() -> None:
     except ValueError:
         meal_candidate_keys = None
 
-    plan = generate_plan(request_data, meal_candidate_keys=meal_candidate_keys)
+    try:
+        plan = generate_plan(request_data, meal_candidate_keys=meal_candidate_keys)
+    except BudgetInfeasibleError as error:
+        print(f"\n{error}")
+        return
     if plan is None:
         print(
             "\nThis version plans for 1 to 12 people over 1 to 14 days, "

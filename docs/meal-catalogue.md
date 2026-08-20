@@ -15,6 +15,8 @@ The current schema is `carrinho.meal-catalogue.v2`. Each template has:
 - a user-visible `dish` name;
 - a `catalogue_tier` of `core` or `extended`;
 - one `cooking_energy` value: `low`, `normal`, or `high`;
+- one `cuisine` value such as `mexican`, `indian`, `mediterranean`,
+  `middle-eastern`, `east-asian`, or `south-american`;
 - one or more supported `dietary_tags`;
 - one or more validated `selection_tags` such as `quick`, `one-pot`, or
   `batch-friendly`;
@@ -42,11 +44,24 @@ foods must be separate soft preferences, rather than being represented as medica
 dietary tags. The optional LLM selector may suggest candidates, but this validated
 catalogue and deterministic selector remain the source of truth for what can be planned.
 
+Cuisine labels describe the culinary style of a template, not the identity or ethnicity
+of the household. They are descriptive metadata for variety and future preference
+selection. The current planner uses cuisine to add variety through the expanded
+catalogue, but does not yet ask the household to choose a cuisine.
+
+When the internal budget category is `low`, the planner uses CAD$0.99 per person per
+meal as a minimum floor reference based on one generic instant-noodle package. This is
+not a user-selectable category and does not force instant noodles into every meal. A
+validated low-cost noodle option may be selected alongside other inexpensive meals. If
+the requested budget is below the floor for the requested people and days, Carrinho
+keeps the plan reviewable and reports the shortfall instead of pretending the budget
+can cover it.
+
 ## Optional LLM boundary
 
 When explicitly enabled, the LLM may receive stable template keys, dish names,
-catalogue tiers, cooking energy, dietary tags, selection tags, and generic product
-keys. It may return an ordered list of known template keys as a suggestion. It must not
+cuisine labels, catalogue tiers, cooking energy, dietary tags, selection tags, and
+generic product keys. It may return an ordered list of known template keys as a suggestion. It must not
 generate authoritative product quantities, cost estimates, dietary compatibility, or
 retailer identifiers.
 

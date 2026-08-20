@@ -15,6 +15,17 @@ COOKING_ENERGY_VALUES = frozenset({"low", "normal", "high"})
 DIETARY_TAG_VALUES = frozenset({"lactose-free"})
 CATALOGUE_TIER_VALUES = frozenset({"core", "extended"})
 DIFFICULTY_VALUES = frozenset({"easy", "medium", "hard"})
+CUISINE_VALUES = frozenset(
+    {
+        "east-asian",
+        "global",
+        "indian",
+        "mediterranean",
+        "middle-eastern",
+        "mexican",
+        "south-american",
+    }
+)
 SELECTION_TAG_VALUES = frozenset(
     {"batch-friendly", "leftover", "one-pan", "one-pot", "quick"}
 )
@@ -37,6 +48,7 @@ class MealTemplate:
     selection_tags: tuple[str, ...]
     ingredients: tuple[MealIngredient, ...]
     difficulty: str = "easy"
+    cuisine: str = "global"
     instructions: tuple[str, ...] = ()
 
 
@@ -150,6 +162,11 @@ def _validate_template(data: object, position: int) -> MealTemplate:
     if difficulty not in DIFFICULTY_VALUES:
         raise ValueError(f"{context} has an unsupported difficulty value.")
 
+    cuisine = data.get("cuisine", "global")
+    if not isinstance(cuisine, str) or cuisine.strip().casefold() not in CUISINE_VALUES:
+        raise ValueError(f"{context} has an unsupported cuisine value.")
+    cuisine = cuisine.strip().casefold()
+
     if "instructions" not in data:
         instructions: tuple[str, ...] = ()
     else:
@@ -176,6 +193,7 @@ def _validate_template(data: object, position: int) -> MealTemplate:
         selection_tags=selection_tags,
         ingredients=ingredients,
         difficulty=difficulty,
+        cuisine=cuisine,
         instructions=instructions,
     )
 

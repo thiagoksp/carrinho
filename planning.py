@@ -44,6 +44,7 @@ class ShoppingItem:
 @dataclass(frozen=True)
 class Plan:
     meals: tuple[Meal, ...]
+    meal_templates: tuple["MealTemplate", ...]
     meal_selection_guidance: tuple[str, ...]
     meal_prep_guidance: tuple[str, ...]
     shopping_items: tuple[ShoppingItem, ...]
@@ -90,6 +91,24 @@ GRAMS_PER_POUND = 453.59237
 ESTIMATE_VARIATION_LOW = 0.85
 ESTIMATE_VARIATION_HIGH = 1.20
 COOKING_ENERGY_RANKS = {"low": 1, "normal": 2, "high": 3}
+BUDGET_CATEGORY_STANDARD = "standard"
+BUDGET_CATEGORY_LOW = "low"
+INSTANT_NOODLE_FLOOR_KEY = "instant_noodles"
+INSTANT_NOODLE_FLOOR_PRICE = 0.99
+DEFAULT_TEMPLATE_EXCLUSION_KEYS = frozenset(
+    {
+        "coconut_milk",
+        "chickpeas",
+        "lentils",
+        "corn_tortillas",
+        "canned_corn",
+        "curry_blend",
+    }
+)
+
+
+class BudgetInfeasibleError(ValueError):
+    """Raised when no validated meal sequence fits the requested budget."""
 
 NUMBER_WORD_VALUES = {
     "one": 1.0,
@@ -116,8 +135,9 @@ def _remove_accents(text: str) -> str:
 
 
 def _restrictions_supported(restrictions: list[str] | None) -> bool:
+    # No explicit restrictions provided is supported (treat as no filter).
     if restrictions is None:
-        return False
+        return True
     return all(
         "lactose" in _remove_accents(restriction)
         for restriction in restrictions
@@ -281,16 +301,165 @@ def _template_pantry_coverage(
     )
 
 
+def _template_estimated_cost(
+    template: MealTemplate,
+    people: int,
+    products_by_key: dict[str, Product],
+) -> float:
+    """Estimate package cost for one meal without changing final calculations."""
+    return round(
+        sum(
+            math.ceil(
+                ingredient.quantity_per_person * people
+                / products_by_key[ingredient.product_key].package_size
+            )
+            * products_by_key[ingredient.product_key].package_price
+            for ingredient in template.ingredients
+        ),
+        2,
+    )
+
+
+def _selection_purchase_cost(
+    templates: tuple[MealTemplate, ...],
+    request: ParsedRequest,
+    products: tuple[Product, ...],
+) -> float:
+    if not templates or request.days is None or request.people is None:
+        return 0
+    meals = _build_meals(request.days, templates)
+    requirements = _calculate_requirements(meals, request.people)
+    shopping_items = _build_shopping_items(
+        requirements,
+        request.pantry_items,
+        products,
+    )
+    return round(sum(item.estimated_price for item in shopping_items), 2)
+
+
+def _sequence_purchase_cost(
+    templates: tuple[MealTemplate, ...],
+    request: ParsedRequest,
+    products: tuple[Product, ...],
+) -> float:
+    if not templates or request.days is None or request.people is None:
+        return 0
+    meal_count = request.days * 2
+    requirements: dict[str, float] = {}
+    for index in range(meal_count):
+        template = templates[index % len(templates)]
+        for ingredient in template.ingredients:
+            requirements[ingredient.product_key] = requirements.get(
+                ingredient.product_key,
+                0,
+            ) + ingredient.quantity_per_person * request.people
+    shopping_items = _build_shopping_items(
+        requirements,
+        request.pantry_items,
+        products,
+    )
+    return round(sum(item.estimated_price for item in shopping_items), 2)
+
+
+def _budget_category(request: ParsedRequest) -> str:
+    """Classify budget pressure without exposing a user-selectable category."""
+    if request.budget is None or request.people is None or request.days is None:
+        return BUDGET_CATEGORY_STANDARD
+    meal_count = request.people * request.days * 2
+    per_meal_budget = request.budget / meal_count
+    if per_meal_budget < INSTANT_NOODLE_FLOOR_PRICE:
+        return BUDGET_CATEGORY_LOW
+    if per_meal_budget <= INSTANT_NOODLE_FLOOR_PRICE * 1.5:
+        return BUDGET_CATEGORY_LOW
+    return BUDGET_CATEGORY_STANDARD
+
+
+def _budget_floor(request: ParsedRequest) -> float | None:
+    if request.people is None or request.days is None:
+        return None
+    return round(
+        INSTANT_NOODLE_FLOOR_PRICE * request.people * request.days * 2,
+        2,
+    )
+
+
+def _select_budget_sequence(
+    request: ParsedRequest,
+    candidates: tuple[MealTemplate, ...],
+    products: tuple[Product, ...],
+) -> tuple[MealTemplate, ...]:
+    if request.budget is None or request.days is None:
+        return candidates
+
+    meal_count = request.days * 2
+    products_by_key = {product.key: product for product in products}
+    ranked_candidates = tuple(
+        sorted(
+            candidates,
+            key=lambda template: _template_estimated_cost(
+                template,
+                request.people or 1,
+                products_by_key,
+            ),
+        )
+    )
+    states: list[tuple[MealTemplate, ...]] = [()]
+    best_states: list[tuple[MealTemplate, ...]] = []
+    for _ in range(min(meal_count, 8)):
+        next_states: list[tuple[MealTemplate, ...]] = []
+        for state in states:
+            for candidate in ranked_candidates:
+                sequence = state + (candidate,)
+                if _sequence_purchase_cost(sequence, request, products) <= request.budget:
+                    next_states.append(sequence)
+        if not next_states:
+            break
+        next_states.sort(
+            key=lambda sequence: (
+                _sequence_purchase_cost(sequence, request, products),
+                len({template.key for template in sequence}),
+                -len(sequence),
+            ),
+            reverse=True,
+        )
+        best_states.extend(next_states[:80])
+        states = next_states[:80]
+
+    if not best_states:
+        floor = _budget_floor(request)
+        floor_text = f" The minimum reference floor is CAD${floor:.2f}." if floor else ""
+        raise BudgetInfeasibleError(
+            "No validated meal plan fits the requested budget." + floor_text
+        )
+    return max(
+        best_states,
+        key=lambda sequence: (
+            _sequence_purchase_cost(sequence, request, products),
+            len({template.key for template in sequence}),
+            -len(sequence),
+        ),
+    )
+
+
 def _select_templates(
     request: ParsedRequest,
     templates: tuple[MealTemplate, ...],
     products: tuple[Product, ...],
 ) -> tuple[MealTemplate, ...]:
     required_tags = _required_dietary_tags(request.dietary_restrictions)
+    budget_category = _budget_category(request)
+    excluded_template_keys = (
+        {"instant_noodles"} if budget_category != BUDGET_CATEGORY_LOW else set()
+    )
     eligible_templates = tuple(
         template
         for template in templates
         if required_tags.issubset(template.dietary_tags)
+        and template.key not in excluded_template_keys
+        and not any(
+            ingredient.product_key in DEFAULT_TEMPLATE_EXCLUSION_KEYS
+            for ingredient in template.ingredients
+        )
     )
     if not eligible_templates:
         raise ValueError("The meal catalogue has no templates for these restrictions.")
@@ -298,15 +467,54 @@ def _select_templates(
     required_meal_count = (request.days or 0) * 2
     products_by_key = {product.key: product for product in products}
     request_energy = request.cooking_energy or "normal"
+    people = request.people or 1
     avoided_keys = frozenset(request.avoided_product_keys or ())
     preferred_keys = frozenset(request.preferred_product_keys or ())
+    baseline_templates = (
+        tuple(
+            template
+            for template in eligible_templates
+            if template.catalogue_tier == "core"
+        )
+        + tuple(
+            template
+            for template in eligible_templates
+            if template.catalogue_tier == "extended"
+        )
+        if required_meal_count >= sum(
+            template.catalogue_tier == "core" for template in eligible_templates
+        )
+        else eligible_templates
+    )
+    budget_pressure = (
+        request.budget is not None and budget_category == BUDGET_CATEGORY_LOW
+    )
 
     def rank(candidates: tuple[MealTemplate, ...]) -> tuple[MealTemplate, ...]:
+        # Rank templates with a small penalty for "leftover" (previously prepared)
+        # templates when the pantry does not already contain matching prepared items.
+        def _leftover_penalty(template: MealTemplate) -> int:
+            # If a template is marked as leftover/quick and pantry coverage is zero,
+            # apply a penalty so it's ranked later for early-day slots.
+            pantry_cov = _template_pantry_coverage(template, request.pantry_items, products_by_key)
+            if "leftover" in template.selection_tags and pantry_cov == 0:
+                return 1
+            return 0
+
         return tuple(
             template
             for _, template in sorted(
                 enumerate(candidates),
                 key=lambda indexed_template: (
+                    (
+                        _template_estimated_cost(
+                            indexed_template[1],
+                            people,
+                            products_by_key,
+                        )
+                        if budget_pressure
+                        else 0
+                    ),
                     len(
                         avoided_keys.intersection(
                             ingredient.product_key
@@ -328,6 +536,7 @@ def _select_templates(
                         request.pantry_items,
                         products_by_key,
                     ),
+                    _leftover_penalty(indexed_template[1]),
                     indexed_template[0],
                 ),
             )
@@ -343,11 +552,10 @@ def _select_templates(
         for template in eligible_templates
         if template.catalogue_tier == "extended"
     )
-    if core_templates and required_meal_count >= len(core_templates):
-        if avoided_keys or preferred_keys:
-            return rank(core_templates) + rank(extended_templates)
-        return core_templates + rank(extended_templates)
-    return rank(eligible_templates)
+    ranked = rank(eligible_templates)
+    if budget_pressure:
+        return _select_budget_sequence(request, ranked, products)
+    return ranked
 
 
 def select_meal_candidate_templates(
@@ -369,6 +577,7 @@ def select_meal_candidate_templates(
 def _describe_meal_selection(
     request: ParsedRequest,
     selected_templates: tuple[MealTemplate, ...],
+    budget_pressure: bool = False,
 ) -> tuple[str, ...]:
     required_meal_count = (request.days or 0) * 2
     guidance = [
@@ -380,17 +589,23 @@ def _describe_meal_selection(
         guidance.append(
             "Soft food preferences influenced meal ranking after dietary filters."
         )
-    core_template_count = sum(
-        template.catalogue_tier == "core" for template in selected_templates
+    if _budget_category(request) == BUDGET_CATEGORY_LOW:
+        guidance.append(
+            "Low budget category detected: meals target at least CAD$0.99 per person per meal."
+        )
+        budget_floor = _budget_floor(request)
+        if request.budget is not None and budget_floor is not None and request.budget < budget_floor:
+            guidance.append(
+                f"Budget is below the minimum floor of CAD${budget_floor:.2f}; "
+                "the final plan will show the shortfall."
+            )
+    if budget_pressure:
+        guidance.append(
+            "Budget pressure applied: lower-cost valid meal templates were preferred."
+        )
+    guidance.append(
+        f"Cooking energy preference applied: {request.cooking_energy or 'normal'}."
     )
-    if core_template_count and required_meal_count >= core_template_count:
-        guidance.append(
-            "The plan uses the complete core library, so core catalogue order is preserved."
-        )
-    else:
-        guidance.append(
-            f"Cooking energy preference applied: {request.cooking_energy or 'normal'}."
-        )
     return tuple(guidance)
 
 
@@ -483,10 +698,15 @@ def _available_quantity(
     if not matching_items:
         return 0
 
-    quantities = [_item_quantity(item, product) for item in matching_items]
-    if any(quantity is None for quantity in quantities):
+    quantities = [
+        quantity
+        for item in matching_items
+        for quantity in [_item_quantity(item, product)]
+        if quantity is not None
+    ]
+    if not quantities:
         return math.inf
-    return sum(quantity or 0 for quantity in quantities)
+    return sum(quantities)
 
 
 def _build_shopping_items(
@@ -658,18 +878,31 @@ def _create_plan(
             MealCatalogue(description="Selected meal candidates", templates=templates),
         )
         llm_selected = True
+        if (
+            request.budget is not None
+            and _sequence_purchase_cost(selected_templates, request, catalog.products)
+            > request.budget
+        ):
+            selected_templates = _select_templates(request, templates, catalog.products)
+            llm_selected = False
     meals_with_templates = _build_meals(request.days, selected_templates)
     requirements = _calculate_requirements(
         meals_with_templates,
         request.people,
     )
     _validate_catalog_coverage(requirements, selected_templates, catalog.products)
+    budget_pressure = (
+        request.budget is not None
+        and _budget_category(request) == BUDGET_CATEGORY_LOW
+    )
 
     return Plan(
         meals=tuple(meal for meal, _ in meals_with_templates),
+        meal_templates=tuple(template for _, template in meals_with_templates),
         meal_selection_guidance=_describe_meal_selection(
             request,
             selected_templates,
+            budget_pressure,
         )
         + (
             (
