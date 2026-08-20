@@ -171,6 +171,97 @@
       "instacart_search_term": "large eggs",
       "instacart_quantity": 12,
       "instacart_unit": "each"
+    },
+    {
+      "key": "corn_tortillas",
+      "name": "Corn tortillas",
+      "package_description": "10 tortillas",
+      "package_size": 10,
+      "package_price": 3.5,
+      "planning_unit": "each",
+      "variable_weight": false,
+      "keywords": ["tortilla", "tortillas", "corn tortilla"],
+      "instacart_search_term": "corn tortillas",
+      "instacart_quantity": 10,
+      "instacart_unit": "each"
+    },
+    {
+      "key": "canned_corn",
+      "name": "Canned corn",
+      "package_description": "1 can",
+      "package_size": 1,
+      "package_price": 1.5,
+      "planning_unit": "can",
+      "variable_weight": false,
+      "keywords": ["corn", "canned corn"],
+      "instacart_search_term": "canned corn",
+      "instacart_quantity": 1,
+      "instacart_unit": "can"
+    },
+    {
+      "key": "chickpeas",
+      "name": "Canned chickpeas",
+      "package_description": "1 can",
+      "package_size": 1,
+      "package_price": 1.75,
+      "planning_unit": "can",
+      "variable_weight": false,
+      "keywords": ["chickpea", "chickpeas", "garbanzo"],
+      "instacart_search_term": "canned chickpeas",
+      "instacart_quantity": 1,
+      "instacart_unit": "can"
+    },
+    {
+      "key": "lentils",
+      "name": "Dry lentils",
+      "package_description": "900 g bag",
+      "package_size": 900,
+      "package_price": 3.5,
+      "planning_unit": "g",
+      "variable_weight": false,
+      "keywords": ["lentil", "lentils"],
+      "instacart_search_term": "dry lentils",
+      "instacart_quantity": 900,
+      "instacart_unit": "g"
+    },
+    {
+      "key": "coconut_milk",
+      "name": "Canned coconut milk",
+      "package_description": "1 can",
+      "package_size": 1,
+      "package_price": 2.5,
+      "planning_unit": "can",
+      "variable_weight": false,
+      "keywords": ["coconut", "coconut milk"],
+      "instacart_search_term": "canned coconut milk",
+      "instacart_quantity": 1,
+      "instacart_unit": "can"
+    },
+    {
+      "key": "curry_blend",
+      "name": "Curry spice blend",
+      "package_description": "1 package",
+      "package_size": 1,
+      "package_price": 4.0,
+      "planning_unit": "package",
+      "variable_weight": false,
+      "keywords": ["curry", "curry powder", "spice blend"],
+      "instacart_search_term": "curry spice blend",
+      "instacart_quantity": 1,
+      "instacart_unit": "package"
+    },
+    {
+      "key": "instant_noodles",
+      "name": "Instant noodles",
+      "package_description": "1 package",
+      "package_size": 1,
+      "package_price": 0.99,
+      "planning_unit": "package",
+      "variable_weight": false,
+      "keywords": ["instant noodles", "noodles", "ramen"],
+      "instacart_search_term": "instant noodles",
+      "instacart_quantity": 1,
+      "instacart_unit": "package"
     }
   ]
 }

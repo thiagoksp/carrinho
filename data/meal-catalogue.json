@@ -727,6 +727,163 @@
         "Roast in a hot oven until the chicken is cooked through and the potatoes are tender.",
         "Rest the chicken for a few minutes, carve if whole, and serve with the roasted vegetables."
       ]
+    },
+    {
+      "key": "mexican_bean_corn_tacos",
+      "dish": "Mexican-style bean and corn tacos",
+      "catalogue_tier": "extended",
+      "cuisine": "mexican",
+      "cooking_energy": "low",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "one-pan"],
+      "ingredients": [
+        {"product_key": "corn_tortillas", "quantity_per_person": 3, "planning_unit": "each"},
+        {"product_key": "beans", "quantity_per_person": 0.5, "planning_unit": "can"},
+        {"product_key": "canned_corn", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "onions", "quantity_per_person": 40, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 5, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Warm the tortillas in a dry pan.",
+        "Cook the beans, corn, onion, oil, and seasoning until hot and lightly thickened.",
+        "Fill the tortillas and serve warm."
+      ]
+    },
+    {
+      "key": "indian_lentil_coconut_curry",
+      "dish": "Indian-style lentil and coconut curry with rice",
+      "catalogue_tier": "extended",
+      "cuisine": "indian",
+      "cooking_energy": "normal",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["batch-friendly", "one-pot"],
+      "ingredients": [
+        {"product_key": "lentils", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "coconut_milk", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "garlic", "quantity_per_person": 10, "planning_unit": "g"},
+        {"product_key": "curry_blend", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Rinse the lentils and simmer them with water until tender.",
+        "Cook onion, garlic, tomato sauce, coconut milk, and curry blend into a gentle sauce.",
+        "Stir in the lentils and serve over rice."
+      ]
+    },
+    {
+      "key": "mediterranean_chickpea_rice_bowl",
+      "dish": "Mediterranean-style chickpea and vegetable rice bowl",
+      "catalogue_tier": "extended",
+      "cuisine": "mediterranean",
+      "cooking_energy": "low",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "one-pan"],
+      "ingredients": [
+        {"product_key": "chickpeas", "quantity_per_person": 0.5, "planning_unit": "can"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 40, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Cook the rice until tender.",
+        "Warm chickpeas, vegetables, onion, oil, and seasoning in a skillet.",
+        "Serve the chickpea mixture over rice."
+      ]
+    },
+    {
+      "key": "middle_eastern_lentil_rice_pot",
+      "dish": "Middle Eastern-style lentil and onion rice pot",
+      "catalogue_tier": "extended",
+      "cuisine": "middle-eastern",
+      "cooking_energy": "normal",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["batch-friendly", "one-pot"],
+      "ingredients": [
+        {"product_key": "lentils", "quantity_per_person": 80, "planning_unit": "g"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Simmer the lentils until nearly tender, then drain if needed.",
+        "Cook sliced onions in oil until soft and golden, then add the rice and seasoning.",
+        "Add the lentils and water, cover, and cook until the rice is tender."
+      ]
+    },
+    {
+      "key": "east_asian_coconut_vegetable_rice",
+      "dish": "East Asian-style coconut vegetable rice",
+      "catalogue_tier": "extended",
+      "cuisine": "east-asian",
+      "cooking_energy": "low",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["one-pot", "quick"],
+      "ingredients": [
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "coconut_milk", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "vegetables", "quantity_per_person": 150, "planning_unit": "g"},
+        {"product_key": "onions", "quantity_per_person": 40, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 5, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Combine rice, coconut milk, water, onion, and seasoning in a pot.",
+        "Cook covered until the rice is tender, adding vegetables near the end.",
+        "Fluff gently and serve warm."
+      ]
+    },
+    {
+      "key": "south_american_chicken_corn_rice",
+      "dish": "South American-style chicken, corn and rice skillet",
+      "catalogue_tier": "extended",
+      "cuisine": "south-american",
+      "cooking_energy": "normal",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["one-pan", "batch-friendly"],
+      "ingredients": [
+        {"product_key": "chicken", "quantity_per_person": 200, "planning_unit": "g"},
+        {"product_key": "rice", "quantity_per_person": 100, "planning_unit": "g"},
+        {"product_key": "canned_corn", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "tomato_sauce", "quantity_per_person": 0.25, "planning_unit": "can"},
+        {"product_key": "onions", "quantity_per_person": 50, "planning_unit": "g"},
+        {"product_key": "oil", "quantity_per_person": 10, "planning_unit": "ml"},
+        {"product_key": "seasoning", "quantity_per_person": 0.01, "planning_unit": "package"}
+      ],
+      "difficulty": "medium",
+      "instructions": [
+        "Brown the chicken with onion and oil in a wide pan.",
+        "Add rice, corn, tomato sauce, seasoning, and water, then cover and simmer.",
+        "Cook until the rice is tender and the chicken is fully cooked."
+      ]
+    },
+    {
+      "key": "instant_noodles",
+      "dish": "Instant noodles",
+      "catalogue_tier": "extended",
+      "cuisine": "east-asian",
+      "cooking_energy": "low",
+      "dietary_tags": ["lactose-free"],
+      "selection_tags": ["quick", "one-pot"],
+      "ingredients": [
+        {"product_key": "instant_noodles", "quantity_per_person": 1, "planning_unit": "package"}
+      ],
+      "difficulty": "easy",
+      "instructions": [
+        "Boil water and cook the noodles according to the package directions.",
+        "Add vegetables and an egg near the end, cooking until the egg is fully set.",
+        "Serve warm and use the noodles as one low-cost meal option, not the only meal in the plan."
+      ]
     }
   ]
 }

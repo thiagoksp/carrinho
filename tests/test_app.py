@@ -328,14 +328,15 @@ class TestTerminal(unittest.TestCase):
         self.assertNotIn("ALTERNATIVA", content)
         self.assertNotIn("savings", content.casefold())
 
-    def test_reports_shortfall_without_switching_to_an_economic_plan(self) -> None:
+    def test_reports_low_budget_fallback_without_offering_a_cheaper_plan(self) -> None:
         plan = generate_plan(_base_request(budget=20))
 
         assert plan is not None
         content = format_plan(plan)
-        self.assertEqual(plan.estimated_total, 62.75)
-        self.assertEqual(plan.budget_balance, -42.75)
-        self.assertIn("Budget shortfall range: CAD$33.32 to CAD$55.30", content)
+        self.assertEqual(plan.estimated_total, 15.84)
+        self.assertEqual(plan.budget_balance, 4.16)
+        self.assertIn("Instant noodles", [meal.dish for meal in plan.meals])
+        self.assertIn("Budget balance range: CAD$0.99 to CAD$6.54", content)
         self.assertNotIn("economic", content.casefold())
         self.assertNotIn("savings", content.casefold())
 

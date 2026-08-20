@@ -11,7 +11,7 @@ class TestMealCatalogue(unittest.TestCase):
     def test_loads_the_versioned_default_catalogue(self) -> None:
         catalogue = load_default_meal_catalogue()
 
-        self.assertEqual(len(catalogue.templates), 12)
+        self.assertEqual(len(catalogue.templates), 22)
         self.assertEqual(
             catalogue.templates[0].key,
             "roasted_chicken_rice_vegetables",
@@ -30,7 +30,22 @@ class TestMealCatalogue(unittest.TestCase):
         self.assertIn("batch-friendly", catalogue.templates[0].selection_tags)
         self.assertEqual(
             [template.catalogue_tier for template in catalogue.templates].count("core"),
-            8,
+            10,
+        )
+        self.assertEqual(
+            {
+                template.cuisine
+                for template in catalogue.templates
+            },
+            {
+                "east-asian",
+                "global",
+                "indian",
+                "mediterranean",
+                "mexican",
+                "middle-eastern",
+                "south-american",
+            },
         )
 
     def test_uses_product_keys_and_units_shared_with_the_price_catalog(self) -> None:

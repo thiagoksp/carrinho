@@ -101,3 +101,11 @@ Before completing work that changes project state, update Linear first. Update
 direction changes. Update `docs/roadmap.md` when milestone ordering changes. The goal is
 that a different account can resume from GitHub and Linear without relying on chat
 history.
+
+## Linear writing rules
+
+- Keep the issue description limited to the durable objective, scope, acceptance criteria,
+  and permanent product decisions.
+- Record progress updates, discoveries, implementation notes, test results, blockers, and
+  pending-merge status as separate comments in the issue Activity.
+- Do not append progress-update sections to the issue description.

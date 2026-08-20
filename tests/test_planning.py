@@ -265,10 +265,67 @@ class TestPlanning(unittest.TestCase):
         plan = generate_plan(request)
 
         assert plan is not None
-        self.assertEqual(plan.estimated_total, 62.75)
-        self.assertEqual(plan.budget_balance, -42.75)
-        names = [item.name for item in plan.shopping_items]
-        self.assertIn("Ground beef", names)
+        self.assertLessEqual(plan.estimated_total, 20)
+        self.assertGreaterEqual(plan.budget_balance, 0)
+        self.assertIn("Instant noodles", [meal.dish for meal in plan.meals])
+
+    def test_prefers_lower_cost_valid_meals_when_budget_is_tight(self) -> None:
+        comfortable_request = ParsedRequest(
+            budget=200,
+            currency="CAD",
+            people=2,
+            days=4,
+            cooking_energy="normal",
+            pantry_items=[],
+            dietary_restrictions=[],
+        )
+        tight_request = replace(comfortable_request, budget=20)
+
+        comfortable_plan = generate_plan(comfortable_request)
+        tight_plan = generate_plan(tight_request)
+
+        assert comfortable_plan is not None
+        assert tight_plan is not None
+        self.assertLess(tight_plan.estimated_total, comfortable_plan.estimated_total)
+        self.assertIn(
+            "Budget pressure applied: lower-cost valid meal templates were preferred.",
+            tight_plan.meal_selection_guidance,
+        )
+
+    def test_rejects_a_budget_below_the_noodle_floor(self) -> None:
+        request = replace(
+            ParsedRequest(
+                budget=20,
+                currency="CAD",
+                people=2,
+                days=4,
+                cooking_energy="low",
+                pantry_items=[],
+                dietary_restrictions=[],
+            ),
+            budget=15,
+        )
+        with self.assertRaisesRegex(ValueError, "No validated meal plan fits"):
+            generate_plan(request)
+
+    def test_detects_low_budget_floor_and_selects_instant_noodle_option(self) -> None:
+        request = ParsedRequest(
+            budget=20,
+            currency="CAD",
+            people=2,
+            days=4,
+            cooking_energy="low",
+            pantry_items=[],
+            dietary_restrictions=[],
+        )
+        plan = generate_plan(request)
+
+        assert plan is not None
+        dishes = [meal.dish for meal in plan.meals]
+        guidance = " ".join(plan.meal_selection_guidance)
+        self.assertIn("Instant noodles", dishes)
+        self.assertIn("Low budget category detected", guidance)
+        self.assertLessEqual(plan.estimated_total, request.budget)
 
     def test_generates_a_plan_without_budget(self) -> None:
         request = parse_request(

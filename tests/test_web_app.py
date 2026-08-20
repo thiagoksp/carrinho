@@ -126,7 +126,19 @@ class TestWebApp(unittest.TestCase):
         self.assertIn("Bad &lt;value&gt;", page)
         self.assertNotIn("<script>alert(1)</script>", page)
         self.assertIn("Your Carrinho plan", page)
-        self.assertIn("Estimated total range: CAD$53.32 to CAD$75.30", page)
+        self.assertIn("Total range:</strong> CAD$53.32 to CAD$75.30", page)
+        self.assertIn('class="budget-status good"', page)
+        self.assertIn('class="budget-status good"', page)
+        self.assertIn('<summary>Meal guidance</summary>', page)
+        self.assertIn('<summary>Budget and estimated prices</summary>', page)
+        self.assertIn('<summary>Pantry items used</summary>', page)
+        self.assertIn('<table class="estimate-table">', page)
+        self.assertIn("<th>Estimated range</th>", page)
+        shopping_section = page.split(
+            '<section class="shopping-list">',
+            1,
+        )[1].split("<h3>Estimated price ranges</h3>", 1)[0]
+        self.assertNotIn("estimated range", shopping_section.casefold())
         self.assertIn("local planning estimate range only", page)
         self.assertIn("Start with people and days.", page)
         self.assertIn("Quick start", page)
@@ -159,6 +171,18 @@ class TestWebApp(unittest.TestCase):
         self.assertIn('action="/download/instacart-json"', page)
         self.assertIn("@media print", page)
         self.assertIn("retailer-neutral Canadian price catalogue", page)
+
+    def test_renders_progressive_meal_review_sections(self) -> None:
+        page = render_page(_reference_form(), plan=create_plan(_reference_form()))
+
+        self.assertIn("Weekly overview", page)
+        self.assertIn("Expand all", page)
+        self.assertIn('data-expand-all="meal-details"', page)
+        self.assertIn('aria-expanded="false"', page)
+        self.assertIn('data-label-collapsed="Open details"', page)
+        self.assertIn('class="meal-card"', page)
+        self.assertIn("Meal guidance", page)
+        self.assertIn("Shopping list", page)
 
     def test_renders_a_safe_local_catalogue_editor(self) -> None:
         content = '{"schema":"test","value":"</textarea><script>bad()</script>"}'

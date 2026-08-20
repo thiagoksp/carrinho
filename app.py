@@ -17,6 +17,7 @@ from instacart import (
 from llm_selector import LLMSelectorError, suggest_meal_candidate_keys
 from local_catalogue import load_effective_price_catalog, load_local_catalogue
 from planning import (
+    BudgetInfeasibleError,
     Plan,
     format_planning_quantity,
     generate_plan,
@@ -549,7 +550,11 @@ def main() -> None:
     except ValueError:
         meal_candidate_keys = None
 
-    plan = generate_plan(request_data, meal_candidate_keys=meal_candidate_keys)
+    try:
+        plan = generate_plan(request_data, meal_candidate_keys=meal_candidate_keys)
+    except BudgetInfeasibleError as error:
+        print(f"\n{error}")
+        return
     if plan is None:
         print(
             "\nThis version plans for 1 to 12 people over 1 to 14 days, "

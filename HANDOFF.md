@@ -1,6 +1,6 @@
 # Carrinho handoff
 
-Updated: August 16, 2026.
+Updated: August 19, 2026.
 
 This is the complete project handoff for a new ChatGPT or Codex account. On the same
 computer, start with the shorter [`START_HERE.md`](START_HERE.md) file and read this
@@ -49,10 +49,10 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 
 - Active Linear team: Carrinho team with the `CAR` issue prefix.
 - [CAR-32 - Use Carrinho for a real weekly planning run](https://linear.app/thiagoksp/issue/CAR-32)
-  is complete. The real browser validation exposed two concrete blockers that kept the
-  plan from feeling practical enough for a real weekly run: meal names without usable
-  cooking steps, and budget wording that did not clearly label the total as a simulated
-  planning estimate rather than live retailer pricing.
+  validation exposed two concrete blockers that kept the plan from feeling practical
+  enough for a real weekly run: meal names without usable cooking steps, and budget
+  wording that did not clearly label the total as a simulated planning estimate rather
+  than live retailer pricing.
 - Follow-up issues created from that diagnosis:
   - [CAR-42 - Add actionable recipe guidance to generated meal plans](https://linear.app/thiagoksp/issue/CAR-42)
   - [CAR-43 - Clarify simulated budget output as planning-only estimates](https://linear.app/thiagoksp/issue/CAR-43)
@@ -105,6 +105,19 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - [CAR-32](https://linear.app/thiagoksp/issue/CAR-32/use-carrinho-for-a-real-weekly-planning-run)
   is the current `Next` issue. Use the product for one realistic weekly plan and make
   only the smallest changes required to unblock practical use.
+- [CAR-57 - Render the structured plan in the browser UI](https://linear.app/thiagoksp/issue/CAR-57)
+  is complete. The browser now renders a structured plan with per-meal cards (collapsible),
+  a clean ingredient-and-quantity shopping list, a separate estimated price range table,
+  budget summary, and guidance sections using the current Plan model instead of legacy
+  text formatting. Implementation was completed on August 19, 2026. The focused browser
+  smoke check passed; the full suite was not rerun after the final visual refinement.
+- The catalogue now contains 22 validated meal templates and 20 generic products,
+  including Mexican, Indian, Mediterranean, Middle Eastern, East Asian, and South
+  American cuisine labels. Cuisine is descriptive metadata and is not yet user-selectable.
+  An internal `low` budget category is detected automatically when the budget approaches
+  CAD$0.99 per person per meal, using one generic instant-noodle package as the minimum
+  floor reference. The planner may select a validated low-cost noodle meal, but does not
+  force it into every day; budgets below the floor remain reviewable and show a shortfall.
 - [CAR-23](https://linear.app/thiagoksp/issue/CAR-23/use-approved-popularity-and-review-signals-for-product-selection)
   is a future approved-integration task for using product popularity, ratings, review
   feedback, and "most bought" style signals only when that data is contractually

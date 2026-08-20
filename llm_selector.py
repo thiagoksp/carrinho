@@ -174,6 +174,7 @@ def _candidate_context(template: MealTemplate) -> dict[str, object]:
         "dish": template.dish,
         "catalogue_tier": template.catalogue_tier,
         "cooking_energy": template.cooking_energy,
+        "cuisine": template.cuisine,
         "dietary_tags": list(template.dietary_tags),
         "selection_tags": list(template.selection_tags),
         "product_keys": [

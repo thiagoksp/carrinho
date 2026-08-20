@@ -26,6 +26,9 @@ not the project handoff by itself; it is the economy-mode overlay.
 - When finishing local work on an issue, update Linear with a short summary.
 - If a change has not been published to Git, mark or comment it as pending merge or
   publication instead of pretending it is complete in the remote repository.
+- Keep stable issue context in the description; record progress, findings, tests, and
+  pending publication in separate Activity comments. Never append progress sections to
+  the description.
 
 ## Handoff files
 
