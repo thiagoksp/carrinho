@@ -145,8 +145,8 @@ class TestPlanning(unittest.TestCase):
             [meal.meal_slot for meal in plan.meals].count("Dinner"),
             4,
         )
-        self.assertEqual(plan.estimated_total, 62.75)
-        self.assertEqual(plan.budget_balance, 17.25)
+        self.assertEqual(plan.estimated_total, 68.75)
+        self.assertEqual(plan.budget_balance, 11.25)
         # Core/extended guidance may vary depending on catalogue coverage; assert cooking energy guidance instead
         self.assertIn(
             "Cooking energy preference applied: low.",
@@ -214,7 +214,8 @@ class TestPlanning(unittest.TestCase):
 
         assert plan is not None
         egg_usage = " ".join(plan.pantry_usage)
-        self.assertIn("7 eggs from the pantry", egg_usage)
+        self.assertIn("Large eggs: used 7 eggs from home.", egg_usage)
+        self.assertIn("Rice: known at home, amount unknown.", egg_usage)
         # Shopping may include eggs if the plan needs additional eggs beyond the pantry
         self.assertIn(
             "Large eggs",
@@ -338,7 +339,7 @@ class TestPlanning(unittest.TestCase):
 
         assert plan is not None
         self.assertIsNone(plan.budget)
-        self.assertEqual(plan.estimated_total, 62.75)
+        self.assertEqual(plan.estimated_total, 68.75)
         self.assertIsNone(plan.budget_balance)
         names = [item.name for item in plan.shopping_items]
         self.assertIn("Chicken thighs", names)

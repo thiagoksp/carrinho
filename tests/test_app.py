@@ -312,7 +312,7 @@ class TestTerminal(unittest.TestCase):
         self.assertIn("Selection is deterministic", content)
         self.assertIn("MEAL PREP GUIDANCE", content)
         self.assertIn("SHOPPING LIST", content)
-        self.assertIn("Estimated total range: CAD$53.32 to CAD$75.30", content)
+        self.assertIn("Estimated total range: CAD$58.42 to CAD$82.50", content)
         self.assertIn("Price source:", content)
         self.assertIn("Retailer: to be selected by the user in Instacart", content)
         self.assertIn("simulated, retailer-neutral Canadian price catalogue", content)

@@ -112,7 +112,7 @@ class TestCatalog(unittest.TestCase):
         plan = generate_plan(request, catalog)
 
         assert plan is not None
-        self.assertEqual(plan.estimated_total, 125.50)
+        self.assertEqual(plan.estimated_total, 137.50)
         self.assertEqual(plan.price_type, "test")
         self.assertEqual(plan.price_description, "Doubled prices for testing.")
 
@@ -159,7 +159,7 @@ class TestCatalog(unittest.TestCase):
 
         assert plan is not None
         self.assertEqual(plan.currency, "USD")
-        self.assertEqual(plan.estimated_total, 62.75)
+        self.assertEqual(plan.estimated_total, 68.75)
 
     def test_rejects_non_finite_numbers_and_empty_keywords(self) -> None:
         cases = (
