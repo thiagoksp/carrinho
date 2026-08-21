@@ -42,8 +42,8 @@ class TestWebApp(unittest.TestCase):
         self.assertEqual(request.currency, "CAD")
         self.assertEqual(request.pantry_items, ["rice", "7 eggs"])
         self.assertEqual(request.dietary_restrictions, ["lactose intolerance"])
-        self.assertEqual(plan.estimated_total, 62.75)
-        self.assertEqual(plan.budget_balance, 17.25)
+        self.assertEqual(plan.estimated_total, 68.75)
+        self.assertEqual(plan.budget_balance, 11.25)
 
     def test_builds_a_plan_without_budget(self) -> None:
         values = _reference_form()
@@ -54,7 +54,7 @@ class TestWebApp(unittest.TestCase):
 
         self.assertIsNone(request.budget)
         self.assertEqual(request.currency, "CAD")
-        self.assertEqual(plan.estimated_total, 62.75)
+        self.assertEqual(plan.estimated_total, 68.75)
         self.assertIsNone(plan.budget_balance)
         self.assertIn("No budget provided.", render_page(values, plan=plan))
 
@@ -136,7 +136,7 @@ class TestWebApp(unittest.TestCase):
         self.assertIn("Plan summary", page)
         self.assertIn("Edit settings", page)
         self.assertIn("Your weekly plan", page)
-        self.assertIn("Total range:</strong> CAD$53.32 to CAD$75.30", page)
+        self.assertIn("Total range:</strong> CAD$58.42 to CAD$82.50", page)
         self.assertIn('class="budget-status good"', page)
         self.assertIn('class="budget-status good"', page)
         self.assertIn('<summary>Meal guidance</summary>', page)
@@ -157,6 +157,7 @@ class TestWebApp(unittest.TestCase):
         self.assertIn("Dietary needs", page)
         self.assertIn("Used only to compare the simulated plan estimate with your target.", page)
         self.assertIn("No request is sent to Instacart", page)
+        self.assertIn("Budget balance range:</strong> CAD$-2.50 to CAD$21.58", page)
         self.assertIn("Food rules", page)
         self.assertIn("Foods to avoid", page)
         self.assertIn("Food rules applied:", page)
@@ -226,11 +227,12 @@ class TestWebApp(unittest.TestCase):
         self.assertIn('class="meal-card"', page)
         self.assertIn("Meal guidance", page)
         self.assertIn("Shopping list", page)
-        self.assertIn("Pantry", page)
-        self.assertIn("Check + quantity", page)
-        self.assertIn('id="pantry_transcript"', page)
-        self.assertIn('type="checkbox"', page)
-        self.assertIn("Audio transcript or spoken note", page)
+        self.assertIn("What do you already have?", page)
+        self.assertIn("Add items", page)
+        self.assertIn("Choose common items", page)
+        self.assertIn('id="pantry_composer"', page)
+        self.assertIn('id="pantry-review"', page)
+        self.assertIn('id="pantry-status"', page)
         self.assertIn("overview-scroll", page)
 
     def test_renders_a_safe_local_catalogue_editor(self) -> None:
@@ -273,7 +275,7 @@ class TestWebApp(unittest.TestCase):
             thread.join(timeout=2)
 
         self.assertIn("MEAL PLAN", plan_response.body)
-        self.assertIn("Estimated total range: CAD$53.32 to CAD$75.30", plan_response.body)
+        self.assertIn("Estimated total range: CAD$58.42 to CAD$82.50", plan_response.body)
         self.assertEqual(
             plan_response.content_disposition,
             'attachment; filename="meal-plan.txt"',

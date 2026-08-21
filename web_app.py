@@ -6,11 +6,19 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import re
 import secrets
+import unicodedata
 from urllib.parse import parse_qs, urlsplit
 
 from app import format_plan
 from catalog import resolve_product_keys
 from food_rules import normalize_food_rule_values
+from pantry import (
+    PantryCandidate,
+    parse_pantry_candidates,
+    pantry_candidates_from_json,
+    pantry_candidates_to_json,
+    pantry_candidate_to_display_text,
+)
 from instacart import create_instacart_paste_list, serialize_instacart_payload
 from local_catalogue import (
     empty_local_catalogue_json,
@@ -123,6 +131,7 @@ PAGE_STYLES = """
    @media (max-width: 640px) {
      .food-rule-grid { grid-template-columns: 1fr; }
      .food-rule-input-row { flex-direction: column; align-items: stretch; }
+     .pantry-review-row { grid-template-columns: 1fr; }
    }
    .plan-overview { margin-bottom: 20px; }
    .overview-scroll { overflow-x: auto; padding-bottom: 10px; }
@@ -151,25 +160,21 @@ PAGE_STYLES = """
    .food-rule-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
    .food-rule-chip-list .chip { display: inline-flex; align-items: center; }
    .food-rules-summary { margin: 0 0 18px; color: #5e6d67; }
-   .pantry-editor { display: grid; gap: 14px; }
-   .pantry-list { display: grid; gap: 10px; }
-   .pantry-row { display: grid; grid-template-columns: auto minmax(0, 1.2fr) auto auto; gap: 8px;
-     align-items: center; padding: 8px 10px; background: #fff; border: 1px solid #d8d2c4;
-     border-radius: 10px; min-height: 62px; }
-   .pantry-row-check { width: 18px; height: 18px; accent-color: #146b4d; margin: 0; }
-   .pantry-row-main { display: grid; gap: 2px; min-width: 0; }
-   .pantry-row-name { font-weight: 800; }
-   .pantry-row-status { color: #5e6d67; font-size: 0.76rem; }
-   .pantry-row-amounts { display: none; gap: 6px; align-items: center; justify-content: flex-end; min-width: 0; }
-   .pantry-row-amounts.visible { display: grid; grid-template-columns: minmax(52px, 72px) minmax(62px, 82px); width: fit-content; }
-   .pantry-row-amounts input, .pantry-row-amounts select {
-     width: 100%; min-height: 32px; padding: 6px 8px; font-size: 0.85rem; border-radius: 8px;
+   .pantry-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+   .pantry-common-panel { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+   .pantry-review { display: grid; gap: 10px; margin-top: 4px; }
+   .pantry-review-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 12px;
+     align-items: start; padding: 12px; background: #fff; border: 1px solid #d8d2c4;
+     border-radius: 12px; }
+   .pantry-review-main, .pantry-review-controls { display: grid; gap: 8px; }
+   .pantry-review-main label, .pantry-review-controls label { min-height: 0; gap: 4px; }
+   .pantry-review-main input, .pantry-review-controls input {
+     min-height: 42px; border-radius: 10px; padding: 8px 10px;
    }
-   .pantry-row button { border: 1px solid #bdd0c2; background: #edf6f1; border-radius: 999px;
-     color: #17352c; font: inherit; font-weight: 700; padding: 6px 10px; cursor: pointer; }
-   .pantry-row .remove-item { border-color: #cf8f7d; background: #fff0ed; color: #7a2a1c; }
-   .pantry-row .remove-item:hover { background: #fce5df; }
-   .pantry-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+   .pantry-review-detail { color: #5e6d67; font-size: 0.9rem; }
+   .pantry-review-status { font-size: 0.82rem; font-weight: 800; color: #17352c; }
+   .pantry-review-remove { width: fit-content; }
+   .pantry-empty { margin: 0; }
    .chip { border: 1px solid #7ea292; background: #dfeee5; color: #17352c;
      border-radius: 999px; padding: 8px 12px; font: inherit; font-weight: 800;
      cursor: pointer; box-shadow: inset 0 0 0 1px rgba(20, 107, 77, 0.08); }
@@ -370,6 +375,27 @@ def build_request(form: Mapping[str, str]) -> ParsedRequest:
     if cooking_energy not in {"low", "normal", "high"}:
         raise ValueError("Choose low, normal, or high cooking energy.")
 
+    pantry_text = form.get("pantry_composer", form.get("pantry_items", "")).strip()
+    catalog_products = load_effective_price_catalog().products
+    pantry_candidates_json = form.get("pantry_candidates_json", "").strip()
+    if pantry_candidates_json:
+        pantry_candidates = list(
+            pantry_candidates_from_json(
+                pantry_candidates_json,
+                catalog_products,
+                source="text",
+            )
+        )
+    else:
+        pantry_candidates = list(
+            parse_pantry_candidates(
+                pantry_text,
+                catalog_products,
+                source="text",
+            )
+        )
+    pantry_items = [candidate.original_text for candidate in pantry_candidates]
+
     try:
         restrictions = list(
             normalize_food_rule_values(_selected_dietary_restrictions(form))
@@ -390,7 +416,8 @@ def build_request(form: Mapping[str, str]) -> ParsedRequest:
         people=people,
         days=days,
         cooking_energy=cooking_energy,
-        pantry_items=_split_items(form.get("pantry_items", "")),
+        pantry_items=pantry_items,
+        pantry_candidates=pantry_candidates,
         dietary_restrictions=restrictions,
         avoided_product_keys=avoided_keys,
         preferred_product_keys=preferred_keys,
@@ -429,7 +456,9 @@ def _hidden_form_fields(values: Mapping[str, str]) -> str:
             "people",
             "days",
             "cooking_energy",
+            "pantry_composer",
             "pantry_items",
+            "pantry_candidates_json",
             "dietary_restrictions",
             "dietary_lactose_intolerance",
             "dietary_vegetarian",
@@ -454,6 +483,98 @@ def _checked(values: Mapping[str, str], field_name: str) -> str:
     return " checked" if values.get(field_name) else ""
 
 
+def _normalize_alias(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value.casefold())
+    return "".join(
+        character
+        for character in normalized
+        if not unicodedata.combining(character)
+    ).strip()
+
+
+def _json_for_script(value: object) -> str:
+    return (
+        json.dumps(value, ensure_ascii=False)
+        .replace("&", "\\u0026")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+    )
+
+
+def _pantry_candidates_for_form(form: Mapping[str, str]) -> list[PantryCandidate]:
+    catalog_products = load_effective_price_catalog().products
+    pantry_candidates_json = form.get("pantry_candidates_json", "").strip()
+    if pantry_candidates_json:
+        try:
+            return list(
+                pantry_candidates_from_json(
+                    pantry_candidates_json,
+                    catalog_products,
+                    source="text",
+                )
+            )
+        except (ValueError, json.JSONDecodeError):
+            pass
+    pantry_text = form.get("pantry_composer", form.get("pantry_items", "")).strip()
+    return list(parse_pantry_candidates(pantry_text, catalog_products, source="text"))
+
+
+def _pantry_review_status(candidate: PantryCandidate) -> str:
+    if candidate.quantity_state == "known" and candidate.resolution_state == "matched":
+        return "Edit"
+    if candidate.quantity_state == "unknown" and candidate.resolution_state == "matched":
+        return "Add amount"
+    if candidate.needs_review:
+        return "Needs review"
+    return "Ready"
+
+
+def _render_pantry_review_list(candidates: list[PantryCandidate]) -> str:
+    if not candidates:
+        return '<p class="hint pantry-empty">No pantry items yet. Optional.</p>'
+
+    rows: list[str] = []
+    for index, candidate in enumerate(candidates):
+        status = _pantry_review_status(candidate)
+        if candidate.quantity_state == "known" and candidate.resolution_state == "matched":
+            detail = "Used from home"
+        elif candidate.quantity_state == "unknown" and candidate.resolution_state == "matched":
+            detail = "No amount was provided, so this item will remain on your shopping list."
+        elif candidate.quantity_state == "invalid":
+            detail = "We could not use this amount. The full item stays on your shopping list."
+        else:
+            detail = "Could not be matched or measured."
+
+        quantity_value = "" if candidate.quantity_value is None else f"{candidate.quantity_value:g}"
+        quantity_unit = candidate.quantity_unit or ""
+        rows.append(
+            f'<div class="pantry-review-row" data-candidate-index="{index}">'
+            f'<div class="pantry-review-main">'
+            f'<div class="pantry-review-name">{escape(candidate.original_text)}</div>'
+            f'<div class="pantry-review-detail">{escape(detail)}</div>'
+            f'</div>'
+            f'<div class="pantry-review-controls">'
+            f'<label class="pantry-review-amount">Amount'
+            f'<input type="text" value="{escape(quantity_value, quote=True)}" '
+            f'data-candidate-field="quantity_value" placeholder="Add amount"></label>'
+            f'<label class="pantry-review-unit">Unit'
+            f'<input type="text" value="{escape(quantity_unit, quote=True)}" '
+            f'data-candidate-field="quantity_unit" placeholder="g, ml, package"></label>'
+            f'<span class="pantry-review-status">{escape(status)}</span>'
+            f'<button type="button" class="chip pantry-review-remove" data-candidate-action="remove">Remove</button>'
+            f'</div>'
+            f'<input type="hidden" data-candidate-field="original_text" value="{escape(candidate.original_text, quote=True)}">'
+            f'<input type="hidden" data-candidate-field="name" value="{escape(candidate.name, quote=True)}">'
+            f'<input type="hidden" data-candidate-field="food_key" value="{escape(candidate.food_key or "", quote=True)}">'
+            f'<input type="hidden" data-candidate-field="quantity_state" value="{escape(candidate.quantity_state, quote=True)}">'
+            f'<input type="hidden" data-candidate-field="resolution_state" value="{escape(candidate.resolution_state, quote=True)}">'
+            f'<input type="hidden" data-candidate-field="source" value="{escape(candidate.source, quote=True)}">'
+            f'<input type="hidden" data-candidate-field="needs_review" value="{str(candidate.needs_review).lower()}">'
+            f'</div>'
+        )
+    return "\n".join(rows)
+
+
 def _format_money(currency: str, value: float) -> str:
     prefixes = {"CAD": "CAD$", "USD": "US$", "BRL": "R$"}
     prefix = prefixes.get(currency, f"{currency} ")
@@ -473,6 +594,29 @@ def render_page(
 
     cooking_energy = form.get("cooking_energy", "normal")
     food_rules_summary = _food_rule_summary(form)
+    pantry_composer = form.get("pantry_composer", form.get("pantry_items", ""))
+    pantry_candidates = _pantry_candidates_for_form(form)
+    catalog_products = load_effective_price_catalog().products
+    pantry_alias_map: dict[str, str] = {}
+    pantry_display_names: dict[str, str] = {
+        product.key: product.name for product in catalog_products
+    }
+    pantry_planning_units: dict[str, str] = {
+        product.key: product.planning_unit for product in catalog_products
+    }
+    pantry_alias_map_json = _json_for_script(pantry_alias_map)
+    pantry_display_names_json = _json_for_script(pantry_display_names)
+    pantry_planning_units_json = _json_for_script(pantry_planning_units)
+    pantry_candidates_json = _json_for_script([candidate.__dict__ for candidate in pantry_candidates])
+    for product in catalog_products:
+        aliases = {
+            product.key,
+            product.key.replace("_", " "),
+            product.name,
+            *product.keywords,
+        }
+        for alias in aliases:
+            pantry_alias_map[_normalize_alias(alias)] = product.key
     error_html = (
         f'<div class="message error" role="alert">{escape(error)}</div>'
         if error
@@ -805,27 +949,34 @@ def render_page(
         <div class="setting-row wide">
           <div class="setting-row-header">
             <h3>Pantry</h3>
-            <span class="setting-row-note">Check + quantity</span>
+            <span class="setting-row-note">Optional</span>
           </div>
-          <div class="pantry-editor">
-            <div class="pantry-suggestions" aria-label="Pantry quick adds">
+          <p class="hint">What do you already have? Optional. This helps us avoid adding things you already have.</p>
+          <label class="wide">What do you already have?
+            <textarea id="pantry_composer" name="pantry_composer" rows="3"
+              placeholder="Rice, 6 eggs, half a bag of pasta">{escape(pantry_composer)}</textarea>
+          </label>
+          <div class="pantry-actions">
+            <button type="button" class="button" data-pantry-add>Add items</button>
+            <button type="button" class="button secondary pantry-common-toggle" data-toggle-common-items>
+              Choose common items
+            </button>
+          </div>
+          <div class="pantry-actions">
+            <div class="pantry-common-panel" hidden>
               <button type="button" class="chip" data-pantry-chip="rice">Rice</button>
               <button type="button" class="chip" data-pantry-chip="eggs">Eggs</button>
               <button type="button" class="chip" data-pantry-chip="pasta">Pasta</button>
               <button type="button" class="chip" data-pantry-chip="oil">Oil</button>
               <button type="button" class="chip" data-pantry-chip="beans">Beans</button>
             </div>
-            <div class="pantry-list" id="pantry-list" aria-live="polite"></div>
-            <label class="wide">Pantry text list
-              <textarea id="pantry_items_fallback" rows="3" placeholder="Rice, 7 eggs">{value('pantry_items')}</textarea>
-              <span class="hint">Quick text backup. The checked list is the main editor.</span>
-            </label>
-            <label class="wide">Audio transcript or spoken note
-              <textarea id="pantry_transcript" rows="2" placeholder="Example: 'I have rice, two bags of beans, and six eggs'"></textarea>
-              <span class="hint">Optional third method: paste a spoken note or transcript to add pantry items in text.</span>
-            </label>
           </div>
-          <textarea id="pantry_items" name="pantry_items" hidden>{value('pantry_items')}</textarea>
+          <div id="pantry-review" class="pantry-review">
+            {_render_pantry_review_list(pantry_candidates)}
+          </div>
+          <div id="pantry-status" class="copy-status" role="status" aria-live="polite"></div>
+          <textarea id="pantry_candidates_json" name="pantry_candidates_json" hidden>{escape(pantry_candidates_to_json(pantry_candidates))}</textarea>
+          <textarea id="pantry_items" name="pantry_items" hidden>{escape(", ".join(candidate.original_text for candidate in pantry_candidates) if pantry_candidates else pantry_composer)}</textarea>
         </div>
         <div class="setting-row wide">
           <div class="setting-row-header">
@@ -893,207 +1044,284 @@ def render_page(
     for (const button of document.querySelectorAll("[data-print-plan]")) {{
       button.addEventListener("click", () => window.print());
     }}
+    const pantryComposer = document.getElementById("pantry_composer");
+    const pantryReview = document.getElementById("pantry-review");
+    const pantryStatus = document.getElementById("pantry-status");
+    const pantryCandidatesField = document.getElementById("pantry_candidates_json");
+    const pantryItemsField = document.getElementById("pantry_items");
+    const pantryAddButton = document.querySelector("[data-pantry-add]");
+    const pantryCommonToggle = document.querySelector("[data-toggle-common-items]");
+    const pantryCommonPanel = document.querySelector(".pantry-common-panel");
     const pantryForm = document.querySelector("form[action='/plan']");
-    const pantryTextArea = document.getElementById("pantry_items");
-    const pantryFallback = document.getElementById("pantry_items_fallback");
-    const pantryTranscript = document.getElementById("pantry_transcript");
-    const pantryList = document.getElementById("pantry-list");
-    const pantryUnits = ['kg', 'g', 'ml', 'L', 'cups', 'cans', 'boxes', 'bags', 'dozens', 'eggs'];
+    const pantryAliases = {pantry_alias_map_json};
+    const pantryDisplayNames = {pantry_display_names_json};
+    const pantryPlanningUnits = {pantry_planning_units_json};
+    const pantrySupportedUnits = new Set(['g', 'kg', 'lb', 'ml', 'l', 'can', 'package', 'dozen']);
+    const pantryNumberWords = {{half: 0.5, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10}};
+    let pantryCandidates = {pantry_candidates_json};
+
+    function normalizeText(value) {{
+      return (value || '')
+        .normalize('NFKD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+    }}
 
     function splitPantryEntries(rawValue) {{
       return Array.from(new Set(
         (rawValue || '')
-          .split(/[\\r\\n,]+|\\s+and\\s+/i)
+          .split(/[\\r\\n,]+|\\s+and\\s+|\\s+or\\s+/i)
           .map((entry) => entry.trim())
           .filter(Boolean)
       ));
     }}
 
+    function parseAmountToken(token) {{
+      if (!token) return null;
+      if (/^\\d+(?:[.,]\\d+)?$/.test(token)) return Number(token.replace(',', '.'));
+      if (/^\\d+\\s*\\/\\s*\\d+$/.test(token)) {{
+        const parts = token.split('/');
+        const denominator = Number(parts[1]);
+        return denominator ? Number(parts[0]) / denominator : null;
+      }}
+      return pantryNumberWords[token] ?? null;
+    }}
+
     function parsePantryEntry(rawEntry) {{
-      const entry = (rawEntry || '').trim();
-      if (!entry) return {{ name: '', quantity: '', unit: '' }};
-      const quantityMatch = entry.match(/^(.+?)\\s+(\\d+(?:\\.\\d+)?)\\s+([a-zA-Z/]+)$/);
-      if (quantityMatch) {{
-        return {{
-          name: quantityMatch[1].trim(),
-          quantity: quantityMatch[2],
-          unit: quantityMatch[3].trim(),
-        }};
+      const originalText = (rawEntry || '').trim();
+      const normalized = normalizeText(originalText);
+      if (!normalized) return null;
+      const tokens = normalized.split(/\\s+/);
+      let amount = parseAmountToken(tokens[0]);
+      let index = 1;
+      if (amount === null) {{
+        amount = null;
+        index = ['enough', 'some', 'any', 'extra', 'leftover', 'leftovers'].includes(tokens[0]) && tokens.length > 1 ? 1 : 0;
       }}
-      const simpleQuantityMatch = entry.match(/^(\\d+(?:\\.\\d+)?)\\s+(.+)$/);
-      if (simpleQuantityMatch) {{
-        return {{
-          name: simpleQuantityMatch[2].trim(),
-          quantity: simpleQuantityMatch[1],
-          unit: '',
-        }};
+      if (tokens[index] === 'a' || tokens[index] === 'an') index += 1;
+      let quantityUnit = '';
+      if (tokens[index] && pantrySupportedUnits.has(tokens[index])) {{
+        quantityUnit = tokens[index];
+        index += 1;
       }}
-      return {{ name: entry, quantity: '', unit: '' }};
+      if (tokens[index] === 'of') index += 1;
+      const name = tokens.slice(index).join(' ').trim() || originalText;
+      const resolvedKey = pantryAliases[normalizeText(name)] || '';
+      const displayName = resolvedKey ? (pantryDisplayNames[resolvedKey] || name) : name;
+      const planningUnit = resolvedKey ? pantryPlanningUnits[resolvedKey] : '';
+      let quantityState = amount === null ? 'unknown' : 'invalid';
+      if (resolvedKey && amount !== null) {{
+        if (planningUnit === 'each' && (!quantityUnit || quantityUnit === 'dozen' || quantityUnit === 'each')) {{
+          quantityState = 'known';
+        }} else if (planningUnit === 'g' && ['g', 'kg', 'lb', 'package'].includes(quantityUnit)) {{
+          quantityState = 'known';
+        }} else if (planningUnit === 'ml' && ['ml', 'l'].includes(quantityUnit)) {{
+          quantityState = 'known';
+        }} else if (planningUnit === 'can' && ['can', 'package'].includes(quantityUnit)) {{
+          quantityState = 'known';
+        }} else if (planningUnit === 'package' && quantityUnit === 'package') {{
+          quantityState = 'known';
+        }}
+      }}
+
+      return {{
+        name: displayName,
+        food_key: resolvedKey,
+        original_text: originalText,
+        quantity_value: amount,
+        quantity_unit: quantityUnit,
+        quantity_state: quantityState,
+        resolution_state: resolvedKey ? 'matched' : 'unmatched',
+        source: 'text',
+        needs_review: quantityState !== 'known' || !resolvedKey,
+      }};
     }}
 
-    function rowEntryString(row) {{
-      const checked = row.querySelector('input[type="checkbox"]');
-      if (checked && !checked.checked) return '';
-      const name = row.dataset.name || '';
-      const quantityInput = row.querySelector('input[type="number"]');
-      const unitSelect = row.querySelector('select');
-      const quantity = quantityInput ? quantityInput.value.trim() : '';
-      const unit = unitSelect ? unitSelect.value.trim() : '';
-      if (quantity && unit) return `${{name}} ${{quantity}} ${{unit}}`;
-      if (quantity) return `${{name}} ${{quantity}}`;
-      return name;
+    function candidateStatus(candidate) {{
+      if (candidate.resolution_state !== 'matched') return 'Needs review';
+      if (candidate.quantity_state === 'known') return 'Edit';
+      if (candidate.quantity_state === 'unknown') return 'Add amount';
+      return 'Needs review';
     }}
 
-    function applyPantryEntry(row, parsed) {{
-      row.dataset.name = parsed.name;
-      row.className = 'pantry-row';
-
-      const checkInput = document.createElement('input');
-      checkInput.type = 'checkbox';
-      checkInput.checked = true;
-      checkInput.className = 'pantry-row-check';
-      checkInput.setAttribute('aria-label', `Include ${{parsed.name}} in the pantry`);
-
-      const main = document.createElement('div');
-      main.className = 'pantry-row-main';
-      const nameEl = document.createElement('div');
-      nameEl.className = 'pantry-row-name';
-      nameEl.textContent = parsed.name;
-      const statusEl = document.createElement('div');
-      statusEl.className = 'pantry-row-status';
-      if (parsed.quantity) {{
-        statusEl.textContent = `${{parsed.quantity}} ${{parsed.unit || 'unit'}}`;
-      }} else {{
-        statusEl.textContent = 'Enough for this plan';
-      }}
-      main.appendChild(nameEl);
-      main.appendChild(statusEl);
-
-      const amountGroup = document.createElement('div');
-      amountGroup.className = 'pantry-row-amounts';
-      if (parsed.quantity) amountGroup.classList.add('visible');
-
-      const qtyInput = document.createElement('input');
-      qtyInput.type = 'number';
-      qtyInput.min = '0';
-      qtyInput.step = '1';
-      qtyInput.value = parsed.quantity || '';
-      qtyInput.placeholder = 'qty';
-
-      const unitSelect = document.createElement('select');
-      for (const unit of pantryUnits) {{
-        const option = document.createElement('option');
-        option.value = unit;
-        option.textContent = unit;
-        if (unit === (parsed.unit || '')) option.selected = true;
-        unitSelect.appendChild(option);
-      }}
-      amountGroup.appendChild(qtyInput);
-      amountGroup.appendChild(unitSelect);
-
-      const removeButton = document.createElement('button');
-      removeButton.type = 'button';
-      removeButton.className = 'remove-item';
-      removeButton.textContent = 'Remove';
-
-      checkInput.addEventListener('change', () => {{
-        syncPantryListValue();
-      }});
-      qtyInput.addEventListener('input', syncPantryListValue);
-      unitSelect.addEventListener('change', syncPantryListValue);
-      removeButton.addEventListener('click', () => {{
-        row.remove();
-        syncPantryListValue();
-      }});
-
-      row.appendChild(checkInput);
-      row.appendChild(main);
-      row.appendChild(amountGroup);
-      row.appendChild(removeButton);
-      row.dataset.name = parsed.name;
+    function candidateDetail(candidate) {{
+      if (candidate.resolution_state !== 'matched') return 'Could not be matched or measured.';
+      if (candidate.quantity_state === 'known') return 'Used from home.';
+      if (candidate.quantity_state === 'unknown') return 'No amount was provided, so this item will remain on your shopping list.';
+      return 'We could not use this amount. The full item stays on your shopping list.';
     }}
 
-    function syncPantryList() {{
-      if (!pantryList) return;
-      pantryList.innerHTML = '';
-      const entries = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
-      for (const entry of entries) {{
-        const parsed = parsePantryEntry(entry);
-        if (!parsed.name) continue;
+    function renderPantryReview() {{
+      if (!pantryReview) return;
+      pantryReview.innerHTML = '';
+      if (!pantryCandidates.length) {{
+        pantryReview.innerHTML = '<p class="hint pantry-empty">No pantry items yet. Optional.</p>';
+        if (pantryStatus) pantryStatus.textContent = 'No pantry items yet.';
+        return;
+      }}
+      const fragment = document.createDocumentFragment();
+      pantryCandidates.forEach((candidate, index) => {{
         const row = document.createElement('div');
-        applyPantryEntry(row, parsed);
-        pantryList.appendChild(row);
+        row.className = 'pantry-review-row';
+        row.dataset.index = String(index);
+        const main = document.createElement('div');
+        main.className = 'pantry-review-main';
+        const itemLabel = document.createElement('label');
+        itemLabel.textContent = 'Item';
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.setAttribute('data-field', 'name');
+        nameInput.value = candidate.name;
+        itemLabel.appendChild(nameInput);
+        const detail = document.createElement('div');
+        detail.className = 'pantry-review-detail';
+        detail.textContent = candidateDetail(candidate);
+        main.appendChild(itemLabel);
+        main.appendChild(detail);
+
+        const controls = document.createElement('div');
+        controls.className = 'pantry-review-controls';
+        const amountLabel = document.createElement('label');
+        amountLabel.textContent = 'Amount';
+        const amountInput = document.createElement('input');
+        amountInput.type = 'text';
+        amountInput.setAttribute('data-field', 'quantity_value');
+        amountInput.value = candidate.quantity_value === null ? '' : String(candidate.quantity_value);
+        amountInput.placeholder = 'Add amount';
+        amountLabel.appendChild(amountInput);
+
+        const unitLabel = document.createElement('label');
+        unitLabel.textContent = 'Unit';
+        const unitInput = document.createElement('input');
+        unitInput.type = 'text';
+        unitInput.setAttribute('data-field', 'quantity_unit');
+        unitInput.value = candidate.quantity_unit || '';
+        unitInput.placeholder = 'g, ml, package';
+        unitLabel.appendChild(unitInput);
+
+        const status = document.createElement('span');
+        status.className = 'pantry-review-status';
+        status.textContent = candidateStatus(candidate);
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'chip pantry-review-remove';
+        removeButton.setAttribute('data-action', 'remove');
+        removeButton.textContent = 'Remove';
+
+        controls.appendChild(amountLabel);
+        controls.appendChild(unitLabel);
+        controls.appendChild(status);
+        controls.appendChild(removeButton);
+        row.appendChild(main);
+        row.appendChild(controls);
+
+        row.addEventListener('input', () => syncPantryCandidateFromRow(row));
+        removeButton.addEventListener('click', () => {{
+          pantryCandidates.splice(index, 1);
+          updatePantryState();
+        }});
+        fragment.appendChild(row);
+      }});
+      pantryReview.appendChild(fragment);
+      if (pantryStatus) {{
+        const readyCount = pantryCandidates.filter((candidate) => candidate.quantity_state === 'known' && candidate.resolution_state === 'matched').length;
+        pantryStatus.textContent = `${{pantryCandidates.length}} pantry item(s), ${{readyCount}} ready to deduct.`;
       }}
     }}
 
-    function syncPantryListValue() {{
-      if (!pantryList || !pantryTextArea) return;
-      const rows = Array.from(pantryList.querySelectorAll('.pantry-row'));
-      const deduped = [];
-      const seen = new Set();
-      for (const row of rows) {{
-        const stringValue = rowEntryString(row);
-        const key = stringValue.trim().toLowerCase();
-        if (!key || seen.has(key)) continue;
-        seen.add(key);
-        deduped.push(stringValue.trim());
+    function syncPantryCandidateFromRow(row) {{
+      const index = Number(row.dataset.index);
+      const candidate = pantryCandidates[index];
+      if (!candidate) return;
+      candidate.name = row.querySelector('[data-field="name"]').value.trim() || candidate.original_text;
+      candidate.quantity_unit = row.querySelector('[data-field="quantity_unit"]').value.trim();
+      const quantityValue = row.querySelector('[data-field="quantity_value"]').value.trim();
+      candidate.quantity_value = quantityValue ? Number(quantityValue) : null;
+      const resolvedKey = pantryAliases[normalizeText(candidate.name)] || '';
+      candidate.food_key = resolvedKey;
+      candidate.resolution_state = resolvedKey ? 'matched' : 'unmatched';
+      candidate.name = resolvedKey ? (pantryDisplayNames[resolvedKey] || candidate.name) : candidate.name;
+      const planningUnit = resolvedKey ? pantryPlanningUnits[resolvedKey] : '';
+      if (candidate.quantity_value === null) {{
+        candidate.quantity_state = 'unknown';
+      }} else if (resolvedKey && (
+        (planningUnit === 'each' && (!candidate.quantity_unit || candidate.quantity_unit === 'dozen' || candidate.quantity_unit === 'each')) ||
+        (planningUnit === 'g' && ['g', 'kg', 'lb', 'package'].includes(candidate.quantity_unit)) ||
+        (planningUnit === 'ml' && ['ml', 'l'].includes(candidate.quantity_unit)) ||
+        (planningUnit === 'can' && ['can', 'package'].includes(candidate.quantity_unit)) ||
+        (planningUnit === 'package' && candidate.quantity_unit === 'package')
+      )) {{
+        candidate.quantity_state = 'known';
+      }} else {{
+        candidate.quantity_state = 'invalid';
       }}
-      const value = deduped.join('\\n');
-      pantryTextArea.value = value;
-      if (pantryFallback) pantryFallback.value = value;
+      candidate.needs_review = candidate.quantity_state !== 'known' || !resolvedKey;
+      candidate.source = 'text';
+      updatePantryState();
     }}
 
-    function mergeTranscriptToPantry() {{
-      if (!pantryTranscript) return;
-      const transcript = pantryTranscript.value.trim();
-      if (!transcript) return;
-      const entries = splitPantryEntries(transcript);
-      const current = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
-      const merged = Array.from(new Set([...current, ...entries])).join('\\n');
-      if (pantryFallback) pantryFallback.value = merged;
-      if (pantryTextArea) pantryTextArea.value = merged;
-      syncPantryList();
+    function updatePantryState() {{
+      if (pantryCandidatesField) {{
+        pantryCandidatesField.value = JSON.stringify(pantryCandidates);
+      }}
+      if (pantryItemsField) {{
+        pantryItemsField.value = pantryCandidates.map((candidate) => candidate.original_text).join(', ');
+      }}
+      renderPantryReview();
     }}
 
-    if (pantryForm && pantryTextArea) {{
-      pantryForm.addEventListener('submit', () => {{
-        syncPantryListValue();
+    function addComposerEntries() {{
+      if (!pantryComposer) return;
+      const rawEntries = splitPantryEntries(pantryComposer.value);
+      const seen = new Set(pantryCandidates.map((candidate) => normalizeText(candidate.original_text)));
+      for (const entry of rawEntries) {{
+        const parsed = parsePantryEntry(entry);
+        if (!parsed) continue;
+        if (seen.has(normalizeText(parsed.original_text))) continue;
+        pantryCandidates.push(parsed);
+        seen.add(normalizeText(parsed.original_text));
+      }}
+      pantryComposer.value = '';
+      updatePantryState();
+    }}
+
+    if (pantryAddButton) {{
+      pantryAddButton.addEventListener('click', addComposerEntries);
+    }}
+
+    if (pantryComposer) {{
+      pantryComposer.addEventListener('keydown', (event) => {{
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {{
+          event.preventDefault();
+          addComposerEntries();
+        }}
       }});
     }}
 
-    if (pantryFallback) {{
-      pantryFallback.addEventListener('input', () => {{
-        syncPantryListValue();
-        syncPantryList();
+    if (pantryCommonToggle && pantryCommonPanel) {{
+      pantryCommonToggle.addEventListener('click', () => {{
+        pantryCommonPanel.hidden = !pantryCommonPanel.hidden;
       }});
-    }}
-
-    if (pantryTranscript) {{
-      pantryTranscript.addEventListener('change', mergeTranscriptToPantry);
-      pantryTranscript.addEventListener('blur', mergeTranscriptToPantry);
     }}
 
     for (const chip of document.querySelectorAll('[data-pantry-chip]')) {{
       chip.addEventListener('click', () => {{
+        if (!pantryComposer) return;
         const item = chip.dataset.pantryChip;
-        const existing = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
-        const selected = existing.includes(item);
-        const next = selected
-          ? existing.filter((entry) => entry.trim().toLowerCase() !== item.trim().toLowerCase())
-          : [...existing, item];
-        const unique = Array.from(new Set(next.map((entry) => entry.trim()).filter(Boolean)));
-        if (pantryFallback) pantryFallback.value = unique.join('\\n');
-        if (pantryTextArea) pantryTextArea.value = unique.join('\\n');
-        chip.classList.toggle('selected', !selected);
-        syncPantryList();
+        pantryComposer.value = pantryComposer.value ? `${{pantryComposer.value}}, ${{item}}` : item;
+        pantryComposer.focus();
       }});
     }}
 
-    for (const chip of document.querySelectorAll('[data-pantry-chip]')) {{
-      const item = chip.dataset.pantryChip;
-      const existing = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
-      chip.classList.toggle('selected', existing.includes(item));
+    if (pantryForm) {{
+      pantryForm.addEventListener('submit', () => {{
+        updatePantryState();
+      }});
     }}
+
+    updatePantryState();
 
     const foodRulesInput = document.getElementById('foods_to_avoid_input');
     const foodRulesHidden = document.getElementById('foods_to_avoid');

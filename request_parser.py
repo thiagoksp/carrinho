@@ -5,6 +5,7 @@ import re
 import unicodedata
 
 from catalog import resolve_product_keys
+from pantry import PantryCandidate, parse_pantry_candidates
 from local_catalogue import load_effective_price_catalog
 
 
@@ -18,6 +19,7 @@ class ParsedRequest:
     days: int | None = None
     cooking_energy: str | None = None
     pantry_items: list[str] | None = None
+    pantry_candidates: list[PantryCandidate] | None = None
     dietary_restrictions: list[str] | None = None
     avoided_product_keys: list[str] | None = None
     preferred_product_keys: list[str] | None = None
@@ -217,6 +219,16 @@ def _find_product_preferences(text: str, preference: str) -> list[str] | None:
 def parse_request(text: str) -> ParsedRequest:
     """Extract data that is explicitly present in a grocery request."""
     budget, currency = _find_budget(text)
+    pantry_items = _find_pantry_items(text)
+    pantry_candidates = None
+    if pantry_items is not None:
+        pantry_candidates = list(
+            parse_pantry_candidates(
+                pantry_items,
+                load_effective_price_catalog().products,
+                source="text",
+            )
+        )
 
     return ParsedRequest(
         budget=budget,
@@ -224,7 +236,8 @@ def parse_request(text: str) -> ParsedRequest:
         people=_find_quantity(text, r"people|persons?"),
         days=_find_quantity(text, r"days?"),
         cooking_energy=_find_cooking_energy(text),
-        pantry_items=_find_pantry_items(text),
+        pantry_items=pantry_items,
+        pantry_candidates=pantry_candidates,
         dietary_restrictions=_find_dietary_restrictions(text),
         avoided_product_keys=_find_product_preferences(text, "avoid"),
         preferred_product_keys=_find_product_preferences(text, "prefer"),

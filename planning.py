@@ -6,6 +6,7 @@ import re
 import unicodedata
 
 from catalog import PriceCatalog, Product
+from pantry import PantryCandidate, parse_pantry_candidates
 from food_rules import (
     build_food_rules_for_avoided_products,
     build_food_rules_for_dietary_restrictions,
@@ -704,37 +705,113 @@ def _item_quantity(item: str, product: Product) -> float | None:
     return None
 
 
-def _available_quantity(
-    product: Product, pantry_items: list[str] | None
-) -> float:
-    matching_items = [
-        item
-        for item in (pantry_items or [])
-        if _item_matches(item, product)
-    ]
-    if not matching_items:
-        return 0
+def _coerce_pantry_candidates(
+    pantry_items: list[str] | list[PantryCandidate] | None,
+    products: tuple[Product, ...],
+) -> tuple[PantryCandidate, ...]:
+    if not pantry_items:
+        return ()
+    first_item = pantry_items[0]
+    if isinstance(first_item, PantryCandidate):
+        return tuple(pantry_items)
+    return parse_pantry_candidates(pantry_items, products, source="text")
 
+
+def _candidate_quantity(
+    candidate: PantryCandidate,
+    product: Product,
+) -> float | None:
+    if candidate.food_key != product.key or candidate.quantity_state != "known":
+        return None
+    if candidate.quantity_value is None:
+        return None
+
+    unit = candidate.quantity_unit
+    if product.planning_unit == "each":
+        if unit in {None, "each"}:
+            return candidate.quantity_value
+        if unit == "dozen":
+            return candidate.quantity_value * 12
+        return None
+
+    if product.planning_unit == "g":
+        if unit == "g":
+            return candidate.quantity_value
+        if unit == "kg":
+            return candidate.quantity_value * 1000
+        if unit == "lb":
+            return candidate.quantity_value * GRAMS_PER_POUND
+        if unit == "package":
+            return candidate.quantity_value * product.package_size
+        return None
+
+    if product.planning_unit == "ml":
+        if unit == "ml":
+            return candidate.quantity_value
+        if unit == "l":
+            return candidate.quantity_value * 1000
+        return None
+
+    if product.planning_unit == "can":
+        if unit == "can":
+            return candidate.quantity_value
+        if unit == "package":
+            return candidate.quantity_value * product.package_size
+        return None
+
+    if product.planning_unit == "package":
+        if unit == "package":
+            return candidate.quantity_value
+        return None
+
+    return None
+
+
+def _candidate_note(candidate: PantryCandidate, product: Product | None) -> str:
+    if candidate.resolution_state != "matched" or product is None:
+        return f"{candidate.original_text}: could not be matched or measured."
+    if candidate.quantity_state == "known":
+        quantity = _format_pantry_candidate_quantity(candidate, product)
+        return f"{product.name}: used {quantity} from home."
+    if candidate.quantity_state == "unknown":
+        return f"{product.name}: known at home, amount unknown."
+    return f"{candidate.original_text}: could not be matched or measured."
+
+
+def _format_pantry_candidate_quantity(
+    candidate: PantryCandidate,
+    product: Product,
+) -> str:
+    quantity = _candidate_quantity(candidate, product)
+    if quantity is None:
+        return candidate.original_text
+    return format_planning_quantity(quantity, product.planning_unit, product.name)
+
+
+def _available_quantity(
+    product: Product,
+    pantry_items: list[str] | list[PantryCandidate] | None,
+    products: tuple[Product, ...],
+) -> float:
+    candidates = _coerce_pantry_candidates(pantry_items, products)
     quantities = [
         quantity
-        for item in matching_items
-        for quantity in [_item_quantity(item, product)]
+        for candidate in candidates
+        for quantity in [_candidate_quantity(candidate, product)]
         if quantity is not None
     ]
-    if not quantities:
-        return math.inf
-    return sum(quantities)
+    return sum(quantities) if quantities else 0
 
 
 def _build_shopping_items(
     requirements: dict[str, float],
-    pantry_items: list[str] | None,
+    pantry_items: list[str] | list[PantryCandidate] | None,
     products: tuple[Product, ...],
 ) -> tuple[ShoppingItem, ...]:
     shopping_items: list[ShoppingItem] = []
     for product in products:
         required_amount = requirements.get(product.key, 0)
-        available_amount = _available_quantity(product, pantry_items)
+        available_amount = _available_quantity(product, pantry_items, products)
         shortfall = max(0, required_amount - available_amount)
         if shortfall <= 0:
             continue
@@ -819,31 +896,39 @@ def _validate_catalog_coverage(
 
 def _describe_pantry_usage(
     requirements: dict[str, float],
-    pantry_items: list[str] | None,
+    pantry_items: list[str] | list[PantryCandidate] | None,
     products: tuple[Product, ...],
 ) -> tuple[str, ...]:
     usage_notes: list[str] = []
+    candidates = _coerce_pantry_candidates(pantry_items, products)
+    products_by_key = {product.key: product for product in products}
+    matched_products = {
+        candidate.food_key
+        for candidate in candidates
+        if candidate.food_key is not None
+    }
     for product in products:
         required_amount = requirements.get(product.key, 0)
-        available_amount = _available_quantity(product, pantry_items)
+        available_amount = _available_quantity(product, candidates, products)
         if required_amount <= 0 or available_amount <= 0:
             continue
 
-        if not math.isinf(available_amount):
-            used_amount = min(required_amount, available_amount)
-            quantity = format_planning_quantity(
-                used_amount,
-                product.planning_unit,
-                product.name,
-            )
-            usage_notes.append(
-                f"{product.name}: the plan will use "
-                f"{quantity} from the pantry."
-            )
-        else:
-            usage_notes.append(
-                f"{product.name}: the plan will use what is already at home."
-            )
+        used_amount = min(required_amount, available_amount)
+        quantity = format_planning_quantity(
+            used_amount,
+            product.planning_unit,
+            product.name,
+        )
+        usage_notes.append(f"{product.name}: used {quantity} from home.")
+
+    for candidate in candidates:
+        product = products_by_key.get(candidate.food_key or "")
+        if candidate.quantity_state == "known" and product is not None:
+            continue
+        if candidate.resolution_state == "matched" and candidate.quantity_state == "unknown":
+            usage_notes.append(_candidate_note(candidate, product))
+        elif candidate.resolution_state != "matched" or candidate.quantity_state == "invalid":
+            usage_notes.append(_candidate_note(candidate, product))
     return tuple(usage_notes)
 
 
@@ -912,6 +997,11 @@ def _create_plan(
         request.budget is not None
         and _budget_category(request) == BUDGET_CATEGORY_LOW
     )
+    pantry_context = (
+        request.pantry_candidates
+        if getattr(request, "pantry_candidates", None) is not None
+        else request.pantry_items
+    )
 
     return Plan(
         meals=tuple(meal for meal, _ in meals_with_templates),
@@ -935,12 +1025,12 @@ def _create_plan(
         ),
         shopping_items=_build_shopping_items(
             requirements,
-            request.pantry_items,
+            pantry_context,
             catalog.products,
         ),
         pantry_usage=_describe_pantry_usage(
             requirements,
-            request.pantry_items,
+            pantry_context,
             catalog.products,
         ),
         budget=request.budget,
