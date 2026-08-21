@@ -155,10 +155,17 @@ def _find_dietary_restrictions(text: str) -> list[str] | None:
     if any(phrase in normalized_text for phrase in no_restriction_phrases):
         return []
 
-    if "lactose" in normalized_text:
-        return ["lactose intolerance"]
-
-    return None
+    known_restrictions = (
+        ("lactose intolerance", ("lactose", "dairy free", "milk free")),
+        ("vegetarian", ("vegetarian",)),
+        ("vegan", ("vegan",)),
+        ("avoid gluten ingredients", ("avoid gluten", "gluten free", "no gluten", "no gluten ingredients")),
+    )
+    found: list[str] = []
+    for restriction, phrases in known_restrictions:
+        if any(phrase in normalized_text for phrase in phrases):
+            found.append(restriction)
+    return found or None
 
 
 def _find_product_preferences(text: str, preference: str) -> list[str] | None:

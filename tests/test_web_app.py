@@ -22,7 +22,10 @@ def _reference_form() -> dict[str, str]:
         "days": "4",
         "cooking_energy": "low",
         "pantry_items": "rice, 7 eggs",
-        "dietary_restrictions": "lactose intolerance",
+        "dietary_lactose_intolerance": "on",
+        "dietary_vegetarian": "",
+        "dietary_vegan": "",
+        "dietary_avoid_gluten_ingredients": "",
         "foods_to_avoid": "",
         "foods_to_prefer": "",
     }
@@ -98,11 +101,16 @@ class TestWebApp(unittest.TestCase):
             ("people", "2.5", "valid number of people"),
             ("people", "13", "between 1 and 12"),
             ("days", "15", "between 1 and 14"),
-            ("dietary_restrictions", "gluten-free", "supported dietary restriction"),
+            ("dietary_restrictions", "paleo", "supported dietary restriction"),
         )
         for field, value, message in cases:
             with self.subTest(field=field):
                 values = _reference_form()
+                if field == "dietary_restrictions":
+                    values["dietary_lactose_intolerance"] = ""
+                    values["dietary_vegetarian"] = ""
+                    values["dietary_vegan"] = ""
+                    values["dietary_avoid_gluten_ingredients"] = ""
                 values[field] = value
                 with self.assertRaisesRegex(ValueError, message):
                     build_request(values)
@@ -125,13 +133,15 @@ class TestWebApp(unittest.TestCase):
 
         self.assertIn("Bad &lt;value&gt;", page)
         self.assertNotIn("<script>alert(1)</script>", page)
-        self.assertIn("Your Carrinho plan", page)
+        self.assertIn("Plan summary", page)
+        self.assertIn("Edit settings", page)
+        self.assertIn("Your weekly plan", page)
         self.assertIn("Total range:</strong> CAD$53.32 to CAD$75.30", page)
         self.assertIn('class="budget-status good"', page)
         self.assertIn('class="budget-status good"', page)
         self.assertIn('<summary>Meal guidance</summary>', page)
-        self.assertIn('<summary>Budget and estimated prices</summary>', page)
-        self.assertIn('<summary>Pantry items used</summary>', page)
+        self.assertIn('<summary>Budget + estimated prices</summary>', page)
+        self.assertIn('<summary>Pantry items from home</summary>', page)
         self.assertIn('<table class="estimate-table">', page)
         self.assertIn("<th>Estimated range</th>", page)
         shopping_section = page.split(
@@ -140,25 +150,31 @@ class TestWebApp(unittest.TestCase):
         )[1].split("<h3>Estimated price ranges</h3>", 1)[0]
         self.assertNotIn("estimated range", shopping_section.casefold())
         self.assertIn("local planning estimate range only", page)
-        self.assertIn("Start with people and days.", page)
-        self.assertIn("Quick start", page)
-        self.assertIn("Required: choose how many people and days", page)
-        self.assertIn("Add details", page)
-        self.assertIn("Optional: add budget, pantry, energy", page)
-        self.assertIn("Optional. Add it when you want a balance or shortfall.", page)
+        self.assertIn("Tell us the minimum. You can customize more if you want.", page)
+        self.assertIn("Plan your week", page)
+        self.assertIn("Target grocery budget", page)
+        self.assertIn("Pantry", page)
+        self.assertIn("Dietary needs", page)
+        self.assertIn("Used only to compare the simulated plan estimate with your target.", page)
         self.assertIn("No request is sent to Instacart", page)
+        self.assertIn("Food rules", page)
+        self.assertIn("Foods to avoid", page)
+        self.assertIn("Food rules applied:", page)
         self.assertNotIn("Foods to use less often", page)
         self.assertNotIn("Foods to use more often", page)
         self.assertIn("Manage local meals and foods", page)
         self.assertIn(CSRF_TOKEN, page)
+        self.assertIn('name="dietary_lactose_intolerance"', page)
 
     def test_initial_page_uses_neutral_quick_start_defaults(self) -> None:
         page = render_page()
 
         self.assertIn('value="2"', page)
         self.assertIn('value="4"', page)
-        self.assertIn('<option value="normal" selected>Normal</option>', page)
-        self.assertIn('<option value="none" selected>None</option>', page)
+        self.assertIn('value="normal" selected', page)
+        self.assertIn("Food rules", page)
+        self.assertNotIn('name="dietary_lactose_intolerance" checked', page)
+        self.assertNotIn('name="dietary_vegetarian" checked', page)
         self.assertNotIn(">rice, 7 eggs</textarea>", page)
 
     def test_renders_portable_export_actions(self) -> None:
@@ -171,6 +187,33 @@ class TestWebApp(unittest.TestCase):
         self.assertIn('action="/download/instacart-json"', page)
         self.assertIn("@media print", page)
         self.assertIn("retailer-neutral Canadian price catalogue", page)
+        self.assertIn("Food rules applied:", page)
+        self.assertIn("Lactose intolerance", page)
+
+    def test_plan_route_handles_get_requests_without_404(self) -> None:
+        server = ThreadingHTTPServer((HOST, 0), CarrinhoHandler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base_url = f"http://{HOST}:{server.server_address[1]}"
+            plan_body = ""
+            for path, expected in (("/plan", "Plan your week"), ("/plan/", "Plan your week"), ("/customize/", "Local catalogue JSON")):
+                with self.subTest(path=path):
+                    request = Request(f"{base_url}{path}", method="GET")
+                    with urlopen(request, timeout=5) as response:
+                        body = response.read().decode("utf-8")
+                    self.assertEqual(response.status, 200)
+                    self.assertIn(expected, body)
+                    self.assertNotIn("Page not found.", body)
+                    if path == "/plan":
+                        plan_body = body
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+        self.assertIn("Plan your week", plan_body)
+        self.assertIn("Create my meal plan", plan_body)
 
     def test_renders_progressive_meal_review_sections(self) -> None:
         page = render_page(_reference_form(), plan=create_plan(_reference_form()))
@@ -183,6 +226,12 @@ class TestWebApp(unittest.TestCase):
         self.assertIn('class="meal-card"', page)
         self.assertIn("Meal guidance", page)
         self.assertIn("Shopping list", page)
+        self.assertIn("Pantry", page)
+        self.assertIn("Check + quantity", page)
+        self.assertIn('id="pantry_transcript"', page)
+        self.assertIn('type="checkbox"', page)
+        self.assertIn("Audio transcript or spoken note", page)
+        self.assertIn("overview-scroll", page)
 
     def test_renders_a_safe_local_catalogue_editor(self) -> None:
         content = '{"schema":"test","value":"</textarea><script>bad()</script>"}'

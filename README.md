@@ -34,19 +34,24 @@ browser starts with a quick-start form for people and days, then optional detail
 budget, pantry, cooking energy, and dietary restrictions. It provides friendly
 validation and the complete plan on one page at `http://127.0.0.1:8765`. The terminal
 interface remains available for natural language requests and one-field-at-a-time
-corrections. The rule-based planner
-separates recipe requirements from whole purchasable packages, reports expected
-overage, marks variable-weight products as approximate, and accounts for pantry amounts
-expressed in kilograms, grams, pounds, litres, millilitres, cans, dozens, units, and
-package fractions. Mass is normalized to grams and volume to millilitres before package
-rounding. The current values come from
-one retailer-neutral JSON catalog that is explicitly labelled as a simulated planning
-estimate range. A planning request does not require a city or retailer.
+corrections. The rule-based planner separates recipe requirements from whole purchasable packages,
+reports expected overage, marks variable-weight products as approximate, and accounts
+for pantry amounts expressed in kilograms, grams, pounds, litres, millilitres, cans,
+dozens, units, and package fractions. Mass is normalized to grams and volume to
+millilitres before package rounding. The current values come from one retailer-neutral
+JSON catalog that is explicitly labelled as a simulated planning estimate range. A
+planning request does not require a city or retailer.
+
+The browser UX is now focused on a compact, review-friendly flow: the main form stays
+lightweight, the pantry uses a checkbox-plus-quantity list with quick-add chips and text
+fallback, and the result page presents a summary-first plan with meal details, a shopping
+list, and estimate ranges without overloading the first review. The current browser pass is
+validated locally and kept deliberately scoped to local-only planning.
 
 Dietary restrictions are hard safety filters. Foods the household avoids or prefers are
 separate soft ranking inputs backed by the existing generic product keys, but they are no
 longer part of the main first-run browser form while the household-rules model is being
-redesigned in CAR-18. The built-in vocabulary remains deliberately small, and a
+designed in CAR-18. The built-in vocabulary remains deliberately small, and a
 household can save its own selections in the private local profile without Carrinho
 copying a large external food database.
 
@@ -109,8 +114,9 @@ Outside contributions are not accepted yet. See [`CONTRIBUTING.md`](CONTRIBUTING
 
 ## Next step
 
-[CAR-32](https://linear.app/thiagoksp/issue/CAR-32) will use Carrinho for one real
-weekly planning run and make only the smallest fixes needed for practical use.
+[CAR-58](https://linear.app/thiagoksp/issue/CAR-58) is the active next milestone for the
+current browser UX and local planning workflow. It keeps the scope to a practical,
+review-ready planner without enabling retailer integration or live pricing.
 Instacart approval is tracked separately in CAR-3; all official shopping network
 integration stays disabled until approved access and contract testing are available.
 

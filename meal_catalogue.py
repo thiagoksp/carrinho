@@ -12,7 +12,14 @@ from catalog import PLANNING_UNITS
 MEAL_CATALOGUE_SCHEMA = "carrinho.meal-catalogue.v2"
 _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 COOKING_ENERGY_VALUES = frozenset({"low", "normal", "high"})
-DIETARY_TAG_VALUES = frozenset({"lactose-free"})
+DIETARY_TAG_VALUES = frozenset(
+    {
+        "lactose-free",
+        "vegetarian",
+        "vegan",
+        "no-gluten-ingredients",
+    }
+)
 CATALOGUE_TIER_VALUES = frozenset({"core", "extended"})
 DIFFICULTY_VALUES = frozenset({"easy", "medium", "hard"})
 CUISINE_VALUES = frozenset(
@@ -127,6 +134,8 @@ def _validate_template(data: object, position: int) -> MealTemplate:
     unsupported_tags = sorted(set(dietary_tags).difference(DIETARY_TAG_VALUES))
     if unsupported_tags:
         raise ValueError(f"{context} has unsupported dietary tags.")
+    if "vegan" in dietary_tags and "vegetarian" not in dietary_tags:
+        raise ValueError(f"{context} has a vegan tag without a vegetarian tag.")
 
     raw_selection_tags = data.get("selection_tags")
     if not isinstance(raw_selection_tags, list) or not raw_selection_tags:

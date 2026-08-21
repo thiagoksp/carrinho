@@ -135,12 +135,12 @@ deterministic form path for households that do not enable LLM. The browser surfa
 should support simple, guided, and future conversational use in one responsive,
 app-friendly interface so a later PWA or mobile path remains open.
 
-**Next:** [CAR-32](https://linear.app/thiagoksp/issue/CAR-32/use-carrinho-for-a-real-weekly-planning-run)
+**Next:** [CAR-58](https://linear.app/thiagoksp/issue/CAR-58/review-the-full-ui-of-the-current-carrinho-screen)
 
-Use Carrinho for one realistic weekly planning run and make the smallest practical
-fixes that help the user start using the product. This is intentionally narrower than a
-new architecture milestone: identify confusing output, rough UI, or missing planning
-details that block real use, then fix only what is necessary.
+Review the current browser experience end to end and make the smallest practical UI
+improvements that improve hierarchy, clarity, and usability without expanding the
+product boundary. This issue keeps the scope on the current local planning screen and
+avoids retailer integration, live pricing, or architecture work.
 
 **Backlog:** [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
 
