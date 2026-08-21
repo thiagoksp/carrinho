@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
+from food_rules import normalize_food_rule_values
 from local_catalogue import load_effective_price_catalog
 from request_parser import ParsedRequest
 
@@ -58,8 +59,10 @@ def _validate_profile(data: object) -> HouseholdProfile:
         data.get("dietary_restrictions"),
         "dietary restrictions",
     )
-    if any("lactose" not in restriction.casefold() for restriction in dietary_restrictions):
-        raise ValueError("The household profile has unsupported dietary restrictions.")
+    try:
+        dietary_restrictions = normalize_food_rule_values(dietary_restrictions)
+    except ValueError as error:
+        raise ValueError("The household profile has unsupported dietary restrictions.") from error
 
     if schema == LEGACY_HOUSEHOLD_PROFILE_SCHEMA:
         avoided_product_keys: tuple[str, ...] = ()

@@ -6,6 +6,12 @@ import re
 import unicodedata
 
 from catalog import PriceCatalog, Product
+from food_rules import (
+    build_food_rules_for_avoided_products,
+    build_food_rules_for_dietary_restrictions,
+    normalize_food_rule_values,
+    restriction_to_tag,
+)
 from local_catalogue import (
     load_effective_meal_catalogue,
     load_effective_price_catalog,
@@ -135,13 +141,14 @@ def _remove_accents(text: str) -> str:
 
 
 def _restrictions_supported(restrictions: list[str] | None) -> bool:
-    # No explicit restrictions provided is supported (treat as no filter).
+    """Accept the known deterministic household dietary presets only."""
     if restrictions is None:
         return True
-    return all(
-        "lactose" in _remove_accents(restriction)
-        for restriction in restrictions
-    )
+    try:
+        normalize_food_rule_values(restrictions)
+    except ValueError:
+        return False
+    return True
 
 
 def _default_meal_instructions(template: MealTemplate) -> tuple[str, ...]:
@@ -226,9 +233,19 @@ def _build_meals(
 def _required_dietary_tags(restrictions: list[str] | None) -> frozenset[str]:
     if not restrictions:
         return frozenset()
-    if any("lactose" in _remove_accents(restriction) for restriction in restrictions):
-        return frozenset({"lactose-free"})
-    return frozenset()
+    required_tags: set[str] = set()
+    for restriction in restrictions:
+        normalized = _remove_accents(str(restriction)).replace("_", " ").replace("-", " ")
+        if "lactose" in normalized:
+            required_tags.add("lactose-free")
+        elif "vegetarian" in normalized:
+            required_tags.add("vegetarian")
+        elif "vegan" in normalized:
+            required_tags.add("vegan")
+            required_tags.add("vegetarian")
+        elif "gluten" in normalized or "no gluten" in normalized:
+            required_tags.add("no-gluten-ingredients")
+    return frozenset(required_tags)
 
 
 def validate_meal_candidate_keys(

@@ -6,10 +6,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import re
 import secrets
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlsplit
 
 from app import format_plan
 from catalog import resolve_product_keys
+from food_rules import normalize_food_rule_values
 from instacart import create_instacart_paste_list, serialize_instacart_payload
 from local_catalogue import (
     empty_local_catalogue_json,
@@ -33,10 +34,23 @@ HOST = "127.0.0.1"
 PORT = 8765
 MAX_REQUEST_BYTES = 1024 * 1024
 CSRF_TOKEN = secrets.token_urlsafe(32)
+DIETARY_RULE_OPTIONS = (
+    ("dietary_lactose_intolerance", "Lactose intolerance", "lactose intolerance"),
+    ("dietary_vegetarian", "Vegetarian", "vegetarian"),
+    ("dietary_vegan", "Vegan", "vegan"),
+    (
+        "dietary_avoid_gluten_ingredients",
+        "Avoid gluten ingredients",
+        "avoid gluten ingredients",
+    ),
+)
+DIETARY_RULE_LABELS = {
+    canonical: label for _, label, canonical in DIETARY_RULE_OPTIONS
+}
 
 PAGE_STYLES = """
     :root { color-scheme: light; font-family: Inter, system-ui, sans-serif; }
-    body { margin: 0; background: #f5f2e9; color: #17352c; }
+   body { margin: 0; background: #f5f2e9; color: #17352c; line-height: 1.5; }
     main { width: min(920px, calc(100% - 32px)); margin: 40px auto; }
     header { margin-bottom: 24px; }
     h1 { font-size: clamp(2.2rem, 8vw, 4.5rem); margin: 0;
@@ -47,35 +61,128 @@ PAGE_STYLES = """
    .eyebrow { color: #b3422e; font-weight: 800; text-transform: uppercase; }
    .card, .result { background: #fff; border: 1px solid #d8d2c4;
      border-radius: 18px; box-shadow: 0 14px 40px rgba(23, 53, 44, 0.08);
-     padding: 24px; }
+     padding: 22px; }
+   .page-intro { margin-bottom: 18px; }
+   .page-intro p { margin: 8px 0 0; max-width: 62ch; color: #465a54; }
+   .form-section-title { margin: 0; font-size: clamp(1.6rem, 3vw, 2.25rem); }
+   .section-kicker { margin: 0 0 10px; color: #6b7b75; font-size: 0.78rem; font-weight: 800;
+     text-transform: uppercase; letter-spacing: 0.08em; }
+   .summary-banner { display: flex; align-items: end; justify-content: space-between;
+     gap: 16px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #e7e0d4; }
+   .summary-banner h2 { margin: 0; font-size: clamp(1.15rem, 3vw, 1.8rem);
+     line-height: 1.2; max-width: 72%; }
+   .summary-banner .summary-meta { color: #5e6d67; font-weight: 700; }
+   .summary-banner .settings-button {
+     flex-shrink: 0; min-width: 150px; border-radius: 18px; background: #edf2ee;
+     color: #17352c; border: 1px solid #cbd9d0; font-weight: 800;
+     box-shadow: inset 0 0 0 1px rgba(20, 107, 77, 0.03);
+   }
+   .summary-banner .settings-button:hover,
+   .summary-banner .settings-button:focus-visible {
+     background: #e0eadf; border-color: #a7bdb0;
+   }
    form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-     gap: 18px; }
-   label { display: grid; gap: 7px; font-weight: 750; width: 100%; }
+     gap: 18px; align-items: start; }
+   label { display: grid; gap: 7px; font-weight: 750; width: 100%; min-height: 90px; }
    .wide { grid-column: 1 / -1; }
-   input, select, textarea { box-sizing: border-box; width: 100%; border: 1px solid #a7aea6;
-     border-radius: 10px; padding: 12px; background: #fff; color: #17352c; font: inherit; }
+   input, select, textarea { box-sizing: border-box; width: 100%; min-height: 46px;
+     border: 1px solid #a7aea6; border-radius: 10px; padding: 11px 12px;
+     background: #fff; color: #17352c; font: inherit; }
    textarea { min-height: 76px; resize: vertical; }
    button, .button { grid-column: 1 / -1; border: 0; border-radius: 999px;
-     padding: 14px 22px; background: #146b4d; color: #fff; font: inherit;
-     font-weight: 800; cursor: pointer; text-align: center; text-decoration: none; }
+     min-height: 48px; padding: 14px 22px; background: #146b4d; color: #fff; font: inherit;
+     font-weight: 800; cursor: pointer; text-align: center; text-decoration: none;
+     display: inline-flex; align-items: center; justify-content: center; }
    button:hover, .button:hover { background: #0f533c; }
    .button.secondary { background: #e7eee9; color: #17352c; }
+   .action-button {
+     border-radius: 16px; min-height: 52px; font-size: 1rem; box-shadow:
+     inset 0 0 0 1px rgba(20, 107, 77, 0.08);
+   }
+   .actions { display: flex; justify-content: center; margin-top: 20px; }
+   .actions .button { width: fit-content; }
    .hint { color: #5e6d67; font-size: 0.9rem; font-weight: 500; }
    .message { border-radius: 12px; margin-bottom: 18px; padding: 14px 16px; }
    .error { background: #fff0ed; border: 1px solid #d35b45; color: #812817; }
    .success { background: #e8f5ed; border: 1px solid #4a956f; color: #174f37; }
    .result { margin-top: 24px; }
-   .plan-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
-   .plan-controls form { display: flex; flex: 1 1 210px; margin: 0; }
+   .plan-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+     gap: 12px; margin: 18px 0 24px; }
+   .plan-controls form { display: flex; margin: 0; }
    .plan-controls > button, .plan-controls form button {
-       flex: 1 1 180px; grid-column: auto; min-width: 0;
+       flex: 1 1 0; grid-column: auto; min-width: 0; border-radius: 16px;
+       box-shadow: inset 0 0 0 1px rgba(20, 107, 77, 0.08);
    }
    .plan-controls form button { width: 100%; }
+   @media (max-width: 760px) {
+     .summary-banner { align-items: flex-start; flex-direction: column; }
+     .summary-banner h2 { max-width: 100%; }
+     .summary-banner .settings-button { width: 100%; }
+     .plan-controls { grid-template-columns: 1fr; }
+   }
+   @media (max-width: 640px) {
+     .food-rule-grid { grid-template-columns: 1fr; }
+     .food-rule-input-row { flex-direction: column; align-items: stretch; }
+   }
    .plan-overview { margin-bottom: 20px; }
+   .overview-scroll { overflow-x: auto; padding-bottom: 10px; }
    .overview-grid { list-style: none; margin: 12px 0 0; padding: 0;
-     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+     display: grid; grid-auto-flow: column; grid-auto-columns: minmax(170px, 1fr);
+     grid-template-columns: none; gap: 12px; min-width: 600px; }
    .meal-summary-card { background: #f7f6f1; border: 1px solid #d8d2c4;
      border-radius: 12px; padding: 14px; }
+   .setting-row { display: grid; gap: 12px; border: 1px solid #d8d2c4;
+     border-radius: 12px; background: #f9faf7; padding: 16px; }
+   .setting-row-header { display: flex; justify-content: space-between; align-items: center;
+     gap: 8px; }
+   .setting-row-header h3 { margin: 0; font-size: 1.02rem; }
+   .setting-row-note { color: #5e6d67; font-size: 0.82rem; font-weight: 700; }
+   .food-rule-options { margin: 0; padding: 0; border: 0; }
+   .food-rule-options legend { font-weight: 800; margin-bottom: 6px; }
+   .food-rule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+     gap: 10px; }
+   .food-rule-choice { display: flex; align-items: center; gap: 10px; min-height: 46px;
+     padding: 10px 12px; border: 1px solid #d8d2c4; border-radius: 10px; background: #fff; }
+   .food-rule-choice input { width: 18px; height: 18px; min-height: 18px; padding: 0;
+     border: 0; background: transparent; accent-color: #146b4d; }
+   .food-rule-entry { display: grid; gap: 10px; }
+   .food-rule-input-row { display: flex; gap: 10px; align-items: center; }
+   .food-rule-input-row input { flex: 1 1 auto; }
+   .food-rule-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+   .food-rule-chip-list .chip { display: inline-flex; align-items: center; }
+   .food-rules-summary { margin: 0 0 18px; color: #5e6d67; }
+   .pantry-editor { display: grid; gap: 14px; }
+   .pantry-list { display: grid; gap: 10px; }
+   .pantry-row { display: grid; grid-template-columns: auto minmax(0, 1.2fr) auto auto; gap: 8px;
+     align-items: center; padding: 8px 10px; background: #fff; border: 1px solid #d8d2c4;
+     border-radius: 10px; min-height: 62px; }
+   .pantry-row-check { width: 18px; height: 18px; accent-color: #146b4d; margin: 0; }
+   .pantry-row-main { display: grid; gap: 2px; min-width: 0; }
+   .pantry-row-name { font-weight: 800; }
+   .pantry-row-status { color: #5e6d67; font-size: 0.76rem; }
+   .pantry-row-amounts { display: none; gap: 6px; align-items: center; justify-content: flex-end; min-width: 0; }
+   .pantry-row-amounts.visible { display: grid; grid-template-columns: minmax(52px, 72px) minmax(62px, 82px); width: fit-content; }
+   .pantry-row-amounts input, .pantry-row-amounts select {
+     width: 100%; min-height: 32px; padding: 6px 8px; font-size: 0.85rem; border-radius: 8px;
+   }
+   .pantry-row button { border: 1px solid #bdd0c2; background: #edf6f1; border-radius: 999px;
+     color: #17352c; font: inherit; font-weight: 700; padding: 6px 10px; cursor: pointer; }
+   .pantry-row .remove-item { border-color: #cf8f7d; background: #fff0ed; color: #7a2a1c; }
+   .pantry-row .remove-item:hover { background: #fce5df; }
+   .pantry-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+   .chip { border: 1px solid #7ea292; background: #dfeee5; color: #17352c;
+     border-radius: 999px; padding: 8px 12px; font: inherit; font-weight: 800;
+     cursor: pointer; box-shadow: inset 0 0 0 1px rgba(20, 107, 77, 0.08); }
+   .chip:hover, .chip:focus-visible { background: #cfe5d7; border-color: #4c7a67; outline: none; }
+   .chip.selected { background: #146b4d; border-color: #0f533c; color: #fff; }
+   .chip.selected:hover, .chip.selected:focus-visible { background: #0f533c; border-color: #0b3f30; }
+   .detail-toggle { width: 100%; }
+   .advanced-details { display: none; }
+   .advanced-details.visible { display: grid; }
+   .detail-cta { margin-top: 8px; }
+   details { grid-column: 1 / -1; }
+   details summary { cursor: pointer; font-weight: 800; }
+   details .detail-body { padding-top: 12px; }
    .meal-summary-card h3 { font-size: 1.02rem; margin-bottom: 4px; }
    .meal-kicker { margin: 0 0 8px; font-size: 0.76rem; font-weight: 800;
      letter-spacing: 0.04em; text-transform: uppercase; color: #5e6d67; }
@@ -172,7 +279,72 @@ def _resolve_preferences(value: str) -> list[str]:
     if not food_names:
         return []
     catalog = load_effective_price_catalog()
-    return list(resolve_product_keys(food_names, catalog.products))
+    try:
+        return list(resolve_product_keys(food_names, catalog.products))
+    except ValueError as error:
+        message = str(error)
+        prefix = "Unknown food preference: "
+        if message.startswith(prefix):
+            unknown_names = message[len(prefix) :].rstrip(".")
+            first_unknown = unknown_names.split(",")[0].strip()
+            raise ValueError(
+                f"We can't reliably filter \"{first_unknown}\" yet. Try a more general ingredient."
+            ) from error
+        raise
+
+
+def _selected_dietary_restrictions(form: Mapping[str, str]) -> list[str]:
+    selected = [
+        canonical
+        for field_name, _, canonical in DIETARY_RULE_OPTIONS
+        if form.get(field_name)
+    ]
+    if selected:
+        return selected
+
+    legacy_value = form.get("dietary_restrictions", "").strip()
+    if not legacy_value or legacy_value.casefold() == "none":
+        return []
+    return [legacy_value]
+
+
+def _food_rule_summary(form: Mapping[str, str]) -> str:
+    items: list[str] = []
+    selected_restrictions = _selected_dietary_restrictions(form)
+    try:
+        for restriction in normalize_food_rule_values(selected_restrictions):
+            items.append(DIETARY_RULE_LABELS[restriction])
+    except ValueError:
+        for restriction in selected_restrictions:
+            display = restriction.strip().replace("_", " ").replace("-", " ")
+            if display:
+                items.append(display.title())
+    for food_name in _split_items(form.get("foods_to_avoid", "")):
+        items.append(f"no {food_name.casefold()}")
+    return ", ".join(items) if items else "none"
+
+
+def _render_form_values(form: Mapping[str, str], request: ParsedRequest) -> dict[str, str]:
+    render_values = dict(form)
+    for field_name, _, canonical in DIETARY_RULE_OPTIONS:
+        if canonical in request.dietary_restrictions:
+            render_values[field_name] = "on"
+        else:
+            render_values.pop(field_name, None)
+
+    products = {
+        product.key: product.name
+        for product in load_effective_price_catalog().products
+    }
+    render_values["foods_to_avoid"] = "\n".join(
+        products.get(product_key, product_key)
+        for product_key in request.avoided_product_keys or ()
+    )
+    render_values["foods_to_prefer"] = "\n".join(
+        products.get(product_key, product_key)
+        for product_key in request.preferred_product_keys or ()
+    )
+    return render_values
 
 
 def build_request(form: Mapping[str, str]) -> ParsedRequest:
@@ -198,13 +370,12 @@ def build_request(form: Mapping[str, str]) -> ParsedRequest:
     if cooking_energy not in {"low", "normal", "high"}:
         raise ValueError("Choose low, normal, or high cooking energy.")
 
-    restriction = form.get("dietary_restrictions", "").strip().casefold()
-    restrictions = {
-        "none": [],
-        "lactose intolerance": ["lactose intolerance"],
-    }
-    if restriction not in restrictions:
-        raise ValueError("Choose a supported dietary restriction.")
+    try:
+        restrictions = list(
+            normalize_food_rule_values(_selected_dietary_restrictions(form))
+        )
+    except ValueError as error:
+        raise ValueError("Choose a supported dietary restriction.") from error
 
     avoided_keys = _resolve_preferences(form.get("foods_to_avoid", ""))
     preferred_keys = _resolve_preferences(form.get("foods_to_prefer", ""))
@@ -220,15 +391,17 @@ def build_request(form: Mapping[str, str]) -> ParsedRequest:
         days=days,
         cooking_energy=cooking_energy,
         pantry_items=_split_items(form.get("pantry_items", "")),
-        dietary_restrictions=restrictions[restriction],
+        dietary_restrictions=restrictions,
         avoided_product_keys=avoided_keys,
         preferred_product_keys=preferred_keys,
     )
 
-
-def create_plan(form: Mapping[str, str]) -> Plan:
+def create_plan(
+    form: Mapping[str, str],
+    request: ParsedRequest | None = None,
+) -> Plan:
     """Create one deterministic plan or raise a friendly validation error."""
-    request = build_request(form)
+    request = request or build_request(form)
     try:
         meal_candidate_keys = suggest_meal_candidate_keys(
             request,
@@ -258,6 +431,10 @@ def _hidden_form_fields(values: Mapping[str, str]) -> str:
             "cooking_energy",
             "pantry_items",
             "dietary_restrictions",
+            "dietary_lactose_intolerance",
+            "dietary_vegetarian",
+            "dietary_vegan",
+            "dietary_avoid_gluten_ingredients",
             "foods_to_avoid",
             "foods_to_prefer",
         )
@@ -271,6 +448,10 @@ def _hidden_form_fields(values: Mapping[str, str]) -> str:
 
 def _selected(value: str, expected: str) -> str:
     return " selected" if value == expected else ""
+
+
+def _checked(values: Mapping[str, str], field_name: str) -> str:
+    return " checked" if values.get(field_name) else ""
 
 
 def _format_money(currency: str, value: float) -> str:
@@ -291,10 +472,7 @@ def render_page(
         return escape(form.get(name, default), quote=True)
 
     cooking_energy = form.get("cooking_energy", "normal")
-    dietary_restrictions = form.get(
-        "dietary_restrictions",
-        "none",
-    )
+    food_rules_summary = _food_rule_summary(form)
     error_html = (
         f'<div class="message error" role="alert">{escape(error)}</div>'
         if error
@@ -461,95 +639,123 @@ def render_page(
             else "<p>No main ingredient from the plan was identified at home.</p>"
         )
 
-        result_html = (
-            '<section class="result" aria-live="polite">'
-            '<h2>Your Carrinho plan</h2>'
-            f'{budget_status}'
-            '<div class="plan-controls">'
-            '<button type="button" data-copy-target="plan-output">Copy plan</button>'
-            '<button type="button" data-print-plan>Print plan</button>'
-            f'<form method="post" action="/download/plan">{hidden_fields}<button type="submit">Download plan text</button></form>'
-            f'<form method="post" action="/download/instacart-paste-list">{hidden_fields}<button type="submit">Download Instacart paste list</button></form>'
-            f'<form method="post" action="/download/instacart-json">{hidden_fields}<button type="submit">Download Instacart JSON preview</button></form>'
-            '</div>'
-            '<div id="plan-output" class="plan-output">'
-            '<section class="plan-overview" aria-label="Weekly overview">'
-            '<h3>Weekly overview</h3>'
-            f'<ul class="overview-grid">{overview_html}</ul>'
-            '</section>'
-            '<section class="meal-list" aria-label="Meal details">'
-            f'{meals_html}'
-            '</section>'
-            '<button type="button" data-expand-all="meal-details" aria-expanded="false">Expand all</button>'
-            '<details class="plan-details">'
-            '<summary>Meal guidance</summary>'
-            '<h3>Meal selection guidance</h3>'
-            f'<pre>{escape("\n".join(plan.meal_selection_guidance))}</pre>'
-            '<h3>Meal prep guidance</h3>'
-            f'<pre>{escape("\n".join(plan.meal_prep_guidance))}</pre>'
-            '</details>'
-            '<section class="shopping-list"><h3>Shopping list</h3>'
-            f'<ul>{shopping_html}</ul>'
-            '</section>'
-            '<details class="plan-details">'
-            '<summary>Budget and estimated prices</summary>'
-            f'<p><strong>Total range:</strong> {escape(estimated_total_min)} to {escape(estimated_total_max)}</p>'
-            f'{budget_summary}'
-            f'{budget_note}'
-            f'<h3>Estimated price ranges</h3>'
-            '<table class="estimate-table">'
-            '<thead><tr><th>Ingredient</th><th>Quantity</th><th>Estimated range</th></tr></thead>'
-            f'<tbody>{estimates_html}</tbody>'
-            '</table>'
-            f'<p><strong>Price source:</strong> {escape(display_price_description)} '
-            '(retailer-neutral Canadian price catalogue for planning only)</p>'
-            '</details>'
-            '<details class="plan-details">'
-            '<summary>Pantry items used</summary>'
-            f'{pantry_html}'
-            '</details>'
-            '</div>'
-            '<div class="copy-status" role="status" aria-live="polite"></div>'
-            '</section>'
-            f'<script nonce="{CSRF_TOKEN}">'
-            'const mealButtons = document.querySelectorAll(".meal-toggle"); '
-            'const expandAllButton = document.querySelector("[data-expand-all]"); '
-            'function syncMealToggle(button, target, isExpanded) { '
-            'if (!button || !target) return; '
-            'button.setAttribute("aria-expanded", String(isExpanded)); '
-            'button.textContent = isExpanded ? button.dataset.labelExpanded : button.dataset.labelCollapsed; '
-            'target.hidden = !isExpanded; '
-            '} '
-            'for (const button of mealButtons) { '
-            'const target = document.getElementById(button.dataset.target); '
-            'button.addEventListener("click", () => { '
-            'const isExpanded = target.hidden; '
-            'for (const otherButton of mealButtons) { '
-            'const otherTarget = document.getElementById(otherButton.dataset.target); '
-            'if (otherButton === button) continue; '
-            'syncMealToggle(otherButton, otherTarget, false); '
-            '} '
-            'syncMealToggle(button, target, isExpanded); '
-            'if (expandAllButton) { '
-            'const allOpen = [...document.querySelectorAll(".meal-details")].every((detail) => !detail.hidden); '
-            'expandAllButton.setAttribute("aria-expanded", String(allOpen)); '
-            'expandAllButton.textContent = allOpen ? "Collapse all" : "Expand all"; '
-            '} '
-            '}); '
-            '} '
-            'if (expandAllButton) { '
-            'expandAllButton.addEventListener("click", () => { '
-            'const anyHidden = [...document.querySelectorAll(".meal-details")].some((detail) => detail.hidden); '
-            'for (const button of mealButtons) { '
-            'const target = document.getElementById(button.dataset.target); '
-            'syncMealToggle(button, target, anyHidden); '
-            '} '
-            'expandAllButton.setAttribute("aria-expanded", String(anyHidden)); '
-            'expandAllButton.textContent = anyHidden ? "Collapse all" : "Expand all"; '
-            '}); '
-            '} '
-            '</script>'
+        summary_label = {
+            "low": "Low cooking",
+            "normal": "Everyday cooking",
+            "high": "Enjoy cooking",
+        }.get(cooking_energy, "Everyday cooking")
+        pantry_count = len(plan.pantry_usage)
+        result_summary = (
+            '<div class="summary-banner">'
+            + f'<div><div class="summary-meta">Plan summary</div>'
+            + f'<h2>{plan.people} people · {plan.days} days · {escape(summary_label)} · {pantry_count} pantry items</h2></div>'
+            + '<button type="button" class="button secondary settings-button" data-toggle-plan-form>Edit settings</button>'
+            + '</div>'
         )
+        result_html_parts = [
+            '<section class="result" aria-live="polite">',
+            result_summary,
+            f'<p class="food-rules-summary"><strong>Food rules applied:</strong> {escape(food_rules_summary)}</p>',
+            '<h2 id="plan-focus">Your weekly plan</h2>',
+            budget_status,
+            '<div class="plan-controls">',
+            '<button type="button" class="action-button" data-copy-target="plan-output">Copy plan</button>',
+            '<button type="button" class="action-button" data-print-plan>Print plan</button>',
+            f'<form method="post" action="/download/plan">{hidden_fields}<button type="submit" class="action-button">Download plan text</button></form>',
+            f'<form method="post" action="/download/instacart-paste-list">{hidden_fields}<button type="submit" class="action-button">Download Instacart paste list</button></form>',
+            f'<form method="post" action="/download/instacart-json">{hidden_fields}<button type="submit" class="action-button">Download Instacart JSON preview</button></form>',
+            '</div>',
+            '<div id="plan-output" class="plan-output">',
+            '<section class="plan-overview" aria-label="Weekly overview">',
+            '<h3>Weekly overview</h3>',
+            '<div class="overview-scroll">',
+            f'<ul class="overview-grid">{overview_html}</ul>',
+            '</div>',
+            '</section>',
+            '<section class="meal-list" aria-label="Meal details">',
+            meals_html,
+            '</section>',
+            '<button type="button" data-expand-all="meal-details" aria-expanded="false">Expand all</button>',
+            '<details class="plan-details">',
+            '<summary>Meal guidance</summary>',
+            '<h3>Meal selection guidance</h3>',
+            f'<pre>{escape("\\n".join(plan.meal_selection_guidance))}</pre>',
+            '<h3>Meal prep guidance</h3>',
+            f'<pre>{escape("\\n".join(plan.meal_prep_guidance))}</pre>',
+            '</details>',
+            '<section class="shopping-list"><h3>Shopping list</h3>',
+            f'<ul>{shopping_html}</ul>',
+            '</section>',
+            '<details class="plan-details">',
+            '<summary>Budget + estimated prices</summary>',
+            f'<p><strong>Total range:</strong> {escape(estimated_total_min)} to {escape(estimated_total_max)}</p>',
+            budget_summary,
+            budget_note,
+            '<h3>Estimated price ranges</h3>',
+            '<table class="estimate-table">',
+            '<thead><tr><th>Ingredient</th><th>Quantity</th><th>Estimated range</th></tr></thead>',
+            f'<tbody>{estimates_html}</tbody>',
+            '</table>',
+            f'<p><strong>Planning estimate source:</strong> {escape(display_price_description)} (retailer-neutral Canadian price catalogue for planning only)</p>',
+            '</details>',
+            '<details class="plan-details">',
+            '<summary>Pantry items from home</summary>',
+            pantry_html,
+            '</details>',
+            '</div>',
+            '<div class="copy-status" role="status" aria-live="polite"></div>',
+            '</section>',
+            f'<script nonce="{CSRF_TOKEN}">',
+            'const mealButtons = document.querySelectorAll(".meal-toggle"); ',
+            'const expandAllButton = document.querySelector("[data-expand-all]"); ',
+            'function syncMealToggle(button, target, isExpanded) { ',
+            'if (!button || !target) return; ',
+            'button.setAttribute("aria-expanded", String(isExpanded)); ',
+            'button.textContent = isExpanded ? button.dataset.labelExpanded : button.dataset.labelCollapsed; ',
+            'target.hidden = !isExpanded; ',
+            '} ',
+            'for (const button of mealButtons) { ',
+            'const target = document.getElementById(button.dataset.target); ',
+            'button.addEventListener("click", () => { ',
+            'const isExpanded = target.hidden; ',
+            'for (const otherButton of mealButtons) { ',
+            'const otherTarget = document.getElementById(otherButton.dataset.target); ',
+            'if (otherButton === button) continue; ',
+            'syncMealToggle(otherButton, otherTarget, false); ',
+            '} ',
+            'syncMealToggle(button, target, isExpanded); ',
+            'if (expandAllButton) { ',
+            'const allOpen = [...document.querySelectorAll(".meal-details")].every((detail) => !detail.hidden); ',
+            'expandAllButton.setAttribute("aria-expanded", String(allOpen)); ',
+            'expandAllButton.textContent = allOpen ? "Collapse all" : "Expand all"; ',
+            '} ',
+            '}); ',
+            '} ',
+            'if (expandAllButton) { ',
+            'expandAllButton.addEventListener("click", () => { ',
+            'const anyHidden = [...document.querySelectorAll(".meal-details")].some((detail) => detail.hidden); ',
+            'for (const button of mealButtons) { ',
+            'const target = document.getElementById(button.dataset.target); ',
+            'syncMealToggle(button, target, anyHidden); ',
+            '} ',
+            'expandAllButton.setAttribute("aria-expanded", String(anyHidden)); ',
+            'expandAllButton.textContent = anyHidden ? "Collapse all" : "Expand all"; ',
+            '}); ',
+            '} ',
+            'const planFocus = document.getElementById("plan-focus"); ',
+            'if (planFocus) { planFocus.scrollIntoView({ behavior: "smooth", block: "start" }); planFocus.focus(); } ',
+            'const editSettingsButton = document.querySelector("[data-toggle-plan-form]"); ',
+            'const plannerFormCard = document.querySelector("form[action=\'/plan\']").closest(".card"); ',
+            'if (editSettingsButton && plannerFormCard) { ',
+            '  editSettingsButton.addEventListener("click", () => { ',
+            '    plannerFormCard.scrollIntoView({ behavior: "smooth", block: "start" }); ',
+            '    const formInputs = plannerFormCard.querySelectorAll("input, select, textarea, button"); ',
+            '    if (formInputs.length) formInputs[0].focus(); ',
+            '  }); ',
+            '} ',
+            '</script>',
+        ]
+        result_html = "".join(result_html_parts)
 
     return f"""<!doctype html>
 <html lang="en-CA">
@@ -563,7 +769,7 @@ def render_page(
 </head>
 <body>
   <main>
-    <header>
+    <header class="page-intro">
       <div class="eyebrow">Canadian grocery planning</div>
       <h1>Carrinho</h1>
       <p>Start with people and days. Add details only when they matter.</p>
@@ -572,8 +778,11 @@ def render_page(
     <section class="card">
       <form method="post" action="/plan">
         <input type="hidden" name="csrf_token" value="{CSRF_TOKEN}">
-        <h2 class="form-section-title">Quick start</h2>
-        <p class="hint wide">Required: choose how many people and days to plan for.</p>
+        <div class="wide">
+          <p class="section-kicker">Quick start</p>
+          <h2 class="form-section-title">Plan your week</h2>
+        </div>
+        <p class="hint wide">Tell us the minimum. You can customize more if you want.</p>
         <label>People
           <input name="people" type="number" min="1" max="12" required
             value="{value('people', '2')}">
@@ -582,38 +791,83 @@ def render_page(
           <input name="days" type="number" min="1" max="14" required
             value="{value('days', '4')}">
         </label>
-        <h2 class="form-section-title">Add details</h2>
-        <p class="hint wide">Optional: add budget, pantry, energy, or dietary details
-          for a more accurate plan.</p>
-        <div class="details-group">
-          <label>Budget in CAD
-            <input name="budget" inputmode="decimal" value="{value('budget')}">
-            <span class="hint">Optional. Add it when you want a balance or shortfall.</span>
-          </label>
-          <label>Cooking energy
-            <select name="cooking_energy">
-              <option value="low"{_selected(cooking_energy, 'low')}>Low</option>
-              <option value="normal"{_selected(cooking_energy, 'normal')}>Normal</option>
-              <option value="high"{_selected(cooking_energy, 'high')}>High</option>
-            </select>
-          </label>
-          <label class="wide">Pantry items
-            <textarea name="pantry_items"
-              placeholder="rice, 7 eggs">{value('pantry_items')}</textarea>
-            <span class="hint">Separate items with commas or new lines.
-              Include quantities when known.</span>
-          </label>
-          <label class="wide">Dietary restrictions
-            <select name="dietary_restrictions">
-              <option value="none"{_selected(dietary_restrictions, 'none')}>None</option>
-              <option value="lactose intolerance"
-                {_selected(dietary_restrictions, 'lactose intolerance')}>
-                Lactose intolerance
-              </option>
-            </select>
-          </label>
+        <label class="wide">Target grocery budget
+          <input name="budget" inputmode="decimal" value="{value('budget')}" placeholder="CAD$ 120">
+          <span class="hint">Used only to compare the simulated plan estimate with your target.</span>
+        </label>
+        <label class="wide">Cooking energy
+          <select name="cooking_energy">
+            <option value="low"{_selected(cooking_energy, 'low')}>Low — meals under 20 minutes</option>
+            <option value="normal"{_selected(cooking_energy, 'normal')}>Normal — everyday cooking</option>
+            <option value="high"{_selected(cooking_energy, 'high')}>Enjoy cooking — more prep is okay</option>
+          </select>
+        </label>
+        <div class="setting-row wide">
+          <div class="setting-row-header">
+            <h3>Pantry</h3>
+            <span class="setting-row-note">Check + quantity</span>
+          </div>
+          <div class="pantry-editor">
+            <div class="pantry-suggestions" aria-label="Pantry quick adds">
+              <button type="button" class="chip" data-pantry-chip="rice">Rice</button>
+              <button type="button" class="chip" data-pantry-chip="eggs">Eggs</button>
+              <button type="button" class="chip" data-pantry-chip="pasta">Pasta</button>
+              <button type="button" class="chip" data-pantry-chip="oil">Oil</button>
+              <button type="button" class="chip" data-pantry-chip="beans">Beans</button>
+            </div>
+            <div class="pantry-list" id="pantry-list" aria-live="polite"></div>
+            <label class="wide">Pantry text list
+              <textarea id="pantry_items_fallback" rows="3" placeholder="Rice, 7 eggs">{value('pantry_items')}</textarea>
+              <span class="hint">Quick text backup. The checked list is the main editor.</span>
+            </label>
+            <label class="wide">Audio transcript or spoken note
+              <textarea id="pantry_transcript" rows="2" placeholder="Example: 'I have rice, two bags of beans, and six eggs'"></textarea>
+              <span class="hint">Optional third method: paste a spoken note or transcript to add pantry items in text.</span>
+            </label>
+          </div>
+          <textarea id="pantry_items" name="pantry_items" hidden>{value('pantry_items')}</textarea>
         </div>
-        <button type="submit">Build my plan</button>
+        <div class="setting-row wide">
+          <div class="setting-row-header">
+            <h3>Food rules</h3>
+            <span class="setting-row-note">Applies before ranking</span>
+          </div>
+          <p class="hint">Tell us about dietary needs and foods you want left out.</p>
+          <fieldset class="food-rule-options">
+            <legend>Dietary needs</legend>
+            <p class="hint">Choose any that apply.</p>
+            <div class="food-rule-grid">
+              <label class="food-rule-choice">
+                <input type="checkbox" name="dietary_lactose_intolerance"{_checked(form, 'dietary_lactose_intolerance')}>
+                <span>Lactose intolerance</span>
+              </label>
+              <label class="food-rule-choice">
+                <input type="checkbox" name="dietary_vegetarian"{_checked(form, 'dietary_vegetarian')}>
+                <span>Vegetarian</span>
+              </label>
+              <label class="food-rule-choice">
+                <input type="checkbox" name="dietary_vegan"{_checked(form, 'dietary_vegan')}>
+                <span>Vegan</span>
+              </label>
+              <label class="food-rule-choice">
+                <input type="checkbox" name="dietary_avoid_gluten_ingredients"{_checked(form, 'dietary_avoid_gluten_ingredients')}>
+                <span>Avoid gluten ingredients</span>
+              </label>
+            </div>
+          </fieldset>
+          <div class="food-rule-entry">
+            <label class="wide">Foods to avoid
+              <div class="food-rule-input-row">
+                <input id="foods_to_avoid_input" type="text" placeholder="Coconut or mushrooms">
+                <button type="button" class="chip" data-food-rule-add>Add food</button>
+              </div>
+            </label>
+            <div id="foods-to-avoid-list" class="food-rule-chip-list" aria-live="polite"></div>
+            <textarea id="foods_to_avoid" name="foods_to_avoid" hidden>{value('foods_to_avoid')}</textarea>
+          </div>
+          <p class="hint">Carrinho uses available ingredient information to filter meals. Always check product labels for allergies or medical dietary needs.</p>
+        </div>
+        <button type="submit" class="button detail-cta">Create my meal plan</button>
       </form>
     </section>
     {result_html}
@@ -639,6 +893,290 @@ def render_page(
     for (const button of document.querySelectorAll("[data-print-plan]")) {{
       button.addEventListener("click", () => window.print());
     }}
+    const pantryForm = document.querySelector("form[action='/plan']");
+    const pantryTextArea = document.getElementById("pantry_items");
+    const pantryFallback = document.getElementById("pantry_items_fallback");
+    const pantryTranscript = document.getElementById("pantry_transcript");
+    const pantryList = document.getElementById("pantry-list");
+    const pantryUnits = ['kg', 'g', 'ml', 'L', 'cups', 'cans', 'boxes', 'bags', 'dozens', 'eggs'];
+
+    function splitPantryEntries(rawValue) {{
+      return Array.from(new Set(
+        (rawValue || '')
+          .split(/[\\r\\n,]+|\\s+and\\s+/i)
+          .map((entry) => entry.trim())
+          .filter(Boolean)
+      ));
+    }}
+
+    function parsePantryEntry(rawEntry) {{
+      const entry = (rawEntry || '').trim();
+      if (!entry) return {{ name: '', quantity: '', unit: '' }};
+      const quantityMatch = entry.match(/^(.+?)\\s+(\\d+(?:\\.\\d+)?)\\s+([a-zA-Z/]+)$/);
+      if (quantityMatch) {{
+        return {{
+          name: quantityMatch[1].trim(),
+          quantity: quantityMatch[2],
+          unit: quantityMatch[3].trim(),
+        }};
+      }}
+      const simpleQuantityMatch = entry.match(/^(\\d+(?:\\.\\d+)?)\\s+(.+)$/);
+      if (simpleQuantityMatch) {{
+        return {{
+          name: simpleQuantityMatch[2].trim(),
+          quantity: simpleQuantityMatch[1],
+          unit: '',
+        }};
+      }}
+      return {{ name: entry, quantity: '', unit: '' }};
+    }}
+
+    function rowEntryString(row) {{
+      const checked = row.querySelector('input[type="checkbox"]');
+      if (checked && !checked.checked) return '';
+      const name = row.dataset.name || '';
+      const quantityInput = row.querySelector('input[type="number"]');
+      const unitSelect = row.querySelector('select');
+      const quantity = quantityInput ? quantityInput.value.trim() : '';
+      const unit = unitSelect ? unitSelect.value.trim() : '';
+      if (quantity && unit) return `${{name}} ${{quantity}} ${{unit}}`;
+      if (quantity) return `${{name}} ${{quantity}}`;
+      return name;
+    }}
+
+    function applyPantryEntry(row, parsed) {{
+      row.dataset.name = parsed.name;
+      row.className = 'pantry-row';
+
+      const checkInput = document.createElement('input');
+      checkInput.type = 'checkbox';
+      checkInput.checked = true;
+      checkInput.className = 'pantry-row-check';
+      checkInput.setAttribute('aria-label', `Include ${{parsed.name}} in the pantry`);
+
+      const main = document.createElement('div');
+      main.className = 'pantry-row-main';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'pantry-row-name';
+      nameEl.textContent = parsed.name;
+      const statusEl = document.createElement('div');
+      statusEl.className = 'pantry-row-status';
+      if (parsed.quantity) {{
+        statusEl.textContent = `${{parsed.quantity}} ${{parsed.unit || 'unit'}}`;
+      }} else {{
+        statusEl.textContent = 'Enough for this plan';
+      }}
+      main.appendChild(nameEl);
+      main.appendChild(statusEl);
+
+      const amountGroup = document.createElement('div');
+      amountGroup.className = 'pantry-row-amounts';
+      if (parsed.quantity) amountGroup.classList.add('visible');
+
+      const qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.min = '0';
+      qtyInput.step = '1';
+      qtyInput.value = parsed.quantity || '';
+      qtyInput.placeholder = 'qty';
+
+      const unitSelect = document.createElement('select');
+      for (const unit of pantryUnits) {{
+        const option = document.createElement('option');
+        option.value = unit;
+        option.textContent = unit;
+        if (unit === (parsed.unit || '')) option.selected = true;
+        unitSelect.appendChild(option);
+      }}
+      amountGroup.appendChild(qtyInput);
+      amountGroup.appendChild(unitSelect);
+
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'remove-item';
+      removeButton.textContent = 'Remove';
+
+      checkInput.addEventListener('change', () => {{
+        syncPantryListValue();
+      }});
+      qtyInput.addEventListener('input', syncPantryListValue);
+      unitSelect.addEventListener('change', syncPantryListValue);
+      removeButton.addEventListener('click', () => {{
+        row.remove();
+        syncPantryListValue();
+      }});
+
+      row.appendChild(checkInput);
+      row.appendChild(main);
+      row.appendChild(amountGroup);
+      row.appendChild(removeButton);
+      row.dataset.name = parsed.name;
+    }}
+
+    function syncPantryList() {{
+      if (!pantryList) return;
+      pantryList.innerHTML = '';
+      const entries = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
+      for (const entry of entries) {{
+        const parsed = parsePantryEntry(entry);
+        if (!parsed.name) continue;
+        const row = document.createElement('div');
+        applyPantryEntry(row, parsed);
+        pantryList.appendChild(row);
+      }}
+    }}
+
+    function syncPantryListValue() {{
+      if (!pantryList || !pantryTextArea) return;
+      const rows = Array.from(pantryList.querySelectorAll('.pantry-row'));
+      const deduped = [];
+      const seen = new Set();
+      for (const row of rows) {{
+        const stringValue = rowEntryString(row);
+        const key = stringValue.trim().toLowerCase();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(stringValue.trim());
+      }}
+      const value = deduped.join('\\n');
+      pantryTextArea.value = value;
+      if (pantryFallback) pantryFallback.value = value;
+    }}
+
+    function mergeTranscriptToPantry() {{
+      if (!pantryTranscript) return;
+      const transcript = pantryTranscript.value.trim();
+      if (!transcript) return;
+      const entries = splitPantryEntries(transcript);
+      const current = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
+      const merged = Array.from(new Set([...current, ...entries])).join('\\n');
+      if (pantryFallback) pantryFallback.value = merged;
+      if (pantryTextArea) pantryTextArea.value = merged;
+      syncPantryList();
+    }}
+
+    if (pantryForm && pantryTextArea) {{
+      pantryForm.addEventListener('submit', () => {{
+        syncPantryListValue();
+      }});
+    }}
+
+    if (pantryFallback) {{
+      pantryFallback.addEventListener('input', () => {{
+        syncPantryListValue();
+        syncPantryList();
+      }});
+    }}
+
+    if (pantryTranscript) {{
+      pantryTranscript.addEventListener('change', mergeTranscriptToPantry);
+      pantryTranscript.addEventListener('blur', mergeTranscriptToPantry);
+    }}
+
+    for (const chip of document.querySelectorAll('[data-pantry-chip]')) {{
+      chip.addEventListener('click', () => {{
+        const item = chip.dataset.pantryChip;
+        const existing = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
+        const selected = existing.includes(item);
+        const next = selected
+          ? existing.filter((entry) => entry.trim().toLowerCase() !== item.trim().toLowerCase())
+          : [...existing, item];
+        const unique = Array.from(new Set(next.map((entry) => entry.trim()).filter(Boolean)));
+        if (pantryFallback) pantryFallback.value = unique.join('\\n');
+        if (pantryTextArea) pantryTextArea.value = unique.join('\\n');
+        chip.classList.toggle('selected', !selected);
+        syncPantryList();
+      }});
+    }}
+
+    for (const chip of document.querySelectorAll('[data-pantry-chip]')) {{
+      const item = chip.dataset.pantryChip;
+      const existing = splitPantryEntries((pantryFallback && pantryFallback.value) || (pantryTextArea && pantryTextArea.value) || '');
+      chip.classList.toggle('selected', existing.includes(item));
+    }}
+
+    const foodRulesInput = document.getElementById('foods_to_avoid_input');
+    const foodRulesHidden = document.getElementById('foods_to_avoid');
+    const foodRulesList = document.getElementById('foods-to-avoid-list');
+    const addFoodRuleButton = document.querySelector('[data-food-rule-add]');
+
+    function splitFoodRuleEntries(rawValue) {{
+      return Array.from(new Set(
+        (rawValue || '')
+          .split(/[\\r\\n,]+|\\s+and\\s+|\\s+or\\s+/i)
+          .map((entry) => entry.trim())
+          .filter(Boolean)
+      ));
+    }}
+
+    function setFoodRuleEntries(entries) {{
+      if (!foodRulesHidden) return;
+      foodRulesHidden.value = entries.join('\n');
+    }}
+
+    function renderFoodRuleChips() {{
+      if (!foodRulesList || !foodRulesHidden) return;
+      foodRulesList.innerHTML = '';
+      const entries = splitFoodRuleEntries(foodRulesHidden.value);
+      if (!entries.length) {{
+        const empty = document.createElement('p');
+        empty.className = 'hint';
+        empty.textContent = 'No foods are excluded yet.';
+        foodRulesList.appendChild(empty);
+        return;
+      }}
+      for (const entry of entries) {{
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip selected';
+        chip.textContent = entry;
+        chip.setAttribute('aria-label', `Remove ${{entry}} from foods to avoid`);
+        chip.addEventListener('click', () => {{
+          const next = splitFoodRuleEntries(foodRulesHidden.value).filter(
+            (current) => current.trim().toLowerCase() !== entry.trim().toLowerCase()
+          );
+          setFoodRuleEntries(next);
+          renderFoodRuleChips();
+        }});
+        foodRulesList.appendChild(chip);
+      }}
+    }}
+
+    function addFoodRuleEntry(rawValue) {{
+      if (!foodRulesHidden) return;
+      const entry = (rawValue || '').trim();
+      if (!entry) return;
+      const current = splitFoodRuleEntries(foodRulesHidden.value);
+      const seen = new Set(current.map((value) => value.trim().toLowerCase()));
+      if (!seen.has(entry.toLowerCase())) {{
+        current.push(entry);
+      }}
+      setFoodRuleEntries(current);
+      renderFoodRuleChips();
+    }}
+
+    if (foodRulesInput && addFoodRuleButton) {{
+      addFoodRuleButton.addEventListener('click', () => {{
+        addFoodRuleEntry(foodRulesInput.value);
+        foodRulesInput.value = '';
+        foodRulesInput.focus();
+      }});
+      foodRulesInput.addEventListener('keydown', (event) => {{
+        if (event.key === 'Enter') {{
+          event.preventDefault();
+          addFoodRuleEntry(foodRulesInput.value);
+          foodRulesInput.value = '';
+        }}
+      }});
+    }}
+
+    if (foodRulesHidden) {{
+      foodRulesHidden.addEventListener('input', renderFoodRuleChips);
+    }}
+
+    renderFoodRuleChips();
+
+    syncPantryList();
   </script>
 </body>
 </html>
@@ -824,10 +1362,11 @@ class CarrinhoHandler(BaseHTTPRequestHandler):
         return values
 
     def do_GET(self) -> None:
-        if self.path == "/":
+        path = urlsplit(self.path).path.rstrip("/") or "/"
+        if path in {"/", "/plan"}:
             self._send_html(render_page())
             return
-        if self.path == "/customize":
+        if path == "/customize":
             try:
                 content = read_local_catalogue_json()
             except ValueError as error:
@@ -842,7 +1381,8 @@ class CarrinhoHandler(BaseHTTPRequestHandler):
         self._send_html(render_page(error="Page not found."), 404)
 
     def do_POST(self) -> None:
-        if self.path not in {
+        path = urlsplit(self.path).path.rstrip("/") or "/"
+        if path not in {
             "/plan",
             "/customize",
             "/customize/restore",
@@ -865,25 +1405,26 @@ class CarrinhoHandler(BaseHTTPRequestHandler):
             self._send_html(error_page, 400)
             return
 
-        if self.path == "/plan":
+        if path == "/plan":
             try:
-                plan = create_plan(values)
+                request = build_request(values)
+                plan = create_plan(values, request=request)
             except ValueError as error:
                 self._send_html(render_page(values, error=str(error)), 400)
                 return
-            self._send_html(render_page(values, plan=plan))
+            self._send_html(render_page(_render_form_values(values, request), plan=plan))
             return
 
-        if self.path.startswith("/download/"):
+        if path.startswith("/download/"):
             try:
                 plan = create_plan(values)
             except ValueError as error:
                 self._send_html(render_page(values, error=str(error)), 400)
                 return
-            if self.path == "/download/plan":
+            if path == "/download/plan":
                 self._send_download(f"{format_plan(plan)}\n", "meal-plan.txt")
                 return
-            if self.path == "/download/instacart-paste-list":
+            if path == "/download/instacart-paste-list":
                 self._send_download(
                     f"{create_instacart_paste_list(plan)}\n",
                     "instacart-paste-list.txt",
@@ -896,7 +1437,7 @@ class CarrinhoHandler(BaseHTTPRequestHandler):
             )
             return
 
-        if self.path == "/customize":
+        if path == "/customize":
             content = values.get("catalogue_json", "")
             try:
                 result = save_local_catalogue_json(content)

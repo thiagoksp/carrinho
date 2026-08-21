@@ -45,79 +45,29 @@ Slack and Notion are not project-control tools for Carrinho at this stage.
 - Project owner and formal assignee: Thiago (`@tkubrusly`).
 - Repository visibility: public for project review, but not open source.
 
-## Current checkpoint
+  ## Current checkpoint
 
-- Active Linear team: Carrinho team with the `CAR` issue prefix.
-- [CAR-32 - Use Carrinho for a real weekly planning run](https://linear.app/thiagoksp/issue/CAR-32)
-  validation exposed two concrete blockers that kept the plan from feeling practical
-  enough for a real weekly run: meal names without usable cooking steps, and budget
-  wording that did not clearly label the total as a simulated planning estimate rather
-  than live retailer pricing.
-- Follow-up issues created from that diagnosis:
-  - [CAR-42 - Add actionable recipe guidance to generated meal plans](https://linear.app/thiagoksp/issue/CAR-42)
-  - [CAR-43 - Clarify simulated budget output as planning-only estimates](https://linear.app/thiagoksp/issue/CAR-43)
-  - [CAR-48 - Align project wording with the estimate range model](https://linear.app/thiagoksp/issue/CAR-48/align-project-wording-with-the-estimate-range-model)
-- [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22)
-  is complete and was merged through
-  [pull request #32](https://github.com/thiagoksp/carrinho/pull/32) on August 15, 2026.
-  It made the browser quick start require only people and days, made budget optional,
-  removed advanced preference fields from the first-run surface, and added
-  [`AI_RULES.md`](AI_RULES.md).
-- [CAR-14 - Add portable plan and shopping-list exports](https://linear.app/thiagoksp/issue/CAR-14)
-  is complete. It added browser copy, print-friendly output, and local downloads for the
-  meal plan, Instacart paste list, and Instacart JSON preview while preserving existing
-  terminal text and JSON exports.
-- [CAR-13 - Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13)
-  is complete. It introduced an optional LLM boundary that returns ordered known
-  meal-template keys while local validation and deterministic calculations remain
-  authoritative. The selector is disabled by default, uses Structured Outputs, has a
-  provider/model adapter, reads configuration from environment variables, applies cost
-  guards, and targets the OpenAI Responses API with `gpt-5.6-luna` when explicitly
-  enabled.
-- [CAR-15](https://linear.app/thiagoksp/issue/CAR-15/evaluate-cheaper-llm-providers-for-guarded-meal-selection)
-  is a future backlog comparison of OpenAI, Gemini, Groq, and Claude options against the
-  same guarded meal-selection eval set. It must not add another production provider
-  unless evidence supports switching.
-- [CAR-16](https://linear.app/thiagoksp/issue/CAR-16/prepare-catalogue-identities-for-a-future-database)
-  is a future backlog architecture task. JSON, exports, prompts, and LLM contracts keep
-  stable text keys; a future database may add internal ids while preserving unique
-  `stable_key` values.
-- [CAR-17](https://linear.app/thiagoksp/issue/CAR-17/expand-supported-dietary-restrictions-safely)
-  is a future backlog product-safety task for expanding hard dietary restrictions beyond
-  lactose intolerance. Dislikes and preferred foods remain soft preferences; dietary
-  safety stays deterministic and must not be delegated to an LLM.
-- [CAR-18](https://linear.app/thiagoksp/issue/CAR-18/design-a-unified-household-rules-model)
-  captures the future household-rules model for hard restrictions, soft preferences,
-  brand-only choices, frequency preferences, and review feedback. It should be considered
-  before broadening CAR-17 so the project does not grow separate rule systems.
-- [CAR-19](https://linear.app/thiagoksp/issue/CAR-19/design-ingredient-substitution-rules)
-  is a future design task for ingredient substitutions using catalogue-backed stable
-  keys. LLMs may suggest candidates, but local rules approve safety and quantity impact.
-- [CAR-20](https://linear.app/thiagoksp/issue/CAR-20/map-generic-grocery-items-to-retailer-product-candidates)
-  is a future approved-integration task for mapping generic grocery items to retailer or
-  Instacart product candidates, including brand, package, variable weight, availability,
-  price, and evidence source when contractually available.
-- [CAR-21](https://linear.app/thiagoksp/issue/CAR-21/design-configurable-shopping-strategy-preferences)
-  is a future design task for configurable shopping strategy, such as cheapest acceptable
-  item versus brand-only rules, without turning Carrinho into a retailer-comparison tool.
-- [CAR-22](https://linear.app/thiagoksp/issue/CAR-22/simplify-first-run-household-setup)
-  is complete. See PR #32.
-- [CAR-32](https://linear.app/thiagoksp/issue/CAR-32/use-carrinho-for-a-real-weekly-planning-run)
-  is the current `Next` issue. Use the product for one realistic weekly plan and make
-  only the smallest changes required to unblock practical use.
-- [CAR-57 - Render the structured plan in the browser UI](https://linear.app/thiagoksp/issue/CAR-57)
-  is complete. The browser now renders a structured plan with per-meal cards (collapsible),
-  a clean ingredient-and-quantity shopping list, a separate estimated price range table,
-  budget summary, and guidance sections using the current Plan model instead of legacy
-  text formatting. Implementation was completed on August 19, 2026. The focused browser
-  smoke check passed; the full suite was not rerun after the final visual refinement.
-- The catalogue now contains 22 validated meal templates and 20 generic products,
-  including Mexican, Indian, Mediterranean, Middle Eastern, East Asian, and South
-  American cuisine labels. Cuisine is descriptive metadata and is not yet user-selectable.
-  An internal `low` budget category is detected automatically when the budget approaches
-  CAD$0.99 per person per meal, using one generic instant-noodle package as the minimum
-  floor reference. The planner may select a validated low-cost noodle meal, but does not
-  force it into every day; budgets below the floor remain reviewable and show a shortfall.
+  - Active Linear team: Carrinho team with the `CAR` issue prefix.
+  - [CAR-58 - Review the full UI of the current Carrinho screen](https://linear.app/thiagoksp/issue/CAR-58/review-the-full-ui-of-the-current-carrinho-screen)
+    is the current `Next` issue. It keeps the scope on the current browser flow, audits the
+    form, pantry, settings, and generated plan end to end, and identifies the highest-value
+    UI improvements without expanding into retailer work or live price data.
+  - Current repo status remains aligned with a local-only, retailer-neutral planner. The app
+    keeps the browser as the primary surface, no official Instacart API access is enabled,
+    and the generated estimates remain clearly labelled as simulated planning ranges.
+  - [CAR-32 - Use Carrinho for a real weekly planning run](https://linear.app/thiagoksp/issue/CAR-32)
+    is complete and closed after the real planning pass and the follow-up browser UX fixes.
+  - [CAR-22 - Simplify first-run household setup](https://linear.app/thiagoksp/issue/CAR-22)
+    is complete and was merged through [pull request #32](https://github.com/thiagoksp/carrinho/pull/32).
+  - [CAR-14 - Add portable plan and shopping-list exports](https://linear.app/thiagoksp/issue/CAR-14)
+    is complete.
+  - [CAR-13 - Add an optional guarded LLM meal selector](https://linear.app/thiagoksp/issue/CAR-13)
+    is complete.
+  - [CAR-57 - Render the structured plan in the browser UI](https://linear.app/thiagoksp/issue/CAR-57)
+    is complete. The browser renders the structured plan, shopping list, and estimate view
+    with the current local-only model.
+  - The current browser pass is deliberately scoped to UX cleanup and local planning quality,
+    not retailer integration or live product pricing. The planner may select a validated low-cost noodle meal, but does not  force it into every day; budgets below the floor remain reviewable and show a shortfall.
 - [CAR-23](https://linear.app/thiagoksp/issue/CAR-23/use-approved-popularity-and-review-signals-for-product-selection)
   is a future approved-integration task for using product popularity, ratings, review
   feedback, and "most bought" style signals only when that data is contractually

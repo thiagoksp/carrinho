@@ -48,7 +48,7 @@ Expected current state:
 - Linear project:
   <https://linear.app/thiagoksp/project/carrinho-instacart-mvp-ad1267b5bbde>
 - exactly one Linear issue should have the `Next` label:
-  [CAR-32 - Use Carrinho for a real weekly planning run](https://linear.app/thiagoksp/issue/CAR-32)
+  [CAR-58 - Review the full UI of the current Carrinho screen](https://linear.app/thiagoksp/issue/CAR-58/review-the-full-ui-of-the-current-carrinho-screen)
 
 ## How the user likes to work
 
@@ -92,6 +92,7 @@ Read these in order:
 
 ## Next action
 
-Start with CAR-32. The goal is to use Carrinho for one real weekly planning run, find
-only the blockers that prevent practical use, and make the smallest useful fixes. Do not
-resume Instacart API work unless CAR-3 changes state.
+Start with CAR-58. The goal is to review the current browser interface end to end,
+identify the highest-value UI improvements, and implement only the changes that improve
+clarity and usability without expanding the product boundary. Do not resume Instacart API
+work unless CAR-3 changes state.

@@ -138,10 +138,10 @@ py -3.12 -m venv .venv
 
 ## Next single step
 
-Continue [CAR-32](https://linear.app/thiagoksp/issue/CAR-32/use-carrinho-for-a-real-weekly-planning-run),
-the only issue labelled `Next`. Use Carrinho for one realistic weekly planning run and
-make only the smallest changes required to unblock practical use. CAR-3 continues to
-track Instacart approval in parallel.
+Continue [CAR-58](https://linear.app/thiagoksp/issue/CAR-58/review-the-full-ui-of-the-current-carrinho-screen),
+the only issue labelled `Next`. Review the current browser screen end to end and make only
+small UI changes that improve clarity, hierarchy, and usability in the existing local
+planning flow. CAR-3 continues to track Instacart approval in parallel.
 
 ## Current deterministic selection
 
